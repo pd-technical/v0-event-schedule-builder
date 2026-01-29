@@ -3,10 +3,19 @@
 import React from "react"
 import { useState, useRef } from "react"
 import { X, GripVertical, AlertTriangle, Calendar, Download, ChevronUp, ChevronDown, FileDown, Utensils, Bath, Droplets } from "lucide-react"
-import type { ScheduledEvent, AmenityVisibility } from "@/app/page"
+import type { AmenityVisibility } from "@/lib/types"
+
+interface UIScheduledEvent {
+  id: string
+  name: string
+  time: string
+  endTime: string
+  location: string
+  orderIndex: number
+}
 
 interface SchedulePanelProps {
-  scheduledEvents: ScheduledEvent[]
+  scheduledEvents: UIScheduledEvent[]
   removeFromSchedule: (eventId: string) => void
   reorderSchedule: (fromIndex: number, toIndex: number) => void
   selectedScheduledEvent: string | null
@@ -24,7 +33,7 @@ function parseTime(timeStr: string): number {
   return h * 60 + minutes
 }
 
-function isOutOfOrder(events: ScheduledEvent[], index: number): boolean {
+function isOutOfOrder(events: UIScheduledEvent[], index: number): boolean {
   if (index === 0) return false
   const currentTime = parseTime(events[index].time)
   const prevTime = parseTime(events[index - 1].time)

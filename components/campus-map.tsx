@@ -1,18 +1,38 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import type { Event, ScheduledEvent, Amenity, AmenityVisibility } from "@/app/page"
-import { Utensils, Droplets, Bath } from "lucide-react"
+import { Utensils, Droplets, Bath, Truck } from "lucide-react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
+import type { LocationWithFeatures, AmenityVisibility } from "@/lib/types"
+
+interface UIEvent {
+  id: string
+  name: string
+  time: string
+  location: string
+  mapPosition: { lat: number; lng: number }
+}
+
+interface UIScheduledEvent extends UIEvent {
+  orderIndex: number
+}
+
+interface UIAmenity {
+  id: string
+  type: "food" | "bathroom" | "water"
+  name: string
+  position: { lat: number; lng: number }
+}
 
 interface CampusMapProps {
-  events: Event[]
-  scheduledEvents: ScheduledEvent[]
+  events: UIEvent[]
+  scheduledEvents: UIScheduledEvent[]
   hoveredEvent: string | null
-  amenities: Amenity[]
+  amenities: UIAmenity[]
   amenityVisibility: AmenityVisibility
   setAmenityVisibility: (visibility: AmenityVisibility) => void
+  locations?: LocationWithFeatures[]
 }
 
 export function CampusMap({ 
@@ -21,14 +41,17 @@ export function CampusMap({
   hoveredEvent, 
   amenities, 
   amenityVisibility,
-  setAmenityVisibility 
+  setAmenityVisibility,
+  locations = []
 }: CampusMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
   const markersRef = useRef<L.Marker[]>([])
   const amenityMarkersRef = useRef<L.Marker[]>([])
+  const locationMarkersRef = useRef<L.Marker[]>([])
   const polylineRef = useRef<L.Polyline | null>(null)
   const [isMapReady, setIsMapReady] = useState(false)
+  const [showFoodTrucks, setShowFoodTrucks] = useState(false)
 
   const getScheduleIndex = (eventId: string) => {
     const index = scheduledEvents.findIndex(e => e.id === eventId)
@@ -92,7 +115,7 @@ export function CampusMap({
         iconAnchor: isScheduled ? [16, 16] : [10, 10]
       })
 
-      const marker = L.marker([event.mapPosition.x, event.mapPosition.y], { icon })
+      const marker = L.marker([event.mapPosition.lat, event.mapPosition.lng], { icon })
         .addTo(mapInstanceRef.current!)
         .bindPopup(`
           <div class="p-1">
@@ -117,8 +140,8 @@ export function CampusMap({
 
     if (scheduledEvents.length > 1) {
       const points: [number, number][] = scheduledEvents.map(event => [
-        event.mapPosition.x,
-        event.mapPosition.y
+        event.mapPosition.lat,
+        event.mapPosition.lng
       ])
 
       polylineRef.current = L.polyline(points, {
@@ -164,13 +187,53 @@ export function CampusMap({
         iconAnchor: [12, 12]
       })
 
-      const marker = L.marker([amenity.position.x, amenity.position.y], { icon })
+      const marker = L.marker([amenity.position.lat, amenity.position.lng], { icon })
         .addTo(mapInstanceRef.current!)
         .bindPopup(`<div class="p-1 text-sm font-medium">${amenity.name}</div>`)
 
       amenityMarkersRef.current.push(marker)
     })
   }, [amenities, amenityVisibility, isMapReady])
+
+  // Update food truck location markers
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current) return
+
+    // Clear existing location markers
+    locationMarkersRef.current.forEach(marker => marker.remove())
+    locationMarkersRef.current = []
+
+    if (!showFoodTrucks) return
+
+    const foodTruckLocations = locations.filter(loc => 
+      loc.location_features?.some(f => f.feature_type === 'food_trucks')
+    )
+
+    foodTruckLocations.forEach(location => {
+      const iconHtml = `<div class="flex items-center justify-center w-7 h-7 rounded-lg shadow-md bg-[#c97723]">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 17h4V5H2v12h3"/><path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5"/><path d="M14 17h1"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+      </div>`
+
+      const icon = L.divIcon({
+        html: iconHtml,
+        className: 'food-truck-marker',
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      })
+
+      const marker = L.marker([location.latitude, location.longitude], { icon })
+        .addTo(mapInstanceRef.current!)
+        .bindPopup(`
+          <div class="p-2">
+            <p class="font-semibold text-sm">${location.name}</p>
+            <p class="text-xs text-gray-600">Food Trucks</p>
+            <p class="text-xs text-gray-500 mt-1">${location.address}</p>
+          </div>
+        `)
+
+      locationMarkersRef.current.push(marker)
+    })
+  }, [locations, showFoodTrucks, isMapReady])
 
   const toggleAmenity = (type: keyof AmenityVisibility) => {
     setAmenityVisibility({
@@ -189,6 +252,17 @@ export function CampusMap({
         <p className="text-[10px] font-medium text-muted-foreground mb-2 uppercase tracking-wide">Show on map</p>
         <div className="flex flex-col gap-1.5">
           <button
+            onClick={() => setShowFoodTrucks(!showFoodTrucks)}
+            className={`flex items-center gap-2 px-2.5 py-1.5 rounded text-xs font-medium transition-all ${
+              showFoodTrucks 
+                ? 'bg-[#c97723] text-white' 
+                : 'bg-secondary text-secondary-foreground hover:bg-muted'
+            }`}
+          >
+            <Truck className="w-3.5 h-3.5" />
+            Food Trucks
+          </button>
+          <button
             onClick={() => toggleAmenity('food')}
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded text-xs font-medium transition-all ${
               amenityVisibility.food 
@@ -197,7 +271,7 @@ export function CampusMap({
             }`}
           >
             <Utensils className="w-3.5 h-3.5" />
-            Food
+            Food Vendors
           </button>
           <button
             onClick={() => toggleAmenity('bathroom')}

@@ -2,12 +2,27 @@
 
 import { useState } from "react"
 import { Plus, Check, MapPin, Clock, ChevronDown } from "lucide-react"
-import type { Event, ScheduledEvent } from "@/app/page"
+
+interface UIEvent {
+  id: string
+  name: string
+  time: string
+  endTime: string
+  location: string
+  category: string
+  description: string
+  mapPosition: { lat: number; lng: number }
+  popularity: number
+}
+
+interface UIScheduledEvent extends UIEvent {
+  orderIndex: number
+}
 
 interface EventListProps {
-  events: Event[]
-  scheduledEvents: ScheduledEvent[]
-  addToSchedule: (event: Event) => void
+  events: UIEvent[]
+  scheduledEvents: UIScheduledEvent[]
+  addToSchedule: (event: UIEvent) => void
   hoveredEvent: string | null
   setHoveredEvent: (id: string | null) => void
 }

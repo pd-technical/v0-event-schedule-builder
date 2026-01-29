@@ -1,154 +1,90 @@
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useMemo, useEffect } from "react"
 import { NavBar } from "@/components/nav-bar"
 import { SearchSection } from "@/components/search-section"
 import { CategoryFilters } from "@/components/category-filters"
 import { EventList } from "@/components/event-list"
 import { CampusMap } from "@/components/campus-map"
 import { SchedulePanel } from "@/components/schedule-panel"
+import { getEvents, getAmenities, getLocationsWithFeatures } from "@/lib/data"
+import type { Event as DbEvent, Amenity as DbAmenity, LocationWithFeatures, ScheduledEvent, AmenityVisibility } from "@/lib/types"
 
-export interface Event {
+// Transform DB event to UI event format
+interface UIEvent {
   id: string
   name: string
   time: string
   endTime: string
   location: string
+  locationId: string
   category: string
   description: string
-  mapPosition: { x: number; y: number }
-  popularity: number // number of users who added this to their schedule
+  mapPosition: { lat: number; lng: number }
+  popularity: number
 }
 
-export interface ScheduledEvent extends Event {
-  orderIndex: number
-}
-
-export interface Amenity {
+interface UIAmenity {
   id: string
   type: "food" | "bathroom" | "water"
   name: string
-  position: { x: number; y: number }
+  position: { lat: number; lng: number }
 }
 
-export type AmenityVisibility = {
-  food: boolean
-  bathroom: boolean
-  water: boolean
+interface UIScheduledEvent extends UIEvent {
+  orderIndex: number
 }
 
-const MOCK_EVENTS: Event[] = [
-  {
-    id: "1",
-    name: "Doxie Derby",
-    time: "10:00 AM",
-    endTime: "11:00 AM",
-    location: "Hutchison Field",
-    category: "animals",
-    description: "Watch adorable dachshunds race across the field in this beloved Picnic Day tradition.",
-    mapPosition: { x: 38.538, y: -121.761 },
-    popularity: 342
-  },
-  {
-    id: "2",
-    name: "Chemistry Magic Show",
-    time: "11:00 AM",
-    endTime: "12:00 PM",
-    location: "Chemistry Building",
-    category: "science",
-    description: "Witness spectacular chemical reactions and learn the science behind the magic.",
-    mapPosition: { x: 38.537, y: -121.749 },
-    popularity: 256
-  },
-  {
-    id: "3",
-    name: "Insect Pavilion Tour",
-    time: "9:30 AM",
-    endTime: "10:30 AM",
-    location: "Briggs Hall",
-    category: "nature",
-    description: "Explore the fascinating world of insects with entomology experts.",
-    mapPosition: { x: 38.536, y: -121.752 },
-    popularity: 189
-  },
-  {
-    id: "4",
-    name: "Animal Science Demo",
-    time: "1:00 PM",
-    endTime: "2:00 PM",
-    location: "Animal Science Building",
-    category: "animals",
-    description: "Interactive demonstrations featuring farm animals and animal science research.",
-    mapPosition: { x: 38.534, y: -121.756 },
-    popularity: 278
-  },
-  {
-    id: "5",
-    name: "Opening Ceremony",
-    time: "8:00 AM",
-    endTime: "9:00 AM",
-    location: "Main Quad",
-    category: "featured",
-    description: "Kick off Picnic Day with the official opening ceremony and welcome address.",
-    mapPosition: { x: 38.539, y: -121.754 },
-    popularity: 456
-  },
-  {
-    id: "6",
-    name: "Battle of the Bands",
-    time: "2:00 PM",
-    endTime: "4:00 PM",
-    location: "ARC Pavilion",
-    category: "arts",
-    description: "Student bands compete for the title of Picnic Day champion.",
-    mapPosition: { x: 38.542, y: -121.760 },
-    popularity: 312
-  },
-  {
-    id: "7",
-    name: "Botanical Garden Walk",
-    time: "10:30 AM",
-    endTime: "11:30 AM",
-    location: "Arboretum",
-    category: "nature",
-    description: "Guided tour through the beautiful UC Davis Arboretum.",
-    mapPosition: { x: 38.532, y: -121.758 },
-    popularity: 145
-  },
-  {
-    id: "8",
-    name: "Engineering Showcase",
-    time: "11:00 AM",
-    endTime: "1:00 PM",
-    location: "Kemper Hall",
-    category: "science",
-    description: "See innovative student engineering projects and robotics demonstrations.",
-    mapPosition: { x: 38.535, y: -121.750 },
-    popularity: 203
+function formatTime(isoTime: string): string {
+  const date = new Date(isoTime)
+  return date.toLocaleTimeString('en-US', { 
+    hour: 'numeric', 
+    minute: '2-digit',
+    hour12: true 
+  })
+}
+
+function transformEvent(event: DbEvent): UIEvent {
+  return {
+    id: event.id,
+    name: event.name,
+    time: formatTime(event.start_time),
+    endTime: formatTime(event.end_time),
+    location: event.location?.name || 'TBD',
+    locationId: event.location_id,
+    category: event.category,
+    description: event.description || '',
+    mapPosition: { 
+      lat: event.location?.latitude || 38.5382, 
+      lng: event.location?.longitude || -121.7617 
+    },
+    popularity: event.popularity
   }
-]
+}
 
-const MOCK_AMENITIES: Amenity[] = [
-  { id: "f1", type: "food", name: "Food Court A", position: { x: 38.537, y: -121.755 } },
-  { id: "f2", type: "food", name: "BBQ Station", position: { x: 38.540, y: -121.758 } },
-  { id: "f3", type: "food", name: "Ice Cream Stand", position: { x: 38.535, y: -121.752 } },
-  { id: "b1", type: "bathroom", name: "Restroom - Quad", position: { x: 38.538, y: -121.754 } },
-  { id: "b2", type: "bathroom", name: "Restroom - Sciences", position: { x: 38.536, y: -121.750 } },
-  { id: "b3", type: "bathroom", name: "Restroom - ARC", position: { x: 38.541, y: -121.759 } },
-  { id: "w1", type: "water", name: "Water Station 1", position: { x: 38.537, y: -121.753 } },
-  { id: "w2", type: "water", name: "Water Station 2", position: { x: 38.539, y: -121.757 } },
-  { id: "w3", type: "water", name: "Water Station 3", position: { x: 38.534, y: -121.755 } },
-]
+function transformAmenity(amenity: DbAmenity): UIAmenity {
+  return {
+    id: amenity.id,
+    type: amenity.type,
+    name: amenity.name,
+    position: { lat: amenity.latitude, lng: amenity.longitude }
+  }
+}
 
-// Calculate distance between two points (simplified for demo)
-function getDistance(pos1: { x: number; y: number }, pos2: { x: number; y: number }) {
-  return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2))
+// Calculate distance between two points
+function getDistance(pos1: { lat: number; lng: number }, pos2: { lat: number; lng: number }) {
+  return Math.sqrt(Math.pow(pos1.lat - pos2.lat, 2) + Math.pow(pos1.lng - pos2.lng, 2))
 }
 
 export default function PicnicDayPage() {
+  const [events, setEvents] = useState<UIEvent[]>([])
+  const [amenities, setAmenities] = useState<UIAmenity[]>([])
+  const [locations, setLocations] = useState<LocationWithFeatures[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [scheduledEvents, setScheduledEvents] = useState<ScheduledEvent[]>([])
+  const [scheduledEvents, setScheduledEvents] = useState<UIScheduledEvent[]>([])
   const [activeTab, setActiveTab] = useState<"browse" | "popular" | "nearby">("browse")
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null)
   const [selectedScheduledEvent, setSelectedScheduledEvent] = useState<string | null>(null)
@@ -157,6 +93,30 @@ export default function PicnicDayPage() {
     bathroom: false,
     water: false
   })
+
+  // Fetch data from Supabase
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true)
+      try {
+        const [eventsData, amenitiesData, locationsData] = await Promise.all([
+          getEvents(),
+          getAmenities(),
+          getLocationsWithFeatures()
+        ])
+        
+        setEvents(eventsData.map(transformEvent))
+        setAmenities(amenitiesData.map(transformAmenity))
+        setLocations(locationsData)
+      } catch (error) {
+        console.error('Error loading data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    loadData()
+  }, [])
 
   // Get reference event for "Near Me" tab (selected event or last in schedule)
   const referenceEvent = useMemo(() => {
@@ -168,7 +128,7 @@ export default function PicnicDayPage() {
 
   // Filter and sort events based on active tab
   const filteredEvents = useMemo(() => {
-    let events = MOCK_EVENTS.filter(event => {
+    let filtered = events.filter(event => {
       const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         event.location.toLowerCase().includes(searchQuery.toLowerCase())
@@ -181,22 +141,31 @@ export default function PicnicDayPage() {
 
     // Sort by popularity for "Popular" tab
     if (activeTab === "popular") {
-      events = [...events].sort((a, b) => b.popularity - a.popularity)
+      filtered = [...filtered].sort((a, b) => b.popularity - a.popularity)
     }
     
     // Sort by distance for "Near Me" tab (relative to selected/last scheduled event)
     if (activeTab === "nearby" && referenceEvent) {
-      events = [...events].sort((a, b) => {
+      filtered = [...filtered].sort((a, b) => {
         const distA = getDistance(a.mapPosition, referenceEvent.mapPosition)
         const distB = getDistance(b.mapPosition, referenceEvent.mapPosition)
         return distA - distB
       })
     }
 
-    return events
-  }, [searchQuery, selectedCategories, activeTab, referenceEvent])
+    return filtered
+  }, [events, searchQuery, selectedCategories, activeTab, referenceEvent])
 
-  const addToSchedule = useCallback((event: Event) => {
+  // Get unique categories from locations with features
+  const locationFeatures = useMemo(() => {
+    const features = new Set<string>()
+    locations.forEach(loc => {
+      loc.location_features?.forEach(f => features.add(f.feature_type))
+    })
+    return Array.from(features)
+  }, [locations])
+
+  const addToSchedule = useCallback((event: UIEvent) => {
     setScheduledEvents(prev => {
       if (prev.find(e => e.id === event.id)) return prev
       return [...prev, { ...event, orderIndex: prev.length }]
@@ -224,6 +193,20 @@ export default function PicnicDayPage() {
     )
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <NavBar />
+        <div className="flex items-center justify-center h-[80vh]">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading events...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
@@ -245,6 +228,7 @@ export default function PicnicDayPage() {
                 <CategoryFilters 
                   selectedCategories={selectedCategories}
                   toggleCategory={toggleCategory}
+                  locationFeatures={locationFeatures}
                 />
                 
                 <EventList 
@@ -263,9 +247,10 @@ export default function PicnicDayPage() {
                 events={filteredEvents}
                 scheduledEvents={scheduledEvents}
                 hoveredEvent={hoveredEvent}
-                amenities={MOCK_AMENITIES}
+                amenities={amenities}
                 amenityVisibility={amenityVisibility}
                 setAmenityVisibility={setAmenityVisibility}
+                locations={locations}
               />
               
               <SchedulePanel 
