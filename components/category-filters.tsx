@@ -48,7 +48,7 @@ const categories = [
 
 export function CategoryFilters({ selectedCategories, toggleCategory }: CategoryFiltersProps) {
   return (
-    <div className="w-48 flex-shrink-0">
+    <div className="flex-shrink-0 w-4/12">
       <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
         Categories
       </h3>
