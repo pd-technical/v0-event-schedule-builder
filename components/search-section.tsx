@@ -1,44 +1,66 @@
 "use client"
 
-import { Search } from "lucide-react"
+import { Search, TrendingUp, MapPin, LayoutGrid } from "lucide-react"
 
 interface SearchSectionProps {
   searchQuery: string
   setSearchQuery: (query: string) => void
   activeTab: "browse" | "popular" | "nearby"
   setActiveTab: (tab: "browse" | "popular" | "nearby") => void
+  hasScheduledEvents?: boolean
 }
 
 const tabs = [
-  { id: "browse" as const, label: "Browse All" },
-  { id: "popular" as const, label: "Popular" },
-  { id: "nearby" as const, label: "Near Me" },
+  { id: "browse" as const, label: "Browse All", icon: LayoutGrid },
+  { id: "popular" as const, label: "Popular", icon: TrendingUp },
+  { id: "nearby" as const, label: "Near Me", icon: MapPin },
 ]
 
 export function SearchSection({ 
   searchQuery, 
   setSearchQuery, 
   activeTab, 
-  setActiveTab 
+  setActiveTab,
+  hasScheduledEvents = false
 }: SearchSectionProps) {
   return (
     <div className="bg-card rounded-lg border border-border p-4">
       {/* Tabs */}
-      <div className="flex gap-1 mb-4">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
-              activeTab === tab.id
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground hover:bg-muted"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="flex gap-1 mb-3">
+        {tabs.map((tab) => {
+          const Icon = tab.icon
+          const isDisabled = tab.id === "nearby" && !hasScheduledEvents
+          
+          return (
+            <button
+              key={tab.id}
+              onClick={() => !isDisabled && setActiveTab(tab.id)}
+              disabled={isDisabled}
+              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded transition-colors ${
+                activeTab === tab.id
+                  ? "bg-primary text-primary-foreground"
+                  : isDisabled
+                    ? "bg-secondary/50 text-muted-foreground cursor-not-allowed"
+                    : "bg-secondary text-secondary-foreground hover:bg-muted"
+              }`}
+              title={isDisabled ? "Add events to your schedule first" : undefined}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {tab.label}
+            </button>
+          )
+        })}
       </div>
+
+      {/* Tab Description */}
+      <p className="text-xs text-muted-foreground mb-3">
+        {activeTab === "browse" && "Showing all events"}
+        {activeTab === "popular" && "Sorted by most added to schedules"}
+        {activeTab === "nearby" && (hasScheduledEvents 
+          ? "Sorted by distance from your selected/last scheduled event" 
+          : "Add events to your schedule to see nearby options"
+        )}
+      </p>
 
       {/* Search Input */}
       <div className="relative">
