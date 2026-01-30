@@ -59,7 +59,7 @@ export function EventList({
                     isExpanded ? "rotate-180" : ""
                   }`} />
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-foreground truncate">
+                    <h4 className="font-medium text-foreground">
                       {event.name}
                     </h4>
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
