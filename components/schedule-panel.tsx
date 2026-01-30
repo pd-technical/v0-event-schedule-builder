@@ -23,8 +23,8 @@ function parseTime(timeStr: string): number {
 
 function isOutOfOrder(events: ScheduledEvent[], index: number): boolean {
   if (index === 0) return false
-  const currentTime = parseTime(events[index].time)
-  const prevTime = parseTime(events[index - 1].time)
+  const currentTime = parseTime(events[index].startTime)
+  const prevTime = parseTime(events[index - 1].startTime)
   return currentTime < prevTime
 }
 

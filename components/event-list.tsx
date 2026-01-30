@@ -65,7 +65,7 @@ export function EventList({
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {event.time}
+                        {event.startTime}
                       </span>
                       <span className="flex items-center gap-1">
                         <MapPin className="w-3 h-3" />
@@ -100,7 +100,7 @@ export function EventList({
                   </p>
                   <div className="flex items-center gap-4 mt-3">
                     <span className="text-xs text-muted-foreground">
-                      {event.time} - {event.endTime}
+                      {event.startTime} - {event.endTime}
                     </span>
                     <span className="px-2 py-0.5 text-xs font-medium bg-secondary rounded-full text-secondary-foreground capitalize">
                       {event.category}

@@ -77,8 +77,8 @@ export function CampusMap({ events, scheduledEvents, hoveredEvent }: CampusMapPr
             key={event.id}
             className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200"
             style={{ 
-              left: `${event.mapPosition.x}%`, 
-              top: `${event.mapPosition.y}%`,
+              left: "50%",  // REPLACE WITH MAP COORDINATE
+              top: "50%",
               zIndex: isHovered ? 20 : isScheduled ? 10 : 5
             }}
           >
@@ -100,7 +100,7 @@ export function CampusMap({ events, scheduledEvents, hoveredEvent }: CampusMapPr
             {isHovered && (
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-card border border-border rounded shadow-lg whitespace-nowrap z-30">
                 <p className="text-xs font-medium text-foreground">{event.name}</p>
-                <p className="text-[10px] text-muted-foreground">{event.time}</p>
+                <p className="text-[10px] text-muted-foreground">{event.startTime}</p>
               </div>
             )}
           </div>
@@ -112,8 +112,8 @@ export function CampusMap({ events, scheduledEvents, hoveredEvent }: CampusMapPr
         <svg className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
           {scheduledEvents.slice(0, -1).map((event, index) => {
             const nextEvent = scheduledEvents[index + 1]
-            const currentPos = events.find(e => e.id === event.id)?.mapPosition
-            const nextPos = events.find(e => e.id === nextEvent.id)?.mapPosition
+            const currentPos = { x: 50, y: 50 }
+            const nextPos = { x: 50, y: 50 } // REPLACE
 
             if (!currentPos || !nextPos) return null
 
