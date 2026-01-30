@@ -129,7 +129,7 @@ export function SchedulePanel({
                         {event.name}
                       </p>
                       <p className="text-[10px] text-muted-foreground">
-                        {event.time} · {event.location}
+                        {event.startTime} · {event.location}
                       </p>
 
                       {/* Out of Order Warning */}
