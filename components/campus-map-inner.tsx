@@ -39,8 +39,15 @@ useEffect(() => {
     <div className="bg-card rounded-lg border border-border overflow-hidden h-[360px] md:h-[480px]">
       <MapContainer
         center={[38.5382, -121.7617]}
-        zoom={15}
-        style={{ height: "100%", width: "100%" }}
+  zoom={15}
+  minZoom={15}
+  maxZoom={18}
+  maxBounds={[
+    [38.531, -121.770], // southwest
+    [38.548, -121.742], // northeast
+  ]}
+  maxBoundsViscosity={1.0}
+  style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
