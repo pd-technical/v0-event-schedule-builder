@@ -63,7 +63,7 @@ export function SchedulePanel({
 
   return (
     <div 
-      className={`absolute top-4 right-4 w-72 bg-card border border-border rounded-lg shadow-lg transition-all z-30 ${
+      className={`absolute top-4 right-4 w-72 bg-card border border-border rounded-lg shadow-lg transition-all z-[1000] ${
         isCollapsed ? "h-auto" : "max-h-[440px]"
       }`}
     >

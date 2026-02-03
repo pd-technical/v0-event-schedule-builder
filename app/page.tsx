@@ -20,6 +20,8 @@ export interface Event {
   location: string
   category: string
   showtime: string
+  lat: number
+  lng: number
 }
 
 export interface ScheduledEvent extends Event {
