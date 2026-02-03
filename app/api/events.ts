@@ -42,6 +42,8 @@ export async function getEvents(): Promise<Event[]> {
         startTime: row.start_time,
         endTime: row.end_time,
         location: row.locations?.name || " ", // Use the joined location name or fallback
+        lat: 38.5382,
+        lng: -121.7617,
         category: row.category,
         showtime: row.showtime,
     }));
