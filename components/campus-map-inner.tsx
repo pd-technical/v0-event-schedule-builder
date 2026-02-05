@@ -15,7 +15,10 @@ interface Props {
 export default function CampusMapInner({
   events,
   scheduledEvents,
+  hoveredEvent
 }: Props) {
+
+const scheduledIds = new Set(scheduledEvents.map(e => e.id));
 
 useEffect(() => {
     delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -53,12 +56,17 @@ useEffect(() => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {events.map(event => (
-          <Marker
-            key={event.id}
-            position={[event.lat, event.lng]}
-          />
-        ))}
+        {events
+          .filter(event => 
+            event.id === hoveredEvent || scheduledIds.has(event.id)
+          )
+          .map(event => (
+            <Marker
+              key={event.id}
+              position={[event.lat, event.lng]}
+            />
+          ))}
+
 
         <RoutingMachine points={routePoints} />
       </MapContainer>
