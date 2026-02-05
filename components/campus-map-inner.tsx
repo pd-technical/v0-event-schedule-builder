@@ -18,8 +18,6 @@ export default function CampusMapInner({
   hoveredEvent
 }: Props) {
 
-const scheduledIds = new Set(scheduledEvents.map(e => e.id));
-
 useEffect(() => {
     delete (L.Icon.Default.prototype as any)._getIconUrl;
 
@@ -37,39 +35,39 @@ useEffect(() => {
     lat: e.lat,
     lng: e.lng,
   }));
+  const scheduledIds = new Set(scheduledEvents.map(e => e.id));
+  const visibleEvents = events.filter(event =>
+    scheduledIds.has(event.id) || hoveredEvent === event.id
+  );
 
   return (
+    
     <div className="bg-card rounded-lg border border-border overflow-hidden h-[360px] md:h-[480px]">
       <MapContainer
         center={[38.5382, -121.7617]}
-  zoom={15}
-  minZoom={15}
-  maxZoom={18}
-  maxBounds={[
-    [38.531, -121.770], // southwest
-    [38.548, -121.742], // northeast
-  ]}
-  maxBoundsViscosity={1.0}
-  style={{ height: "100%", width: "100%" }}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        zoom={15}
+        minZoom={15}
+        maxZoom={18}
+        maxBounds={[
+          [38.531, -121.770], // southwest
+          [38.548, -121.742], // northeast
+        ]}
+        maxBoundsViscosity={1.0}
+        style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
 
-        {events
-          .filter(event => 
-            event.id === hoveredEvent || scheduledIds.has(event.id)
-          )
-          .map(event => (
-            <Marker
-              key={event.id}
-              position={[event.lat, event.lng]}
-            />
-          ))}
+              {visibleEvents.map(event => (
+                <Marker
+                  key={event.id}
+                  position={[event.lat, event.lng]}
+                />
+              ))}
 
-
-        <RoutingMachine points={routePoints} />
-      </MapContainer>
-    </div>
-  );
+              <RoutingMachine points={routePoints} />
+            </MapContainer>
+          </div>
+        );
 }
