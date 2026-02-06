@@ -116,6 +116,7 @@ export default function PicnicDayPage() {
                     events={filteredEvents}
                     scheduledEvents={scheduledEvents}
                     addToSchedule={addToSchedule}
+                    removeFromSchedule={removeFromSchedule}
                     hoveredEvent={hoveredEvent}
                     setHoveredEvent={setHoveredEvent}
                   />

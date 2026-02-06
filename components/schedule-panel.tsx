@@ -28,14 +28,15 @@ function isOutOfOrder(events: ScheduledEvent[], index: number): boolean {
   return currentTime < prevTime
 }
 
-export function SchedulePanel({ 
-  scheduledEvents, 
-  removeFromSchedule, 
-  reorderSchedule 
+export function SchedulePanel({
+  scheduledEvents,
+  removeFromSchedule,
+  reorderSchedule
 }: SchedulePanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const dragOverIndex = useRef<number | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index)
@@ -62,13 +63,12 @@ export function SchedulePanel({
   }
 
   return (
-    <div 
-      className={`absolute top-4 right-4 w-72 bg-card border border-border rounded-lg shadow-lg transition-all z-[1000] ${
-        isCollapsed ? "h-auto" : "max-h-[440px]"
-      }`}
+    <div
+      className={`absolute top-4 right-4 w-72 bg-card border border-border rounded-lg shadow-lg transition-all z-[1000] ${isCollapsed ? "h-auto" : "max-h-[440px]"
+        }`}
     >
       {/* Header */}
-      <div 
+      <div
         className="flex items-center justify-between p-3 border-b border-border cursor-pointer"
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
@@ -79,9 +79,8 @@ export function SchedulePanel({
             {scheduledEvents.length}
           </span>
         </div>
-        <ChevronUp className={`w-4 h-4 text-muted-foreground transition-transform ${
-          isCollapsed ? "rotate-180" : ""
-        }`} />
+        <ChevronUp className={`w-4 h-4 text-muted-foreground transition-transform ${isCollapsed ? "rotate-180" : ""
+          }`} />
       </div>
 
       {/* Content */}
@@ -107,11 +106,10 @@ export function SchedulePanel({
                     onDragStart={() => handleDragStart(index)}
                     onDragOver={(e) => handleDragOver(e, index)}
                     onDragEnd={handleDragEnd}
-                    className={`relative flex items-start gap-2 p-2 rounded-lg mb-1 transition-all ${
-                      isDragging 
-                        ? "opacity-50 bg-muted" 
+                    className={`relative flex items-start gap-2 p-2 rounded-lg mb-1 transition-all ${isDragging
+                        ? "opacity-50 bg-muted"
                         : "bg-secondary/50 hover:bg-secondary"
-                    }`}
+                      }`}
                   >
                     {/* Drag Handle */}
                     <div className="flex flex-col items-center gap-0.5 pt-1 cursor-grab active:cursor-grabbing">
@@ -124,26 +122,46 @@ export function SchedulePanel({
                     </div>
 
                     {/* Event Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {event.name}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {event.startTime} · {event.location}
-                      </p>
-
-                      {/* Out of Order Warning */}
-                      {outOfOrder && (
-                        <div className="flex items-center gap-1 mt-1 text-destructive">
-                          <AlertTriangle className="w-3 h-3" />
-                          <span className="text-[10px] font-medium">
-                            Time conflict with previous event
-                          </span>
+                      <div
+                        className="flex-1 min-w-0 cursor-pointer"
+                        onClick={() =>
+                          setExpandedId(expandedId === event.id ? null : event.id)
+                        }
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-medium text-foreground line-clamp-2">
+                            {event.name}
+                          </p>
+                          <ChevronDown
+                            className={`w-5 h-5 mt-0.5 text-muted-foreground transition-transform ${
+                              expandedId === event.id ? "rotate-180" : ""
+                            }`}
+                          />
                         </div>
-                      )}
-                    </div>
 
-                    {/* Actions */}
+
+                        <p className="text-[10px] text-muted-foreground">
+                          {event.startTime} · {event.location}
+                        </p>
+
+                        {expandedId === event.id && event.description && (
+                          <p className="mt-1 text-xs text-muted-foreground leading-snug">
+                            {event.description}
+                          </p>
+                        )}
+
+                        {outOfOrder && (
+                          <div className="flex items-center gap-1 mt-1 text-destructive">
+                            <AlertTriangle className="w-3 h-3" />
+                            <span className="text-[10px] font-medium">
+                              Time conflict with previous event
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+
+                    {/* Actions 
                     <div className="flex flex-col gap-0.5">
                       <button
                         onClick={() => moveItem(index, "up")}
@@ -160,6 +178,7 @@ export function SchedulePanel({
                         <ChevronDown className="w-3 h-3 text-muted-foreground" />
                       </button>
                     </div>
+                    */}
 
                     <button
                       onClick={() => removeFromSchedule(event.id)}
@@ -168,6 +187,7 @@ export function SchedulePanel({
                       <X className="w-3 h-3" />
                     </button>
                   </div>
+                  
                 )
               })}
             </div>
