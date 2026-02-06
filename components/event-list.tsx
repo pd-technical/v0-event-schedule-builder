@@ -8,6 +8,7 @@ interface EventListProps {
   events: Event[]
   scheduledEvents: ScheduledEvent[]
   addToSchedule: (event: Event) => void
+  removeFromSchedule: (eventId: string) => void
   hoveredEvent: string | null
   setHoveredEvent: (id: string | null) => void
 }
@@ -16,6 +17,7 @@ export function EventList({
   events, 
   scheduledEvents, 
   addToSchedule,
+  removeFromSchedule,
   hoveredEvent,
   setHoveredEvent
 }: EventListProps) {
@@ -76,8 +78,8 @@ export function EventList({
                 </button>
 
                 <button
-                  onClick={() => !scheduled && addToSchedule(event)}
-                  disabled={scheduled}
+                  onClick={() => 
+                    scheduled ? removeFromSchedule(event.id) : addToSchedule(event)}
                   className={`flex-shrink-0 p-2 rounded-full transition-all ${
                     scheduled
                       ? "bg-accent text-accent-foreground"
