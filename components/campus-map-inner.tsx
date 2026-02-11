@@ -46,11 +46,11 @@ useEffect(() => {
       <MapContainer
         center={[38.5382, -121.7617]}
         zoom={15}
-        minZoom={15}
+        minZoom={14}
         maxZoom={18}
         maxBounds={[
-          [38.531, -121.770], // southwest
-          [38.548, -121.742], // northeast
+          [38.528, -121.775], // southwest corner
+          [38.555, -121.735], // northeast corner
         ]}
         maxBoundsViscosity={1.0}
         style={{ height: "100%", width: "100%" }}
