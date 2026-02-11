@@ -22,6 +22,22 @@ Continue building your app on:
 
 **[https://v0.app/chat/dXJNkGX1IN9](https://v0.app/chat/dXJNkGX1IN9)**
 
+## Walking routes on the map
+
+Routes between scheduled events use **Mapbox Directions API** with the **walking** profile so paths follow sidewalks and pedestrian-appropriate routes instead of driving roads.
+
+To enable walking routes:
+
+1. Create a [Mapbox account](https://account.mapbox.com/) and copy your **default public access token** (or create a new one).
+2. Add it to your environment:
+   - **Local:** create `.env.local` in the project root and add:
+     ```bash
+     NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_mapbox_access_token_here
+     ```
+   - **Vercel:** in your project settings, add `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` as an environment variable.
+
+If the token is not set, the map falls back to the default routing provider (driving-style routes).
+
 ## How It Works
 
 1. Create and modify your project using [v0.app](https://v0.app)
