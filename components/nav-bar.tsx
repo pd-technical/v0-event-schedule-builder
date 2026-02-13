@@ -15,11 +15,11 @@ const navItems = [
 
 export function NavBar() {
   return (
-    <nav className="bg-primary text-primary-foreground">
-      <div className="max-w-[1600px] mx-auto px-6">
-        <div className="flex items-center justify-between h-14">
-          {/* Nav Items */}
-          <div className="flex items-center gap-1">
+    <nav className="bg-primary text-primary-foreground sticky top-0 z-[1100]">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6">
+        <div className="flex items-center justify-between h-12 md:h-14 min-h-12">
+          {/* Nav Items - scroll horizontally on small screens */}
+          <div className="flex items-center gap-1 overflow-x-auto flex-1 min-w-0">
             {navItems.map((item) => (
               <button
                 key={item.label}
@@ -34,7 +34,7 @@ export function NavBar() {
           </div>
 
           {/* Right Side */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button className="p-2 hover:bg-white/10 rounded transition-colors">
               <Search className="w-5 h-5" />
             </button>
