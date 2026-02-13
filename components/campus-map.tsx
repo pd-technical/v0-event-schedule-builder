@@ -7,6 +7,8 @@ interface CampusMapProps {
   events: Event[];
   scheduledEvents: ScheduledEvent[];
   hoveredEvent: string | null;
+  resultsPage: number;
+  pageSize: number;
 }
 
 export const CampusMap = dynamic<CampusMapProps>(

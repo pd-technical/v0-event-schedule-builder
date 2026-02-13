@@ -6,12 +6,24 @@ import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet";
 import type { Event, ScheduledEvent } from "@/app/page";
 import RoutingMachine from "./routing-machine";
 
-const MAP_RESULTS_LIMIT = 20;
+/** Matches schedule list: w-5 h-5, rounded-full, bg-primary, text-primary-foreground, text-[10px] font-bold */
+function createNumberedCircleIcon(number: number): L.DivIcon {
+  const size = 20;
+  const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--primary);color:var(--primary-foreground);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">${number}</div>`;
+  return L.divIcon({
+    html,
+    className: "numbered-marker",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
 
 interface Props {
   events: Event[];
   scheduledEvents: ScheduledEvent[];
   hoveredEvent: string | null;
+  resultsPage: number;
+  pageSize: number;
 }
 
 function createWhiteCircleIcon(): L.DivIcon {
@@ -40,6 +52,8 @@ export default function CampusMapInner({
   events,
   scheduledEvents,
   hoveredEvent,
+  resultsPage,
+  pageSize,
 }: Props) {
   useEffect(() => {
     delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -53,34 +67,38 @@ export default function CampusMapInner({
     });
   }, []);
 
-  const routePoints = scheduledEvents.map((e) => ({ lat: e.lat, lng: e.lng }));
   const scheduleIndexByEventId = useMemo(
     () => new Map(scheduledEvents.map((e, i) => [e.id, i + 1])),
     [scheduledEvents]
   );
+  const routePoints = scheduledEvents.map((e) => ({ lat: e.lat, lng: e.lng }));
 
-  const topResults = events.slice(0, MAP_RESULTS_LIMIT);
-  const scheduledIds = new Set(scheduledEvents.map((e) => e.id));
+  // Show events for the current list page so map stays in sync with next/prev
   const eventsOnMap = useMemo(() => {
+    const eventsForCurrentPage = events.slice(
+      resultsPage * pageSize,
+      (resultsPage + 1) * pageSize
+    );
     const byId = new Map<string, Event | ScheduledEvent>();
     scheduledEvents.forEach((e) => byId.set(e.id, e));
-    topResults.forEach((e) => {
+    eventsForCurrentPage.forEach((e) => {
       if (!byId.has(e.id)) byId.set(e.id, e);
     });
     return Array.from(byId.values());
-  }, [scheduledEvents, topResults]);
+  }, [events, scheduledEvents, resultsPage, pageSize]);
 
   const whiteIcon = useMemo(() => createWhiteCircleIcon(), []);
+  const maxNumbered = pageSize + scheduledEvents.length;
   const numberedIcons = useMemo(() => {
     const m = new Map<number, L.DivIcon>();
-    for (let i = 1; i <= MAP_RESULTS_LIMIT + scheduledEvents.length; i++) {
+    for (let i = 1; i <= maxNumbered; i++) {
       m.set(i, createBlueNumberedCircleIcon(i));
     }
     return m;
-  }, [scheduledEvents.length]);
+  }, [scheduledEvents.length, maxNumbered]);
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden h-[360px] md:h-[480px]">
+    <div className="bg-card rounded-lg border border-border overflow-hidden h-[280px] sm:h-[320px] md:h-[480px] w-full">
       <MapContainer
         center={[38.5382, -121.7617]}
         zoom={15}

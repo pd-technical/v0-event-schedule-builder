@@ -10,6 +10,7 @@ import { SchedulePanel } from "@/components/schedule-panel"
 import { supabase } from "@/lib/supabaseClient"
 
 import { getEvents } from "@/app/api/events"
+import { eventMatchesSearch } from "@/lib/searchUtils"
 
 export interface Event {
   id: string
@@ -50,9 +51,7 @@ export default function PicnicDayPage() {
 }, [])
 
   const filteredEvents = events.filter(event => {
-    const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = eventMatchesSearch(event, searchQuery)
     const matchesCategory = selectedCategories.length === 0 ||
       selectedCategories.includes(event.category)
     return matchesSearch && matchesCategory
@@ -102,29 +101,43 @@ export default function PicnicDayPage() {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
-      
-      <main className="pt-4 pb-8 px-6">
+
+      <main className="pt-3 pb-8 px-4 md:pt-4 md:px-6">
         <div className="max-w-[1600px] mx-auto">
-          <div className="flex gap-6">
-            {/* Left Section - Search, Filters, Events */}
-            <div className="flex-1 max-w-[640px] min-w-0">
-              <SearchSection 
+          {/* Mobile: column (map first, then search+results). Desktop: row (search left, map right) */}
+          <div className="flex flex-col gap-4 md:flex-row md:gap-6">
+            {/* Map + Schedule — mobile: stacked (map then schedule below); desktop: map with overlay panel */}
+            <div className="order-1 w-full min-w-0 flex flex-col gap-4 relative md:order-2 md:flex-1 md:gap-0">
+              <CampusMap
+                events={filteredEvents}
+                scheduledEvents={scheduledEvents}
+                hoveredEvent={hoveredEvent}
+                resultsPage={resultsPage}
+                pageSize={RESULTS_PAGE_SIZE}
+              />
+              <SchedulePanel
+                scheduledEvents={scheduledEvents}
+                removeFromSchedule={removeFromSchedule}
+                reorderSchedule={reorderSchedule}
+              />
+            </div>
+
+            {/* Search, Filters, Events — on mobile: order 2 (below map); on desktop: left column */}
+            <div className="order-2 flex flex-col min-w-0 md:order-1 md:flex-1 md:max-w-[640px]">
+              <SearchSection
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
               />
-              
-             
-              <div className="flex gap-4 mt-4 min-w-0">
-                
-                <CategoryFilters 
+
+              <div className="flex flex-col gap-4 mt-4 min-w-0 md:flex-row">
+                <CategoryFilters
                   selectedCategories={selectedCategories}
                   toggleCategory={toggleCategory}
                 />
-     
                 <div className="flex-1 min-w-0">
-                  <EventList 
+                  <EventList
                     events={eventsForCurrentPage}
                     allFilteredCount={filteredEvents.length}
                     scheduledEvents={scheduledEvents}
@@ -138,22 +151,6 @@ export default function PicnicDayPage() {
                   />
                 </div>
               </div>
-            </div>
-
-
-            {/* Right Section - Map and Schedule */}
-            <div className="flex-1 relative">
-              <CampusMap 
-                events={eventsForCurrentPage}
-                scheduledEvents={scheduledEvents}
-                hoveredEvent={hoveredEvent}
-              />
-              
-              <SchedulePanel 
-                scheduledEvents={scheduledEvents}
-                removeFromSchedule={removeFromSchedule}
-                reorderSchedule={reorderSchedule}
-              />
             </div>
           </div>
         </div>

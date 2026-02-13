@@ -74,7 +74,7 @@ export function EventList({
         )}
       </div>
 
-      <div className="space-y-2 max-h-[520px] overflow-y-auto pr-2">
+      <div className="space-y-2 max-h-[420px] md:max-h-[520px] overflow-y-auto pr-2 -mr-2 md:mr-0">
         {events.map((event) => {
           const scheduled = isScheduled(event.id)
           const isExpanded = expandedEvent === event.id
