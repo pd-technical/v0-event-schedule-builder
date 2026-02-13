@@ -10,7 +10,7 @@ import { SchedulePanel } from "@/components/schedule-panel"
 import { supabase } from "@/lib/supabaseClient"
 
 import { getEvents } from "@/app/api/events"
-import { eventMatchesSearch } from "@/lib/searchUtils"
+import { rankedEventMatchesSearch } from "@/lib/searchUtils"
 
 export interface Event {
   id: string
@@ -50,12 +50,12 @@ export default function PicnicDayPage() {
   loadEvents()
 }, [])
 
-  const filteredEvents = events.filter(event => {
-    const matchesSearch = eventMatchesSearch(event, searchQuery)
-    const matchesCategory = selectedCategories.length === 0 ||
+  const searchRanked = rankedEventMatchesSearch(events, searchQuery)
+  const filteredEvents = searchRanked.filter(
+    (event) =>
+      selectedCategories.length === 0 ||
       selectedCategories.includes(event.category)
-    return matchesSearch && matchesCategory
-  })
+  )
 
   const RESULTS_PAGE_SIZE = 20
   const totalResultsPages = Math.max(1, Math.ceil(filteredEvents.length / RESULTS_PAGE_SIZE))
