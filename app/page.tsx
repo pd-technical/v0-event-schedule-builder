@@ -36,6 +36,7 @@ export default function PicnicDayPage() {
   const [activeTab, setActiveTab] = useState<"browse" | "popular" | "nearby">("browse")
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null)
   const [events, setEvents] = useState<Event[]>([])
+  const [resultsPage, setResultsPage] = useState(0)
 
   useEffect(() => {
   async function loadEvents() {
@@ -55,6 +56,19 @@ export default function PicnicDayPage() {
       selectedCategories.includes(event.category)
     return matchesSearch && matchesCategory
   })
+
+  const RESULTS_PAGE_SIZE = 20
+  const totalResultsPages = Math.max(1, Math.ceil(filteredEvents.length / RESULTS_PAGE_SIZE))
+  const eventsForCurrentPage = filteredEvents.slice(
+    resultsPage * RESULTS_PAGE_SIZE,
+    (resultsPage + 1) * RESULTS_PAGE_SIZE
+  )
+
+  useEffect(() => {
+    if (resultsPage >= totalResultsPages && totalResultsPages > 0) {
+      setResultsPage(Math.max(0, totalResultsPages - 1))
+    }
+  }, [totalResultsPages, resultsPage])
 
   const addToSchedule = useCallback((event: Event) => {
     setScheduledEvents(prev => {
@@ -98,6 +112,8 @@ export default function PicnicDayPage() {
                 events={filteredEvents}
                 scheduledEvents={scheduledEvents}
                 hoveredEvent={hoveredEvent}
+                resultsPage={resultsPage}
+                pageSize={RESULTS_PAGE_SIZE}
               />
               <SchedulePanel
                 scheduledEvents={scheduledEvents}
@@ -122,12 +138,16 @@ export default function PicnicDayPage() {
                 />
                 <div className="flex-1 min-w-0">
                   <EventList
-                    events={filteredEvents}
+                    events={eventsForCurrentPage}
+                    allFilteredCount={filteredEvents.length}
                     scheduledEvents={scheduledEvents}
                     addToSchedule={addToSchedule}
                     removeFromSchedule={removeFromSchedule}
                     hoveredEvent={hoveredEvent}
                     setHoveredEvent={setHoveredEvent}
+                    page={resultsPage}
+                    totalPages={totalResultsPages}
+                    onPageChange={setResultsPage}
                   />
                 </div>
               </div>

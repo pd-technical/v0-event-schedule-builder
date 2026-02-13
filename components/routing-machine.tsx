@@ -97,7 +97,7 @@ export default function RoutingMachine({ points }: { points: Point[] }) {
       createMarker: () => null,
       addWaypoints: false,
       draggableWaypoints: false,
-      fitSelectedRoutes: true,
+      fitSelectedRoutes: false, // keep user's zoom/pan; don't auto-fit to route
       show: false,
       lineOptions: ROUTE_LINE_OPTIONS,
     }).addTo(map);
