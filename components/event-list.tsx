@@ -1,37 +1,77 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Check, MapPin, Clock, ChevronDown } from "lucide-react"
+import { Plus, Check, MapPin, Clock, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import type { Event, ScheduledEvent } from "@/app/page"
 
 interface EventListProps {
   events: Event[]
+  allFilteredCount: number
   scheduledEvents: ScheduledEvent[]
   addToSchedule: (event: Event) => void
   removeFromSchedule: (eventId: string) => void
   hoveredEvent: string | null
   setHoveredEvent: (id: string | null) => void
+  page: number
+  totalPages: number
+  onPageChange: (page: number) => void
 }
 
 export function EventList({ 
   events, 
+  allFilteredCount,
   scheduledEvents, 
   addToSchedule,
   removeFromSchedule,
   hoveredEvent,
-  setHoveredEvent
+  setHoveredEvent,
+  page,
+  totalPages,
+  onPageChange
 }: EventListProps) {
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null)
 
   const isScheduled = (eventId: string) => 
     scheduledEvents.some(e => e.id === eventId)
 
+  const pageSize = 20
+  const start = page * pageSize + 1
+  const end = Math.min((page + 1) * pageSize, allFilteredCount)
+
   return (
     <div className="flex-1">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          {events.length} Events Found
+          {allFilteredCount} Events Found
+          {allFilteredCount > pageSize && (
+            <span className="normal-case font-normal text-muted-foreground ml-1">
+              (showing {start}–{end})
+            </span>
+          )}
         </h3>
+        {totalPages > 1 && (
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => onPageChange(Math.max(0, page - 1))}
+              disabled={page === 0}
+              className="p-1.5 rounded border border-border bg-card hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-xs text-muted-foreground px-2">
+              {page + 1} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
+              disabled={page >= totalPages - 1}
+              className="p-1.5 rounded border border-border bg-card hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="space-y-2 max-h-[520px] overflow-y-auto pr-2">
