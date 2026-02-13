@@ -24,7 +24,7 @@ export function SearchSection({
   return (
     <div className="bg-card rounded-lg border border-border p-4">
       {/* Tabs */}
-      <div className="flex gap-1 mb-4">
+      <div className="flex gap-1 mb-4 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -53,7 +53,7 @@ export function SearchSection({
       </div>
 
       {/* Quick Search Tags */}
-      <div className="flex flex-wrap gap-2 mt-3">
+      <div className="flex flex-wrap gap-2 mt-5 mb-1">
         {["children's discovery fair", "entertainment", "student organization fair", "exhibits", "animal events", "food"].map((tag) => (
           <button
             key={tag}
