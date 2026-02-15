@@ -102,28 +102,12 @@ export default function PicnicDayPage() {
     <div className="min-h-screen bg-background">
       <NavBar />
 
-      <main className="pt-3 pb-8 px-4 md:pt-4 md:px-6">
+      <main className="pt-3 pb-8 px-4 sm:px-5 md:px-6 md:pt-5 lg:pt-6">
         <div className="max-w-[1600px] mx-auto">
-          {/* Mobile: column (map first, then search+results). Desktop: row (search left, map right) */}
-          <div className="flex flex-col gap-4 md:flex-row md:gap-6">
-            {/* Map + Schedule — mobile: stacked (map then schedule below); desktop: map with overlay panel */}
-            <div className="order-1 w-full min-w-0 flex flex-col gap-4 relative md:order-2 md:flex-1 md:gap-0">
-              <CampusMap
-                events={filteredEvents}
-                scheduledEvents={scheduledEvents}
-                hoveredEvent={hoveredEvent}
-                resultsPage={resultsPage}
-                pageSize={RESULTS_PAGE_SIZE}
-              />
-              <SchedulePanel
-                scheduledEvents={scheduledEvents}
-                removeFromSchedule={removeFromSchedule}
-                reorderSchedule={reorderSchedule}
-              />
-            </div>
-
-            {/* Search, Filters, Events — on mobile: order 2 (below map); on desktop: left column */}
-            <div className="order-2 flex flex-col min-w-0 md:order-1 md:flex-1 md:max-w-[640px]">
+          {/* Mobile/tablet: single column (search, filters, list, then map, schedule). Large: row (search left, map right) */}
+          <div className="flex flex-col gap-5 md:gap-6 lg:flex-row lg:gap-8">
+            {/* Search, Filters, Events — first when stacked; left column on large */}
+            <div className="order-1 flex flex-col min-w-0 lg:flex-1 lg:max-w-[520px] xl:max-w-[600px]">
               <SearchSection
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
@@ -131,7 +115,7 @@ export default function PicnicDayPage() {
                 setActiveTab={setActiveTab}
               />
 
-              <div className="flex flex-col gap-4 mt-4 min-w-0 md:flex-row">
+              <div className="flex flex-col gap-4 mt-2 min-w-0 lg:mt-4 lg:flex-row lg:gap-5">
                 <CategoryFilters
                   selectedCategories={selectedCategories}
                   toggleCategory={toggleCategory}
@@ -151,6 +135,22 @@ export default function PicnicDayPage() {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Map + Schedule — second when stacked; right column on large */}
+            <div className="order-2 w-full min-w-0 flex flex-col gap-4 relative lg:flex-1 lg:gap-0 lg:min-w-[360px]">
+              <CampusMap
+                events={filteredEvents}
+                scheduledEvents={scheduledEvents}
+                hoveredEvent={hoveredEvent}
+                resultsPage={resultsPage}
+                pageSize={RESULTS_PAGE_SIZE}
+              />
+              <SchedulePanel
+                scheduledEvents={scheduledEvents}
+                removeFromSchedule={removeFromSchedule}
+                reorderSchedule={reorderSchedule}
+              />
             </div>
           </div>
         </div>
