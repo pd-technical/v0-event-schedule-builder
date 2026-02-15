@@ -6,7 +6,43 @@ import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet";
 import type { Event, ScheduledEvent } from "@/app/page";
 import RoutingMachine from "./routing-machine";
 
-/** Matches schedule list: w-5 h-5, rounded-full, bg-primary, text-primary-foreground, text-[10px] font-bold */
+//Same-location threshold in degrees (~1–2 m); events within this are grouped for offset
+const LOCATION_KEY_DECIMALS = 5;
+const OFFSET_RADIUS_DEG = 0.00012; 
+
+function locationKey(lat: number, lng: number): string {
+  return `${lat.toFixed(LOCATION_KEY_DECIMALS)},${lng.toFixed(LOCATION_KEY_DECIMALS)}`;
+}
+
+//Slight offset [lat, lng] when multiple events have the same location 
+function useOffsetPositions(events: Event[]): Map<string, [number, number]> {
+  return useMemo(() => {
+    const keyToEvents = new Map<string, Event[]>();
+    for (const e of events) {
+      const key = locationKey(e.lat, e.lng);
+      const list = keyToEvents.get(key) ?? [];
+      list.push(e);
+      keyToEvents.set(key, list);
+    }
+    const out = new Map<string, [number, number]>();
+    for (const [, list] of keyToEvents) {
+      const n = list.length;
+      for (let i = 0; i < n; i++) {
+        const e = list[i];
+        if (n === 1) {
+          out.set(e.id, [e.lat, e.lng]);
+        } else {
+          const angle = (2 * Math.PI * i) / n;
+          const lat = e.lat + OFFSET_RADIUS_DEG * Math.cos(angle);
+          const lng = e.lng + OFFSET_RADIUS_DEG * Math.sin(angle);
+          out.set(e.id, [lat, lng]);
+        }
+      }
+    }
+    return out;
+  }, [events]);
+}
+
 function createNumberedCircleIcon(number: number): L.DivIcon {
   const size = 20;
   const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--primary);color:var(--primary-foreground);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">${number}</div>`;
@@ -71,10 +107,14 @@ export default function CampusMapInner({
     () => new Map(scheduledEvents.map((e, i) => [e.id, i + 1])),
     [scheduledEvents]
   );
-  const routePoints = scheduledEvents.map((e) => ({ lat: e.lat, lng: e.lng }));
 
-  // Show events for the current list page so map stays in sync with next/prev
-  const eventsOnMap = useMemo(() => {
+  const routePoints = scheduledEvents.map(e => ({
+    lat: e.lat,
+    lng: e.lng,
+  }));
+
+  // Show events for the current list page so map stays in sync with next/prev; scheduled get numbers, rest get white dots
+  const visibleEvents = useMemo(() => {
     const eventsForCurrentPage = events.slice(
       resultsPage * pageSize,
       (resultsPage + 1) * pageSize
@@ -84,18 +124,17 @@ export default function CampusMapInner({
     eventsForCurrentPage.forEach((e) => {
       if (!byId.has(e.id)) byId.set(e.id, e);
     });
-    return Array.from(byId.values());
-  }, [events, scheduledEvents, resultsPage, pageSize]);
 
-  const whiteIcon = useMemo(() => createWhiteCircleIcon(), []);
-  const maxNumbered = pageSize + scheduledEvents.length;
-  const numberedIcons = useMemo(() => {
-    const m = new Map<number, L.DivIcon>();
-    for (let i = 1; i <= maxNumbered; i++) {
-      m.set(i, createBlueNumberedCircleIcon(i));
+    // Include hovered event so it appears when hovering in list 
+    if (hoveredEvent) {
+      const hovered = events.find((e) => e.id === hoveredEvent);
+      if (hovered && !byId.has(hovered.id)) byId.set(hovered.id, hovered);
     }
-    return m;
-  }, [scheduledEvents.length, maxNumbered]);
+    return Array.from(byId.values());
+  }, [events, scheduledEvents, resultsPage, pageSize, hoveredEvent]);
+
+  const offsetPositions = useOffsetPositions(visibleEvents);
+  const whiteIcon = useMemo(() => createWhiteCircleIcon(), []);
 
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden h-[280px] sm:h-[320px] md:h-[480px] w-full">
@@ -113,17 +152,19 @@ export default function CampusMapInner({
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-        {eventsOnMap.map((event) => {
+        {visibleEvents.map(event => {
           const scheduleIndex = scheduleIndexByEventId.get(event.id);
           const isScheduled = scheduleIndex != null;
-          const icon = isScheduled
-            ? numberedIcons.get(scheduleIndex) ?? createBlueNumberedCircleIcon(scheduleIndex)
-            : whiteIcon;
+          const [lat, lng] = offsetPositions.get(event.id) ?? [event.lat, event.lng];
           return (
             <Marker
               key={event.id}
-              position={[event.lat, event.lng]}
-              icon={icon}
+              position={[lat, lng]}
+              icon={
+                isScheduled
+                  ? createNumberedCircleIcon(scheduleIndex)
+                  : whiteIcon
+              }
               zIndexOffset={isScheduled ? 100 : 0}
             >
               <Tooltip direction="top" offset={[0, -12]} opacity={1} className="text-left">
