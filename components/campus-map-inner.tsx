@@ -1,18 +1,44 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet";
 import type { Event, ScheduledEvent } from "@/app/page";
 import RoutingMachine from "./routing-machine";
 
-/** Matches schedule list: w-5 h-5, rounded-full, bg-primary, text-primary-foreground, text-[10px] font-bold */
-function createNumberedCircleIcon(number: number): L.DivIcon {
+const NAVY = "#022851";
+
+/** Available (search result): white fill, navy blue outline */
+function createAvailableIcon(): L.DivIcon {
   const size = 20;
-  const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--primary);color:var(--primary-foreground);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">${number}</div>`;
+  const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:white;border:2px solid ${NAVY};box-shadow:0 1px 3px rgba(0,0,0,0.2);"></div>`;
   return L.divIcon({
     html,
-    className: "numbered-marker",
+    className: "event-marker-available",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
+
+/** Hovered (from list or map): navy blue fill, navy blue outline */
+function createHoveredIcon(): L.DivIcon {
+  const size = 20;
+  const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${NAVY};border:2px solid ${NAVY};box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`;
+  return L.divIcon({
+    html,
+    className: "event-marker-hovered",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
+
+/** Scheduled (added to calendar): navy fill, navy border, white number */
+function createScheduledNumberedIcon(number: number): L.DivIcon {
+  const size = 20;
+  const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${NAVY};color:white;border:2px solid ${NAVY};box-shadow:0 1px 3px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">${number}</div>`;
+  return L.divIcon({
+    html,
+    className: "event-marker-scheduled",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
@@ -22,36 +48,18 @@ interface Props {
   events: Event[];
   scheduledEvents: ScheduledEvent[];
   hoveredEvent: string | null;
+  setHoveredEvent: (id: string | null) => void;
+  onMarkerClick?: (eventId: string) => void;
   resultsPage: number;
   pageSize: number;
-}
-
-function createWhiteCircleIcon(): L.DivIcon {
-  const size = 20;
-  const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:white;border:2px solid #334155;box-shadow:0 1px 3px rgba(0,0,0,0.25);"></div>`;
-  return L.divIcon({
-    html,
-    className: "event-marker-whites",
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  });
-}
-
-function createBlueNumberedCircleIcon(number: number): L.DivIcon {
-  const size = 24;
-  const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#2563eb;color:white;border:2px solid #1e40af;box-shadow:0 1px 3px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;">${number}</div>`;
-  return L.divIcon({
-    html,
-    className: "event-marker-numbered",
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  });
 }
 
 export default function CampusMapInner({
   events,
   scheduledEvents,
   hoveredEvent,
+  setHoveredEvent,
+  onMarkerClick,
   resultsPage,
   pageSize,
 }: Props) {
@@ -73,7 +81,7 @@ export default function CampusMapInner({
   );
   const routePoints = scheduledEvents.map((e) => ({ lat: e.lat, lng: e.lng }));
 
-  // Show events for the current list page so map stays in sync with next/prev
+  // Show events for the current list page + hovered event (so hovering in list shows it on map)
   const eventsOnMap = useMemo(() => {
     const eventsForCurrentPage = events.slice(
       resultsPage * pageSize,
@@ -84,18 +92,35 @@ export default function CampusMapInner({
     eventsForCurrentPage.forEach((e) => {
       if (!byId.has(e.id)) byId.set(e.id, e);
     });
-    return Array.from(byId.values());
-  }, [events, scheduledEvents, resultsPage, pageSize]);
-
-  const whiteIcon = useMemo(() => createWhiteCircleIcon(), []);
-  const maxNumbered = pageSize + scheduledEvents.length;
-  const numberedIcons = useMemo(() => {
-    const m = new Map<number, L.DivIcon>();
-    for (let i = 1; i <= maxNumbered; i++) {
-      m.set(i, createBlueNumberedCircleIcon(i));
+    if (hoveredEvent) {
+      const hovered = events.find((e) => e.id === hoveredEvent);
+      if (hovered && !byId.has(hovered.id)) byId.set(hovered.id, hovered);
     }
-    return m;
-  }, [scheduledEvents.length, maxNumbered]);
+    return Array.from(byId.values());
+  }, [events, scheduledEvents, resultsPage, pageSize, hoveredEvent]);
+
+  const availableIcon = useMemo(() => createAvailableIcon(), []);
+  const hoveredIcon = useMemo(() => createHoveredIcon(), []);
+  const markerRefs = useRef(new Map<string, L.Marker>());
+
+  // When hover comes from the list, open that marker's tooltip so the rectangle shows
+  useEffect(() => {
+    if (!hoveredEvent) {
+      markerRefs.current.forEach((m) => m.closeTooltip());
+      return;
+    }
+    const openHovered = () => {
+      const marker = markerRefs.current.get(hoveredEvent);
+      if (marker) marker.openTooltip();
+      markerRefs.current.forEach((marker, id) => {
+        if (id !== hoveredEvent) marker.closeTooltip();
+      });
+    };
+    openHovered();
+    // If marker just mounted (e.g. hovered event from another page), ref may not be set yet
+    const t = requestAnimationFrame(() => openHovered());
+    return () => cancelAnimationFrame(t);
+  }, [hoveredEvent]);
 
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden h-[280px] sm:h-[320px] md:h-[480px] w-full">
@@ -116,17 +141,35 @@ export default function CampusMapInner({
         {eventsOnMap.map((event) => {
           const scheduleIndex = scheduleIndexByEventId.get(event.id);
           const isScheduled = scheduleIndex != null;
+          const isHovered = hoveredEvent === event.id;
           const icon = isScheduled
-            ? numberedIcons.get(scheduleIndex) ?? createBlueNumberedCircleIcon(scheduleIndex)
-            : whiteIcon;
+            ? createScheduledNumberedIcon(scheduleIndex)
+            : isHovered
+              ? hoveredIcon
+              : availableIcon;
           return (
             <Marker
               key={event.id}
+              ref={(el) => {
+                if (el) markerRefs.current.set(event.id, el);
+                else markerRefs.current.delete(event.id);
+              }}
               position={[event.lat, event.lng]}
               icon={icon}
-              zIndexOffset={isScheduled ? 100 : 0}
+              zIndexOffset={isScheduled ? 100 : isHovered ? 50 : 0}
+              eventHandlers={{
+                mouseover: () => setHoveredEvent(event.id),
+                mouseout: () => setHoveredEvent(null),
+                click: () => onMarkerClick?.(event.id),
+              }}
             >
-              <Tooltip direction="top" offset={[0, -12]} opacity={1} className="text-left">
+              <Tooltip
+                direction="top"
+                offset={[0, -12]}
+                opacity={1}
+                className="text-left"
+                permanent={isHovered}
+              >
                 <div className="font-medium">{event.name}</div>
                 <div className="text-muted-foreground text-xs">{event.startTime}</div>
               </Tooltip>

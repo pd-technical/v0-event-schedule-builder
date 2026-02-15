@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Plus, Check, MapPin, Clock, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import type { Event, ScheduledEvent } from "@/app/page"
 
@@ -12,6 +12,8 @@ interface EventListProps {
   removeFromSchedule: (eventId: string) => void
   hoveredEvent: string | null
   setHoveredEvent: (id: string | null) => void
+  scrollToEventId: string | null
+  onScrollToEventDone: () => void
   page: number
   totalPages: number
   onPageChange: (page: number) => void
@@ -25,14 +27,28 @@ export function EventList({
   removeFromSchedule,
   hoveredEvent,
   setHoveredEvent,
+  scrollToEventId,
+  onScrollToEventDone,
   page,
   totalPages,
   onPageChange
 }: EventListProps) {
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null)
+  const listScrollRef = useRef<HTMLDivElement>(null)
 
   const isScheduled = (eventId: string) => 
     scheduledEvents.some(e => e.id === eventId)
+
+  // When scrollToEventId is set (e.g. after clicking a map marker), scroll list to that event and expand it
+  useEffect(() => {
+    if (!scrollToEventId || !listScrollRef.current) return
+    const el = listScrollRef.current.querySelector(`[data-event-id="${scrollToEventId}"]`)
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" })
+      setExpandedEvent(scrollToEventId)
+    }
+    onScrollToEventDone()
+  }, [scrollToEventId, onScrollToEventDone])
 
   const pageSize = 20
   const start = page * pageSize + 1
@@ -74,7 +90,10 @@ export function EventList({
         )}
       </div>
 
-      <div className="space-y-2 max-h-[420px] md:max-h-[520px] overflow-y-auto pr-2 -mr-2 md:mr-0">
+      <div
+        ref={listScrollRef}
+        className="space-y-2 max-h-[420px] md:max-h-[520px] overflow-y-auto pr-2 -mr-2 md:mr-0"
+      >
         {events.map((event) => {
           const scheduled = isScheduled(event.id)
           const isExpanded = expandedEvent === event.id
@@ -83,6 +102,7 @@ export function EventList({
           return (
             <div
               key={event.id}
+              data-event-id={event.id}
               onMouseEnter={() => setHoveredEvent(event.id)}
               onMouseLeave={() => setHoveredEvent(null)}
               className={`bg-card border rounded-lg transition-all ${
