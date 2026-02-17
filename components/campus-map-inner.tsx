@@ -5,6 +5,7 @@ import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet";
 import type { Event, ScheduledEvent } from "@/app/page";
 import RoutingMachine from "./routing-machine";
+import { formatTime } from "@/lib/time";
 
 const NAVY = "#022851";
 
@@ -23,7 +24,19 @@ function createAvailableIcon(): L.DivIcon {
 /** Hovered (from list or map): navy blue fill, navy blue outline */
 function createHoveredIcon(): L.DivIcon {
   const size = 20;
-  const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${NAVY};border:2px solid ${NAVY};box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`;
+  const html = `
+    <div style="
+      width:${size}px;
+      height:${size}px;
+      border-radius:50%;
+      background:#daaa00;
+      border:2px solid #022851;
+      box-shadow:0 0 0 2px rgba(218,170,0,0.3);
+      transform:scale(1.15);
+      transition:all 0.2s ease;
+    "></div>
+  `;
+
   return L.divIcon({
     html,
     className: "event-marker-hovered",
@@ -32,10 +45,21 @@ function createHoveredIcon(): L.DivIcon {
   });
 }
 
+
 /** Scheduled (added to calendar): navy fill, navy border, white number */
-function createScheduledNumberedIcon(number: number): L.DivIcon {
+function createScheduledNumberedIcon(
+  number: number,
+  withRipple: boolean
+): L.DivIcon {
   const size = 20;
-  const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${NAVY};color:white;border:2px solid ${NAVY};box-shadow:0 1px 3px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">${number}</div>`;
+
+  const html = `
+    <div class="scheduled-marker">
+      <span class="scheduled-number">${number}</span>
+      ${withRipple ? `<span class="scheduled-ripple"></span>` : ""}
+    </div>
+  `;
+
   return L.divIcon({
     html,
     className: "event-marker-scheduled",
@@ -43,6 +67,7 @@ function createScheduledNumberedIcon(number: number): L.DivIcon {
     iconAnchor: [size / 2, size / 2],
   });
 }
+
 
 interface Props {
   events: Event[];
@@ -52,6 +77,7 @@ interface Props {
   onMarkerClick?: (eventId: string) => void;
   resultsPage: number;
   pageSize: number;
+  recentlyAddedId: string | null;
 }
 
 export default function CampusMapInner({
@@ -62,6 +88,7 @@ export default function CampusMapInner({
   onMarkerClick,
   resultsPage,
   pageSize,
+  recentlyAddedId
 }: Props) {
   useEffect(() => {
     delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -80,6 +107,25 @@ export default function CampusMapInner({
     [scheduledEvents]
   );
   const routePoints = scheduledEvents.map((e) => ({ lat: e.lat, lng: e.lng }));
+  const prevScheduledIdsRef = useRef<Set<string>>(new Set());
+  const newlyAddedIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const prev = prevScheduledIdsRef.current;
+    const current = new Set(scheduledEvents.map(e => e.id));
+
+    const newlyAdded = new Set<string>();
+
+    current.forEach(id => {
+      if (!prev.has(id)) {
+        newlyAdded.add(id);
+      }
+    });
+
+    newlyAddedIdsRef.current = newlyAdded;
+    prevScheduledIdsRef.current = current;
+  }, [scheduledEvents]);
+
 
   // Show events for the current list page + hovered event (so hovering in list shows it on map)
   const eventsOnMap = useMemo(() => {
@@ -142,11 +188,15 @@ export default function CampusMapInner({
           const scheduleIndex = scheduleIndexByEventId.get(event.id);
           const isScheduled = scheduleIndex != null;
           const isHovered = hoveredEvent === event.id;
-          const icon = isScheduled
-            ? createScheduledNumberedIcon(scheduleIndex)
+          const isNewlyAdded = recentlyAddedId === event.id;
+
+          const icon =
+          isScheduled
+            ? createScheduledNumberedIcon(scheduleIndex!, isNewlyAdded)
             : isHovered
               ? hoveredIcon
               : availableIcon;
+
           return (
             <Marker
               key={event.id}
@@ -171,7 +221,7 @@ export default function CampusMapInner({
                 permanent={isHovered}
               >
                 <div className="font-medium">{event.name}</div>
-                <div className="text-muted-foreground text-xs">{event.startTime}</div>
+                <div className="text-muted-foreground text-xs">{formatTime(event.startTime)}</div>
               </Tooltip>
             </Marker>
           );
