@@ -38,6 +38,28 @@ export function EventList({
   const start = page * pageSize + 1
   const end = Math.min((page + 1) * pageSize, allFilteredCount)
 
+  function formatTimeRange(startTime: string, endTime: string) {
+    if (startTime === "00:00:00" && endTime === "00:00:00") {
+      return "All Day"
+    }
+    return `${formatTime(startTime)} - ${formatTime(endTime)}`
+  }
+
+  function formatTime(time: string) {
+    const [hours, minutes] = time.split(":").map(Number)
+
+    const date = new Date()
+    date.setHours(hours)
+    date.setMinutes(minutes)
+
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+  }
+
+
   return (
     <div className="flex-1">
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -107,7 +129,7 @@ export function EventList({
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" /> 
-                        {event.startTime}
+                        {formatTime(event.startTime)}
                       </span>
                       <span className="flex items-center gap-1">
                         <MapPin className="w-3 h-3" />
@@ -142,7 +164,7 @@ export function EventList({
                   </p>
                   <div className="flex items-center gap-4 mt-3">
                     <span className="text-xs text-muted-foreground">
-                      {event.startTime} - {event.endTime}
+                      {formatTimeRange(event.startTime, event.endTime)}
                     </span>
                     <span className="px-2 py-0.5 text-xs font-medium bg-secondary rounded-full text-secondary-foreground capitalize">
                       {event.category}
