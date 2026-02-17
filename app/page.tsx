@@ -35,6 +35,7 @@ export default function PicnicDayPage() {
   const [scheduledEvents, setScheduledEvents] = useState<ScheduledEvent[]>([])
   const [activeTab, setActiveTab] = useState<"browse" | "popular" | "nearby">("browse")
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null)
+  const [scrollToEventId, setScrollToEventId] = useState<string | null>(null)
   const [events, setEvents] = useState<Event[]>([])
   const [resultsPage, setResultsPage] = useState(0)
 
@@ -69,6 +70,15 @@ export default function PicnicDayPage() {
       setResultsPage(Math.max(0, totalResultsPages - 1))
     }
   }, [totalResultsPages, resultsPage])
+
+  const handleMapMarkerClick = useCallback((eventId: string) => {
+    const index = filteredEvents.findIndex((e) => e.id === eventId)
+    if (index >= 0) {
+      const page = Math.floor(index / RESULTS_PAGE_SIZE)
+      setResultsPage(page)
+      setScrollToEventId(eventId)
+    }
+  }, [filteredEvents])
 
   const addToSchedule = useCallback((event: Event) => {
     setScheduledEvents(prev => {
@@ -112,6 +122,8 @@ export default function PicnicDayPage() {
                 events={filteredEvents}
                 scheduledEvents={scheduledEvents}
                 hoveredEvent={hoveredEvent}
+                setHoveredEvent={setHoveredEvent}
+                onMarkerClick={handleMapMarkerClick}
                 resultsPage={resultsPage}
                 pageSize={RESULTS_PAGE_SIZE}
               />
@@ -145,6 +157,8 @@ export default function PicnicDayPage() {
                     removeFromSchedule={removeFromSchedule}
                     hoveredEvent={hoveredEvent}
                     setHoveredEvent={setHoveredEvent}
+                    scrollToEventId={scrollToEventId}
+                    onScrollToEventDone={() => setScrollToEventId(null)}
                     page={resultsPage}
                     totalPages={totalResultsPages}
                     onPageChange={setResultsPage}
