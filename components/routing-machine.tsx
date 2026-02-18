@@ -12,6 +12,7 @@ type Point = {
 
 const ROUTE_LINE_OPTIONS = {
   styles: [{ color: "#022851", weight: 5 }],
+  renderer: L.canvas(),
 };
 
 /** Latitude must be in [-90, 90], longitude in [-180, 180]. Fix if swapped. */

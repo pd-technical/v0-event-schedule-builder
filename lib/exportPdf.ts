@@ -25,6 +25,8 @@ export async function exportSchedulePdf(scheduledEvents: ScheduledEvent[]) {
   // --- Map capture ---
   const mapContainer = document.querySelector(".leaflet-container") as HTMLElement | null
   if (mapContainer) {
+    // Wait for route lines to finish rendering on canvas
+    await new Promise(resolve => setTimeout(resolve, 800))
     try {
       const canvas = await html2canvas(mapContainer, {
         useCORS: true,

@@ -134,6 +134,7 @@ export default function CampusMapInner({
           [38.555, -121.735],
         ]}
         maxBoundsViscosity={1.0}
+        preferCanvas={true}
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
