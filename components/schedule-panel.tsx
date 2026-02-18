@@ -77,7 +77,7 @@ export function SchedulePanel({
 
   return (
     <div
-      className={`absolute top-4 right-4 w-72 bg-card border border-border rounded-lg shadow-lg transition-all z-[1000] ${isCollapsed ? "h-auto" : "max-h-[440px]"
+      className={`w-full bg-card border border-border rounded-lg shadow-lg transition-all md:absolute md:left-auto md:right-4 md:top-4 md:bottom-auto md:w-72 md:z-[1000] ${isCollapsed ? "h-auto" : "md:max-h-[440px]"
         }`}
     >
       {/* Header */}
@@ -107,7 +107,7 @@ export function SchedulePanel({
               </p>
             </div>
           ) : (
-            <div className="p-2 max-h-[300px] overflow-y-auto">
+            <div className="p-2 max-h-[70vh] overflow-y-auto md:max-h-[300px]">
               {scheduledEvents.map((event, index) => {
                 const outOfOrder = isOutOfOrder(scheduledEvents, index)
                 const isDragging = draggedIndex === index
