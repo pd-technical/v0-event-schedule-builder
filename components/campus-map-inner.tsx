@@ -191,10 +191,10 @@ export default function CampusMapInner({
           const isNewlyAdded = recentlyAddedId === event.id;
 
           const icon =
-          isHovered
-            ? hoveredIcon
-            : isScheduled
-              ? createScheduledNumberedIcon(scheduleIndex!, isNewlyAdded)
+          isScheduled
+            ? createScheduledNumberedIcon(scheduleIndex!, isNewlyAdded)
+            : isHovered
+              ? hoveredIcon
               : availableIcon;
 
           return (
