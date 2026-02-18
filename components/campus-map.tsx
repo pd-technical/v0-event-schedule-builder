@@ -11,6 +11,7 @@ interface CampusMapProps {
   onMarkerClick?: (eventId: string) => void;
   resultsPage: number;
   pageSize: number;
+  recentlyAddedId: string | null;
 }
 
 export const CampusMap = dynamic<CampusMapProps>(

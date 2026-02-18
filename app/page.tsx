@@ -38,6 +38,7 @@ export default function PicnicDayPage() {
   const [scrollToEventId, setScrollToEventId] = useState<string | null>(null)
   const [events, setEvents] = useState<Event[]>([])
   const [resultsPage, setResultsPage] = useState(0)
+  const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null)
 
   useEffect(() => {
   async function loadEvents() {
@@ -85,6 +86,12 @@ export default function PicnicDayPage() {
       if (prev.find(e => e.id === event.id)) return prev
       return [...prev, { ...event, orderIndex: prev.length }]
     })
+
+    setRecentlyAddedId(event.id)
+
+    setTimeout(() => {
+      setRecentlyAddedId(null)
+    }, 700)
   }, [])
 
   const removeFromSchedule = useCallback((eventId: string) => {
@@ -126,6 +133,7 @@ export default function PicnicDayPage() {
                 onMarkerClick={handleMapMarkerClick}
                 resultsPage={resultsPage}
                 pageSize={RESULTS_PAGE_SIZE}
+                recentlyAddedId={recentlyAddedId}
               />
               <SchedulePanel
                 scheduledEvents={scheduledEvents}

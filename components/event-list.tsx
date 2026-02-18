@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Plus, Check, MapPin, Clock, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import type { Event, ScheduledEvent } from "@/app/page"
+import {formatTimeRange, formatTime} from "@/lib/time"
 
 interface EventListProps {
   events: Event[]
@@ -53,28 +54,6 @@ export function EventList({
   const pageSize = 20
   const start = page * pageSize + 1
   const end = Math.min((page + 1) * pageSize, allFilteredCount)
-
-  function formatTimeRange(startTime: string, endTime: string) {
-    if (startTime === "00:00:00" && endTime === "00:00:00") {
-      return "All Day"
-    }
-    return `${formatTime(startTime)} - ${formatTime(endTime)}`
-  }
-
-  function formatTime(time: string) {
-    const [hours, minutes] = time.split(":").map(Number)
-
-    const date = new Date()
-    date.setHours(hours)
-    date.setMinutes(minutes)
-
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    })
-  }
-
 
   return (
     <div className="flex-1">
@@ -129,7 +108,7 @@ export function EventList({
               onMouseLeave={() => setHoveredEvent(null)}
               className={`bg-card border rounded-lg transition-all ${
                 isHovered 
-                  ? "border-primary/50 shadow-sm" 
+                  ? "border-accent bg-accent/5 shadow-md"
                   : "border-border"
               }`}
             >
