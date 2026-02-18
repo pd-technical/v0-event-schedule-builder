@@ -162,6 +162,12 @@
   animation: scheduledRipple 0.7s ease-out forwards;
 }
 
+.leaflet-marker-icon.event-marker-scheduled {
+  background: none !important;
+  border: none !important;
+}
+
+
 @keyframes scheduledRipple {
   0% {
     transform: scale(1);
