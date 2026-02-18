@@ -129,11 +129,15 @@ export function SchedulePanel({
                         }
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium text-foreground line-clamp-2">
+                          <p
+                            className={`text-sm font-medium text-foreground ${
+                              expandedId === event.id ? "" : "line-clamp-2"
+                            }`}
+                          >
                             {event.name}
                           </p>
                           <ChevronDown
-                            className={`w-5 h-5 mt-0.5 text-muted-foreground transition-transform ${
+                            className={`w-5 h-5 mt-0.5 text-muted-foreground transition-transform flex-shrink-0 ${
                               expandedId === event.id ? "rotate-180" : ""
                             }`}
                           />
