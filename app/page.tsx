@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
 import { NavBar } from "@/components/nav-bar"
 import { SearchSection } from "@/components/search-section"
 import { CategoryFilters } from "@/components/category-filters"
@@ -31,12 +31,16 @@ export interface ScheduledEvent extends Event {
 
 export default function PicnicDayPage() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [submittedSearchQuery, setSubmittedSearchQuery] = useState("")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [scheduledEvents, setScheduledEvents] = useState<ScheduledEvent[]>([])
   const [activeTab, setActiveTab] = useState<"browse" | "popular" | "nearby">("browse")
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null)
+  const [scrollToEventId, setScrollToEventId] = useState<string | null>(null)
   const [events, setEvents] = useState<Event[]>([])
   const [resultsPage, setResultsPage] = useState(0)
+  const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null)
+  const [searchHistory, setSearchHistory] = useState<string[]>([])
 
   useEffect(() => {
   async function loadEvents() {
@@ -50,7 +54,11 @@ export default function PicnicDayPage() {
   loadEvents()
 }, [])
 
-  const searchRanked = rankedEventMatchesSearch(events, searchQuery)
+  const searchRanked = useMemo(() => {
+      if (!submittedSearchQuery.trim()) return events
+      return rankedEventMatchesSearch(events, submittedSearchQuery)
+    }, [events, submittedSearchQuery])
+
   const filteredEvents = searchRanked.filter(
     (event) =>
       selectedCategories.length === 0 ||
@@ -70,11 +78,26 @@ export default function PicnicDayPage() {
     }
   }, [totalResultsPages, resultsPage])
 
+  const handleMapMarkerClick = useCallback((eventId: string) => {
+    const index = filteredEvents.findIndex((e) => e.id === eventId)
+    if (index >= 0) {
+      const page = Math.floor(index / RESULTS_PAGE_SIZE)
+      setResultsPage(page)
+      setScrollToEventId(eventId)
+    }
+  }, [filteredEvents])
+
   const addToSchedule = useCallback((event: Event) => {
     setScheduledEvents(prev => {
       if (prev.find(e => e.id === event.id)) return prev
       return [...prev, { ...event, orderIndex: prev.length }]
     })
+
+    setRecentlyAddedId(event.id)
+
+    setTimeout(() => {
+      setRecentlyAddedId(null)
+    }, 700)
   }, [])
 
   const removeFromSchedule = useCallback((eventId: string) => {
@@ -98,6 +121,11 @@ export default function PicnicDayPage() {
     )
   }
 
+  const clearSearchHistory = () => {
+    setSearchHistory([])
+  }
+
+
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
@@ -112,8 +140,11 @@ export default function PicnicDayPage() {
                 events={filteredEvents}
                 scheduledEvents={scheduledEvents}
                 hoveredEvent={hoveredEvent}
+                setHoveredEvent={setHoveredEvent}
+                onMarkerClick={handleMapMarkerClick}
                 resultsPage={resultsPage}
                 pageSize={RESULTS_PAGE_SIZE}
+                recentlyAddedId={recentlyAddedId}
               />
               <SchedulePanel
                 scheduledEvents={scheduledEvents}
@@ -125,10 +156,29 @@ export default function PicnicDayPage() {
             {/* Search, Filters, Events — on mobile: order 2 (below map); on desktop: left column */}
             <div className="order-2 flex flex-col min-w-0 md:order-1 md:flex-1 md:max-w-[640px]">
               <SearchSection
+                events={events}
+                searchHistory={searchHistory}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
+                onSearchSubmit={(value) => {
+                  const finalQuery = (value ?? searchQuery).trim()
+                  if (!finalQuery) return
+
+                  setSearchQuery(finalQuery)
+                  setSubmittedSearchQuery(finalQuery)
+                  setResultsPage(0)
+
+                  setSearchHistory(prev => {
+                    const updated = [
+                      finalQuery,
+                      ...prev.filter(q => q !== finalQuery)
+                    ]
+                    return updated.slice(0, 5)
+                  })
+                }}
+                clearSearchHistory={clearSearchHistory}
               />
 
               <div className="flex flex-col gap-4 mt-4 min-w-0 md:flex-row">
@@ -145,6 +195,8 @@ export default function PicnicDayPage() {
                     removeFromSchedule={removeFromSchedule}
                     hoveredEvent={hoveredEvent}
                     setHoveredEvent={setHoveredEvent}
+                    scrollToEventId={scrollToEventId}
+                    onScrollToEventDone={() => setScrollToEventId(null)}
                     page={resultsPage}
                     totalPages={totalResultsPages}
                     onPageChange={setResultsPage}

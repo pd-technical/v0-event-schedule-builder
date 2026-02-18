@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Plus, Check, MapPin, Clock, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import type { Event, ScheduledEvent } from "@/app/page"
+import {formatTimeRange, formatTime} from "@/lib/time"
 
 interface EventListProps {
   events: Event[]
@@ -12,6 +13,8 @@ interface EventListProps {
   removeFromSchedule: (eventId: string) => void
   hoveredEvent: string | null
   setHoveredEvent: (id: string | null) => void
+  scrollToEventId: string | null
+  onScrollToEventDone: () => void
   page: number
   totalPages: number
   onPageChange: (page: number) => void
@@ -25,14 +28,28 @@ export function EventList({
   removeFromSchedule,
   hoveredEvent,
   setHoveredEvent,
+  scrollToEventId,
+  onScrollToEventDone,
   page,
   totalPages,
   onPageChange
 }: EventListProps) {
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null)
+  const listScrollRef = useRef<HTMLDivElement>(null)
 
   const isScheduled = (eventId: string) => 
     scheduledEvents.some(e => e.id === eventId)
+
+  // When scrollToEventId is set (e.g. after clicking a map marker), scroll list to that event and expand it
+  useEffect(() => {
+    if (!scrollToEventId || !listScrollRef.current) return
+    const el = listScrollRef.current.querySelector(`[data-event-id="${scrollToEventId}"]`)
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" })
+      setExpandedEvent(scrollToEventId)
+    }
+    onScrollToEventDone()
+  }, [scrollToEventId, onScrollToEventDone])
 
   const pageSize = 20
   const start = page * pageSize + 1
@@ -74,7 +91,10 @@ export function EventList({
         )}
       </div>
 
-      <div className="space-y-2 max-h-[420px] md:max-h-[520px] overflow-y-auto pr-2 -mr-2 md:mr-0">
+      <div
+        ref={listScrollRef}
+        className="space-y-2 max-h-[420px] md:max-h-[520px] overflow-y-auto pr-2 -mr-2 md:mr-0"
+      >
         {events.map((event) => {
           const scheduled = isScheduled(event.id)
           const isExpanded = expandedEvent === event.id
@@ -83,11 +103,12 @@ export function EventList({
           return (
             <div
               key={event.id}
+              data-event-id={event.id}
               onMouseEnter={() => setHoveredEvent(event.id)}
               onMouseLeave={() => setHoveredEvent(null)}
               className={`bg-card border rounded-lg transition-all ${
                 isHovered 
-                  ? "border-primary/50 shadow-sm" 
+                  ? "border-accent bg-accent/5 shadow-md"
                   : "border-border"
               }`}
             >
@@ -107,7 +128,7 @@ export function EventList({
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" /> 
-                        {event.startTime}
+                        {formatTime(event.startTime)}
                       </span>
                       <span className="flex items-center gap-1">
                         <MapPin className="w-3 h-3" />
@@ -142,7 +163,7 @@ export function EventList({
                   </p>
                   <div className="flex items-center gap-4 mt-3">
                     <span className="text-xs text-muted-foreground">
-                      {event.startTime} - {event.endTime}
+                      {formatTimeRange(event.startTime, event.endTime)}
                     </span>
                     <span className="px-2 py-0.5 text-xs font-medium bg-secondary rounded-full text-secondary-foreground capitalize">
                       {event.category}
