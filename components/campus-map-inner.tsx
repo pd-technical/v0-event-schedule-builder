@@ -217,7 +217,7 @@ export default function CampusMapInner({
   }, [hoveredEvent]);
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden h-[480px] w-full">
+    <div className="bg-card rounded-lg border border-border overflow-hidden h-[280px] sm:h-[320px] md:h-[380px] lg:h-[480px] w-full">
       <MapContainer
         center={[38.5382, -121.7617]}
         zoom={15}
