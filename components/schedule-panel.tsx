@@ -6,6 +6,7 @@ import { useState, useRef } from "react"
 import { X, GripVertical, AlertTriangle, Calendar, Download, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
 import type { ScheduledEvent } from "@/app/page"
 import { exportSchedulePdf } from "@/lib/exportPdf"
+import { formatTime } from "@/lib/time"
 
 interface SchedulePanelProps {
   scheduledEvents: ScheduledEvent[]
@@ -142,11 +143,15 @@ export function SchedulePanel({
                         }
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium text-foreground line-clamp-2">
+                          <p
+                            className={`text-sm font-medium text-foreground ${
+                              expandedId === event.id ? "" : "line-clamp-2"
+                            }`}
+                          >
                             {event.name}
                           </p>
                           <ChevronDown
-                            className={`w-5 h-5 mt-0.5 text-muted-foreground transition-transform ${
+                            className={`w-5 h-5 mt-0.5 text-muted-foreground transition-transform flex-shrink-0 ${
                               expandedId === event.id ? "rotate-180" : ""
                             }`}
                           />
@@ -154,7 +159,7 @@ export function SchedulePanel({
 
 
                         <p className="text-[10px] text-muted-foreground">
-                          {event.startTime} · {event.location}
+                          {formatTime(event.startTime)} · {event.location}
                         </p>
 
                         {expandedId === event.id && event.description && (
