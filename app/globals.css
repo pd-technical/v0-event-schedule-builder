@@ -129,3 +129,55 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+.scheduled-marker {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #022851;
+  border: 2px solid #022851;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  overflow: visible;
+  z-index: 1;
+}
+
+.scheduled-number {
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  position: relative;
+  z-index: 3;
+}
+
+.scheduled-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid #daaa00;
+  animation: scheduledRipple 0.7s ease-out forwards;
+  z-index: 2;
+  pointer-events: none;
+}
+
+
+.leaflet-marker-icon.event-marker-scheduled {
+  background: none !important;
+  border: none !important;
+}
+
+
+@keyframes scheduledRipple {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(3.5);
+    opacity: 0;
+  }
+}

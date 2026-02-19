@@ -7,8 +7,11 @@ interface CampusMapProps {
   events: Event[];
   scheduledEvents: ScheduledEvent[];
   hoveredEvent: string | null;
+  setHoveredEvent: (id: string | null) => void;
+  onMarkerClick?: (eventId: string) => void;
   resultsPage: number;
   pageSize: number;
+  recentlyAddedId: string | null;
 }
 
 export const CampusMap = dynamic<CampusMapProps>(
