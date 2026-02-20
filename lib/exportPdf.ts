@@ -33,6 +33,7 @@ export async function exportSchedulePdf(scheduledEvents: ScheduledEvent[]) {
         allowTaint: true,
         backgroundColor: "#ffffff",
         scale: 2,
+        ignoreElements: (el) => el.classList.contains("leaflet-control-container"),
       })
       const imgData = canvas.toDataURL("image/png")
       const aspectRatio = canvas.height / canvas.width

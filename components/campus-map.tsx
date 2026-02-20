@@ -12,6 +12,7 @@ interface CampusMapProps {
   resultsPage: number;
   pageSize: number;
   recentlyAddedId: string | null;
+  isExporting?: boolean;
 }
 
 export const CampusMap = dynamic<CampusMapProps>(

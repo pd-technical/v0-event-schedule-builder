@@ -5,13 +5,14 @@ import React from "react"
 import { useState, useRef } from "react"
 import { X, GripVertical, AlertTriangle, Calendar, Download, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
 import type { ScheduledEvent } from "@/app/page"
-import { exportSchedulePdf } from "@/lib/exportPdf"
 import { formatTime } from "@/lib/time"
 
 interface SchedulePanelProps {
   scheduledEvents: ScheduledEvent[]
   removeFromSchedule: (eventId: string) => void
   reorderSchedule: (fromIndex: number, toIndex: number) => void
+  onExport: () => void
+  isExporting: boolean
 }
 
 function parseTime(timeStr: string): number {
@@ -33,24 +34,14 @@ function isOutOfOrder(events: ScheduledEvent[], index: number): boolean {
 export function SchedulePanel({
   scheduledEvents,
   removeFromSchedule,
-  reorderSchedule
+  reorderSchedule,
+  onExport,
+  isExporting,
 }: SchedulePanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const dragOverIndex = useRef<number | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [exporting, setExporting] = useState(false)
-
-  const handleExport = async () => {
-    setExporting(true)
-    try {
-      await exportSchedulePdf(scheduledEvents)
-    } catch (err) {
-      console.error("Export failed:", err)
-    } finally {
-      setExporting(false)
-    }
-  }
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index)
@@ -215,12 +206,12 @@ export function SchedulePanel({
           {scheduledEvents.length > 0 && (
             <div className="p-3 border-t border-border">
               <button
-                onClick={handleExport}
-                disabled={exporting}
+                onClick={onExport}
+                disabled={isExporting}
                 className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
               >
-                {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                {exporting ? "Exporting..." : "Export Schedule"}
+                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {isExporting ? "Exporting..." : "Export Schedule"}
               </button>
             </div>
           )}

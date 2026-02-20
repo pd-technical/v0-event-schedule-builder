@@ -130,6 +130,7 @@ interface Props {
   resultsPage: number;
   pageSize: number;
   recentlyAddedId: string | null;
+  isExporting?: boolean;
 }
 
 export default function CampusMapInner({
@@ -141,6 +142,7 @@ export default function CampusMapInner({
   resultsPage,
   pageSize,
   recentlyAddedId,
+  isExporting,
 }: Props) {
   /* Leaflet icon fix */
   useEffect(() => {
@@ -167,6 +169,10 @@ export default function CampusMapInner({
 
   /* Events to show on map */
   const eventsOnMap = useMemo(() => {
+    if (isExporting) {
+      return scheduledEvents as (Event | ScheduledEvent)[];
+    }
+
     const eventsForCurrentPage = events.slice(
       resultsPage * pageSize,
       (resultsPage + 1) * pageSize
@@ -185,7 +191,7 @@ export default function CampusMapInner({
     }
 
     return Array.from(byId.values());
-  }, [events, scheduledEvents, resultsPage, pageSize, hoveredEvent]);
+  }, [events, scheduledEvents, resultsPage, pageSize, hoveredEvent, isExporting]);
 
   /* Offset positions */
   const offsetPositions = useOffsetPositions(eventsOnMap);

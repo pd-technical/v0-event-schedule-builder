@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabaseClient"
 
 import { getEvents } from "@/app/api/events"
 import { rankedEventMatchesSearch } from "@/lib/searchUtils"
+import { exportSchedulePdf } from "@/lib/exportPdf"
 
 export interface Event {
   id: string
@@ -41,6 +42,7 @@ export default function PicnicDayPage() {
   const [resultsPage, setResultsPage] = useState(0)
   const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null)
   const [searchHistory, setSearchHistory] = useState<string[]>([])
+  const [isExportingPdf, setIsExportingPdf] = useState(false)
 
   useEffect(() => {
   async function loadEvents() {
@@ -125,6 +127,14 @@ export default function PicnicDayPage() {
     setSearchHistory([])
   }
 
+  const handleExportPdf = async () => {
+    setIsExportingPdf(true)
+    try {
+      await exportSchedulePdf(scheduledEvents)
+    } finally {
+      setIsExportingPdf(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -198,11 +208,14 @@ export default function PicnicDayPage() {
                 resultsPage={resultsPage}
                 pageSize={RESULTS_PAGE_SIZE}
                 recentlyAddedId={recentlyAddedId}
+                isExporting={isExportingPdf}
               />
               <SchedulePanel
                 scheduledEvents={scheduledEvents}
                 removeFromSchedule={removeFromSchedule}
                 reorderSchedule={reorderSchedule}
+                onExport={handleExportPdf}
+                isExporting={isExportingPdf}
               />
             </div>
           </div>
