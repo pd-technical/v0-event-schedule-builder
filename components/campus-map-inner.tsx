@@ -2,10 +2,39 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
-import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Tooltip, useMap } from "react-leaflet";
 import type { Event, ScheduledEvent } from "@/app/page";
 import RoutingMachine from "./routing-machine";
 import { formatTime } from "@/lib/time";
+
+/* Fit map bounds to scheduled events when exporting */
+function FitBoundsOnExport({
+  points,
+  isExporting,
+}: {
+  points: { lat: number; lng: number }[];
+  isExporting: boolean;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!isExporting || points.length === 0) return;
+
+    // Temporarily allow fractional zoom for a tight fit
+    const prevSnap = map.options.zoomSnap;
+    map.options.zoomSnap = 0;
+
+    const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng]));
+    const zoom = Math.min(map.getBoundsZoom(bounds, false, [40, 40]), 18);
+    map.setView(bounds.getCenter(), zoom, { animate: false });
+
+    return () => {
+      map.options.zoomSnap = prevSnap;
+    };
+  }, [isExporting, points, map]);
+
+  return null;
+}
 
 /* =========================
    Dot Offset Logic
@@ -104,7 +133,10 @@ function createScheduledNumberedIcon(
 
   const html = `
     <div class="scheduled-marker">
-      <span class="scheduled-number">${number}</span>
+      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="position:absolute;top:0;left:0;">
+        <text x="${size / 2}" y="${size / 2}" text-anchor="middle" dominant-baseline="central"
+              fill="white" font-size="10" font-weight="bold">${number}</text>
+      </svg>
       ${withRipple ? `<span class="scheduled-ripple"></span>` : ""}
     </div>
   `;
@@ -202,8 +234,17 @@ export default function CampusMapInner({
 
   const markerRefs = useRef(new Map<string, L.Marker>());
 
-  /* Auto-open tooltip on hover */
+  /* Close all tooltips when export starts */
   useEffect(() => {
+    if (isExporting) {
+      markerRefs.current.forEach((m) => m.closeTooltip());
+    }
+  }, [isExporting]);
+
+  /* Auto-open tooltip on hover (suppressed during export) */
+  useEffect(() => {
+    if (isExporting) return;
+
     if (!hoveredEvent) {
       markerRefs.current.forEach((m) => m.closeTooltip());
       return;
@@ -220,7 +261,7 @@ export default function CampusMapInner({
     openHovered();
     const t = requestAnimationFrame(openHovered);
     return () => cancelAnimationFrame(t);
-  }, [hoveredEvent]);
+  }, [hoveredEvent, isExporting]);
 
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden h-[280px] sm:h-[320px] md:h-[380px] lg:h-[480px] w-full">
@@ -274,7 +315,7 @@ export default function CampusMapInner({
                 direction="top"
                 offset={[0, -12]}
                 opacity={1}
-                permanent={isHovered}
+                permanent={isHovered && !isExporting}
               >
                 <div className="font-medium">{event.name}</div>
                 <div className="text-muted-foreground text-xs">
@@ -285,6 +326,10 @@ export default function CampusMapInner({
           );
         })}
 
+        <FitBoundsOnExport
+          points={routePoints}
+          isExporting={!!isExporting}
+        />
         <RoutingMachine points={routePoints} />
       </MapContainer>
     </div>
