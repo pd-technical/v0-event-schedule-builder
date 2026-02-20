@@ -100,7 +100,7 @@ export function EventList({
 
       <div
         ref={listScrollRef}
-        className="space-y-2 max-h-[420px] md:max-h-[520px] overflow-y-auto pr-2 -mr-2 md:mr-0"
+        className="space-y-2 max-h-[380px] md:max-h-[420px] lg:max-h-[520px] overflow-y-auto pr-2 -mr-2 lg:mr-0"
       >
         {events.map((event) => {
           const scheduled = isScheduled(event.id)
