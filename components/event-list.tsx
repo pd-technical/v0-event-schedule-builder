@@ -18,6 +18,7 @@ interface EventListProps {
   page: number
   totalPages: number
   onPageChange: (page: number) => void
+  searchQuery: string
 }
 
 export function EventList({ 
@@ -32,7 +33,8 @@ export function EventList({
   onScrollToEventDone,
   page,
   totalPages,
-  onPageChange
+  onPageChange,
+  searchQuery
 }: EventListProps) {
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null)
   const listScrollRef = useRef<HTMLDivElement>(null)
@@ -60,6 +62,11 @@ export function EventList({
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           {allFilteredCount} Events Found
+          {searchQuery.trim() && (
+            <span className="normal-case font-normal text-muted-foreground ml-1">
+              for "<span className="text-foreground">{searchQuery}</span>"
+            </span>
+          )}
           {allFilteredCount > pageSize && (
             <span className="normal-case font-normal text-muted-foreground ml-1">
               (showing {start}–{end})

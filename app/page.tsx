@@ -181,6 +181,7 @@ export default function PicnicDayPage() {
                     page={resultsPage}
                     totalPages={totalResultsPages}
                     onPageChange={setResultsPage}
+                    searchQuery={submittedSearchQuery}
                   />
                 </div>
               </div>
