@@ -3,8 +3,9 @@
 import React from "react"
 
 import { useState, useRef } from "react"
-import { X, GripVertical, AlertTriangle, Calendar, Download, ChevronUp, ChevronDown } from "lucide-react"
+import { X, GripVertical, AlertTriangle, Calendar, Download, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
 import type { ScheduledEvent } from "@/app/page"
+import { exportSchedulePdf } from "@/lib/exportPdf"
 import { formatTime } from "@/lib/time"
 
 interface SchedulePanelProps {
@@ -38,6 +39,18 @@ export function SchedulePanel({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const dragOverIndex = useRef<number | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [exporting, setExporting] = useState(false)
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      await exportSchedulePdf(scheduledEvents)
+    } catch (err) {
+      console.error("Export failed:", err)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index)
@@ -65,7 +78,7 @@ export function SchedulePanel({
 
   return (
     <div
-      className={`w-full bg-card border border-border rounded-lg shadow-lg transition-all md:absolute md:left-auto md:right-4 md:top-4 md:bottom-auto md:w-72 md:z-[1000] ${isCollapsed ? "h-auto" : "md:max-h-[440px]"
+      className={`w-full bg-card border border-border rounded-lg shadow-lg transition-all lg:absolute lg:left-auto lg:right-4 lg:top-4 lg:bottom-auto lg:w-72 lg:z-[1000] ${isCollapsed ? "h-auto" : "lg:max-h-[440px]"
         }`}
     >
       {/* Header */}
@@ -95,7 +108,7 @@ export function SchedulePanel({
               </p>
             </div>
           ) : (
-            <div className="p-2 max-h-[70vh] overflow-y-auto md:max-h-[300px]">
+            <div className="p-2 max-h-[70vh] overflow-y-auto lg:max-h-[300px]">
               {scheduledEvents.map((event, index) => {
                 const outOfOrder = isOutOfOrder(scheduledEvents, index)
                 const isDragging = draggedIndex === index
@@ -130,11 +143,15 @@ export function SchedulePanel({
                         }
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium text-foreground line-clamp-2">
+                          <p
+                            className={`text-sm font-medium text-foreground ${
+                              expandedId === event.id ? "" : "line-clamp-2"
+                            }`}
+                          >
                             {event.name}
                           </p>
                           <ChevronDown
-                            className={`w-5 h-5 mt-0.5 text-muted-foreground transition-transform ${
+                            className={`w-5 h-5 mt-0.5 text-muted-foreground transition-transform flex-shrink-0 ${
                               expandedId === event.id ? "rotate-180" : ""
                             }`}
                           />
@@ -197,9 +214,13 @@ export function SchedulePanel({
           {/* Footer */}
           {scheduledEvents.length > 0 && (
             <div className="p-3 border-t border-border">
-              <button className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
-                <Download className="w-4 h-4" />
-                Export Schedule
+              <button
+                onClick={handleExport}
+                disabled={exporting}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
+              >
+                {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {exporting ? "Exporting..." : "Export Schedule"}
               </button>
             </div>
           )}
