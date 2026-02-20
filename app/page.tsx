@@ -162,7 +162,7 @@ export default function PicnicDayPage() {
                 clearSearchHistory={clearSearchHistory}
               />
 
-              <div className="flex flex-col gap-4 mt-2 min-w-0 lg:mt-4 lg:flex-row lg:gap-5">
+              <div className="flex flex-col gap-4 mt-4 min-w-0 xl:flex-row">
                 <CategoryFilters
                   selectedCategories={selectedCategories}
                   toggleCategory={toggleCategory}
