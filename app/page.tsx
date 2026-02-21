@@ -92,7 +92,9 @@ export default function PicnicDayPage() {
   const addToSchedule = useCallback((event: Event) => {
     setScheduledEvents(prev => {
       if (prev.find(e => e.id === event.id)) return prev
-      return [...prev, { ...event, orderIndex: prev.length }]
+      const updated = [...prev, { ...event, orderIndex: prev.length }]
+      updated.sort((a, b) => a.startTime.localeCompare(b.startTime))
+      return updated.map((e, i) => ({ ...e, orderIndex: i }))
     })
 
     setRecentlyAddedId(event.id)
@@ -116,8 +118,8 @@ export default function PicnicDayPage() {
   }, [])
 
   const toggleCategory = (category: string) => {
-    setSelectedCategories(prev => 
-      prev.includes(category) 
+    setSelectedCategories(prev =>
+      prev.includes(category)
         ? prev.filter(c => c !== category)
         : [...prev, category]
     )
