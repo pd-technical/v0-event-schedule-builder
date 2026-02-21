@@ -126,27 +126,16 @@ export function SchedulePanel({
                       {index + 1}
                     </div>
 
-                    {/* Event Info */}
-                      <div
-                        className="flex-1 min-w-0 cursor-pointer"
-                        onClick={() =>
-                          setExpandedId(expandedId === event.id ? null : event.id)
-                        }
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <p
-                            className={`text-sm font-medium text-foreground ${
-                              expandedId === event.id ? "" : "line-clamp-2"
-                            }`}
-                          >
-                            {event.name}
-                          </p>
-                          <ChevronDown
-                            className={`w-5 h-5 mt-0.5 text-muted-foreground transition-transform flex-shrink-0 ${
-                              expandedId === event.id ? "rotate-180" : ""
-                            }`}
-                          />
-                        </div>
+                    <div
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className={`text-sm font-medium text-foreground ${expandedId === event.id ? "" : "line-clamp-1"}`}>
+                          {event.name}
+                        </p>
+                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform flex-shrink-0 ${expandedId === event.id ? "rotate-180" : ""}`} />
+                      </div>
 
 
                         <p className="text-[10px] text-muted-foreground">

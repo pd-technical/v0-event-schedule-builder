@@ -55,10 +55,10 @@ export function SearchSection({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
+            className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors ${
               activeTab === tab.id
                 ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground hover:bg-muted"
+                : "bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
             }`}
           >
             {tab.label}
@@ -97,10 +97,8 @@ export function SearchSection({
         </form>
 
         {isFocused && dropdownItems.length > 0 && (
-          <div className="absolute z-30 mt-1 w-full bg-card border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-
-            {/* Header Row */}
-            <div className="flex items-center justify-between px-4 pt-3 pb-2">
+          <div className="absolute z-30 mt-2 w-full bg-card border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-border/50">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Recent Searches
               </span>
@@ -146,8 +144,8 @@ export function SearchSection({
 
 
       </div>
-
-      {/* Quick Search Tags */}
+    {/* 
+      // {Quick Search Tags}
       <div className="flex flex-wrap gap-2 mt-5 mb-1">
         {["children's discovery fair", "entertainment", "student organization fair", "exhibits", "animal events", "food"].map((tag) => (
           <button
@@ -158,7 +156,7 @@ export function SearchSection({
             {tag}
           </button>
         ))}
-      </div>
+      </div> */}
     </div>
   )
 }
