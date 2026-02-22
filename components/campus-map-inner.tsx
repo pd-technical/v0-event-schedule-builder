@@ -296,8 +296,9 @@ export default function CampusMapInner({
   }
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden w-full flex-1 min-h-[400px]">
+    <div className="w-full h-[400px] md:h-auto md:flex-1 md:min-h-0">
       <MapContainer
+        className="h-full w-full"
         center={[38.5382, -121.7617]}
         zoom={15}
         minZoom={14}
