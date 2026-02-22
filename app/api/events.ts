@@ -15,8 +15,9 @@ export async function getEvents(): Promise<Event[]> {
                 description, 
                 start_time, end_time, 
                 category, 
-                showtime, 
+                location_details,
                 location_id, 
+                showtime,
                 locations (
                     name,
                     latitude,
@@ -46,6 +47,7 @@ export async function getEvents(): Promise<Event[]> {
         location: row.locations?.name || " ", // Use the joined location name or fallback
         lat: row.locations?.latitude || 0,
         lng: row.locations?.longitude || 0,
+        location_details: row.location_details || " ", 
         category: row.category,
         showtime: row.showtime,
     }));

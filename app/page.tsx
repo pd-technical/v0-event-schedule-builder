@@ -24,9 +24,11 @@ export interface Event {
   showtime: string
   lat: number
   lng: number
+  location_details: string
 }
 
 export interface ScheduledEvent extends Event {
+  location_details: any
   orderIndex: number
 }
 
@@ -174,7 +176,7 @@ export default function PicnicDayPage() {
                 clearSearchHistory={clearSearchHistory}
               />
 
-              <div className="flex flex-col gap-4 mt-4 min-w-0 xl:flex-row">
+              <div className="flex flex-col gap-6 mt-6 min-w-0 xl:flex-row xl:items-start">
                 <CategoryFilters
                   selectedCategories={selectedCategories}
                   toggleCategory={toggleCategory}
@@ -198,6 +200,8 @@ export default function PicnicDayPage() {
                 </div>
               </div>
             </div>
+
+            
 
             {/* Map + Schedule — second when stacked; right column on large */}
             <div className="order-2 w-full min-w-0 flex flex-col gap-4 relative lg:flex-1 lg:gap-0 lg:min-w-[360px]">
