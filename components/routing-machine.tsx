@@ -28,7 +28,13 @@ function normalizePoint(p: Point): Point {
   return { lat: a, lng: b };
 }
 
-export default function RoutingMachine({ points }: { points: Point[] }) {
+export default function RoutingMachine({
+  points,
+  onRouteBounds,
+}: {
+  points: Point[];
+  onRouteBounds?: (bounds: L.LatLngBounds) => void;
+}) {
   const map = useMap();
 
   useEffect(() => {
@@ -103,12 +109,19 @@ export default function RoutingMachine({ points }: { points: Point[] }) {
       lineOptions: ROUTE_LINE_OPTIONS,
     }).addTo(map);
 
+    routingControl.on("routesfound", (e: { routes: Array<{ coordinates: L.LatLng[] }> }) => {
+      const coords = e.routes[0]?.coordinates;
+      if (coords && coords.length > 0) {
+        onRouteBounds?.(L.latLngBounds(coords));
+      }
+    });
+
     return () => {
       try {
         routingControl?.remove();
       } catch {}
     };
-  }, [points, map]);
+  }, [points, map, onRouteBounds]);
 
   return null;
 }
