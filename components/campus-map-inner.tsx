@@ -271,6 +271,30 @@ export default function CampusMapInner({
     return () => cancelAnimationFrame(t);
   }, [hoveredEvent, isExporting]);
 
+  function FlyToHoveredEvent({
+    hoveredEvent,
+    events,
+  }: {
+    hoveredEvent: string | null
+    events: (Event | ScheduledEvent)[]
+  }) {
+    const map = useMap()
+
+    useEffect(() => {
+      if (!hoveredEvent) return
+
+      const event = events.find((e) => e.id === hoveredEvent)
+      if (!event) return
+
+      map.panTo([event.lat, event.lng], {
+        animate: true,
+        duration: 0.5,
+      })
+    }, [hoveredEvent, events, map])
+
+    return null
+  }
+
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden w-full flex-1 min-h-[400px]">
       <MapContainer
@@ -338,6 +362,10 @@ export default function CampusMapInner({
           points={routePoints}
           isExporting={!!isExporting}
           routeBoundsRef={routeBoundsRef}
+        />
+        <FlyToHoveredEvent
+          hoveredEvent={hoveredEvent}
+          events={eventsOnMap}
         />
         <RoutingMachine
           points={routePoints}
