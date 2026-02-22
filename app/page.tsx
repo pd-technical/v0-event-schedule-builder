@@ -201,12 +201,12 @@ export default function PicnicDayPage() {
                 clearSearchHistory={clearSearchHistory}
               />
 
-              <div className="flex flex-col gap-6 mt-6 min-w-0 xl:flex-row xl:items-start">
+              <div className="flex flex-col gap-6 mt-6 min-w-0 xl:flex-col xl:items-start">
                 <CategoryFilters
                   selectedCategories={selectedCategories}
                   toggleCategory={toggleCategory}
                 />
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 w-full">
                   <EventList
                     events={eventsForCurrentPage}
                     allFilteredCount={filteredEvents.length}
