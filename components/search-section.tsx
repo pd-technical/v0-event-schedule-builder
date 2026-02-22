@@ -161,7 +161,7 @@ export function SearchSection({
 
       </div>
 
-      {/* Quick Search Tags */}
+      {/* Quick Search Tags
       <div className="flex flex-wrap gap-2 mt-5 mb-1">
         {["children's discovery fair", "entertainment", "student organization fair", "exhibits", "animal events", "food"].map((tag) => (
           <button
@@ -172,7 +172,8 @@ export function SearchSection({
             {tag}
           </button>
         ))}
-      </div>
+      </div>  */}
+      
     </div>
   )
 }
