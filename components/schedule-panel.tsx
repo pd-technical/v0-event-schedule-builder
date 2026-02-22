@@ -151,6 +151,9 @@ export function SchedulePanel({
 
                         <p className="text-[10px] text-muted-foreground">
                           {formatTime(event.startTime)} · {event.location}
+                          {event.location_details && (
+                            <> — {event.location_details}</>
+                          )}
                         </p>
 
                         {expandedId === event.id && event.description && (

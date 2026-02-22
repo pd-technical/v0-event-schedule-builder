@@ -25,7 +25,7 @@ function FitBoundsOnExport({
     map.options.zoomSnap = 0;
 
     const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng]));
-    const zoom = Math.min(map.getBoundsZoom(bounds, false, [40, 40]), 18);
+    const zoom = Math.min(map.getBoundsZoom(bounds, false, L.point(40, 40)), 18);
     map.setView(bounds.getCenter(), zoom, { animate: false });
 
     return () => {
@@ -264,7 +264,7 @@ export default function CampusMapInner({
   }, [hoveredEvent, isExporting]);
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden h-[280px] sm:h-[320px] md:h-[380px] lg:h-[480px] w-full">
+    <div className="bg-card rounded-lg border border-border overflow-hidden w-full flex-1 min-h-[400px]">
       <MapContainer
         center={[38.5382, -121.7617]}
         zoom={15}
