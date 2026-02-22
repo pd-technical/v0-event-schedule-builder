@@ -25,6 +25,7 @@ export interface Event {
   lat: number
   lng: number
   location_details: string
+  tags: string[]
 }
 
 export interface ScheduledEvent extends Event {
@@ -46,6 +47,15 @@ export default function PicnicDayPage() {
   const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [isExportingPdf, setIsExportingPdf] = useState(false)
 
+  const categoryToTags: Record<string, string[]> = { 
+    animals: ["animals"],
+    science: ["science", "engineering", "talks", "math", "space"],
+    nature: ["plants", "animals", "science"],
+    arts: ["music", "art", "crafts", "exhibits", "culture"],
+    food: ["food"],
+    fun: ["games", "relax", "kids"],
+  }
+
   useEffect(() => {
   async function loadEvents() {
     try {
@@ -63,11 +73,21 @@ export default function PicnicDayPage() {
       return rankedEventMatchesSearch(events, submittedSearchQuery)
     }, [events, submittedSearchQuery])
 
-  const filteredEvents = searchRanked.filter(
-    (event) =>
-      selectedCategories.length === 0 ||
-      selectedCategories.includes(event.category)
-  )
+  const filteredEvents = useMemo(() => {
+    if (selectedCategories.length === 0) return searchRanked;
+
+    return searchRanked.filter((event) =>
+      selectedCategories.some((category) => {
+        const validTags = categoryToTags[category] || [];
+
+        return validTags.some((tag) =>
+          event.tags?.some(
+            (eventTag) => eventTag.toLowerCase() === tag.toLowerCase()
+          )
+        );
+      })
+    );
+  }, [searchRanked, selectedCategories]);
 
   const RESULTS_PAGE_SIZE = 20
   const totalResultsPages = Math.max(1, Math.ceil(filteredEvents.length / RESULTS_PAGE_SIZE))
@@ -159,7 +179,12 @@ export default function PicnicDayPage() {
                 setActiveTab={setActiveTab}
                 onSearchSubmit={(value) => {
                   const finalQuery = (value ?? searchQuery).trim()
-                  if (!finalQuery) return
+                  if (!finalQuery) {
+                    setSearchQuery("")
+                    setSubmittedSearchQuery("")
+                    setResultsPage(0)
+                    return
+                  }
 
                   setSearchQuery(finalQuery)
                   setSubmittedSearchQuery(finalQuery)

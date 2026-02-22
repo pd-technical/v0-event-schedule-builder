@@ -188,11 +188,31 @@ export function EventList({
                           {event.description}
                         </p>
 
-                        <div className="flex items-center gap-4 mt-3">
-
+                        <div className="flex flex-wrap items-center gap-2 mt-3">
                           <span className="px-2 py-0.5 text-xs font-medium bg-highlight/10 text-highlight rounded-full capitalize">
                             {event.category}
                           </span>
+
+                          {event.tags && event.tags.length > 0 && (
+                            <>
+                              {event.tags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="
+                                    px-2.5 py-0.5
+                                    text-[11px]
+                                    font-medium
+                                    bg-primary/10
+                                    text-primary
+                                    rounded-full
+                                    capitalize
+                                  "
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </>
+                          )}
                         </div>
                       </div>
 

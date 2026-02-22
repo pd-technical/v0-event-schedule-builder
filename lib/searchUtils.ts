@@ -134,8 +134,8 @@ function scoreEvent<T extends SearchableEvent>(event: T, query: string): RankedM
   const q = query.trim();
   if (!q) return { event, tier: 1, tiebreaker: 0 };
 
-  const combined = [event.name, event.description, event.location].join(" ").toLowerCase();
-  const combinedNorm = [event.name, event.description, event.location]
+  const combined = [event.name, event.description, event.location, ...(event as any).tags ?? []].join(" ").toLowerCase();
+  const combinedNorm = [event.name, event.description, event.location, ...(event as any).tags ?? []]
     .map((s) => s.toLowerCase().replace(/\s+/g, " ").trim())
     .join(" ");
   const queryLower = q.toLowerCase();
@@ -194,6 +194,7 @@ export interface SearchableEvent {
   name: string;
   description: string;
   location: string;
+  tags?: string[];
 }
 
 /**
