@@ -131,7 +131,10 @@ export function EventList({
                 {/* Main Row */}
                 <div className="flex items-start gap-3 p-3">
                   <button
-                    onClick={() => setExpandedEvent(isExpanded ? null : event.id)}
+                     onClick={() => {
+                      setExpandedEvent(isExpanded ? null : event.id)
+                      setHoveredEvent(event.id)
+                    }}
                     className="flex-1 flex items-start gap-3 text-left"
                   >
                     <ChevronDown className={`w-4 h-4 mt-1 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""
