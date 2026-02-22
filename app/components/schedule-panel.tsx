@@ -5,7 +5,7 @@ import React from "react"
 import { useState, useRef } from "react"
 import { X, GripVertical, AlertTriangle, Calendar, Download, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
 import type { ScheduledEvent } from "@/app/page"
-import { formatTime } from "@/lib/time"
+import { formatTime } from "@/app/lib/time"
 
 interface SchedulePanelProps {
   scheduledEvents: ScheduledEvent[]

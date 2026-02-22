@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Plus, Check, MapPin, Clock, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import type { Event, ScheduledEvent } from "@/app/page"
-import { formatTimeRange, formatTime } from "@/lib/time"
+import { formatTimeRange, formatTime } from "@/app/lib/time"
 
 interface EventListProps {
   events: Event[]

@@ -1,17 +1,17 @@
 "use client"
 
 import { useState, useCallback, useEffect, useMemo } from "react"
-import { NavBar } from "@/components/nav-bar"
-import { SearchSection } from "@/components/search-section"
-import { CategoryFilters } from "@/components/category-filters"
-import { EventList } from "@/components/event-list"
-import { CampusMap } from "@/components/campus-map"
-import { SchedulePanel } from "@/components/schedule-panel"
-import { supabase } from "@/lib/supabaseClient"
+import { NavBar } from "@/app/components/nav-bar"
+import { SearchSection } from "@/app/components/search-section"
+import { CategoryFilters } from "@/app/components/category-filters"
+import { EventList } from "@/app/components/event-list"
+import { CampusMap } from "@/app/components/campus-map"
+import { SchedulePanel } from "@/app/components/schedule-panel"
+import { supabase } from "@/app/lib/supabaseClient"
 
 import { getEvents } from "@/app/api/events"
-import { rankedEventMatchesSearch } from "@/lib/searchUtils"
-import { exportSchedulePdf } from "@/lib/exportPdf"
+import { rankedEventMatchesSearch } from "@/app/lib/searchUtils"
+import { exportSchedulePdf } from "@/app/lib/exportPdf"
 
 export interface Event {
   id: string
