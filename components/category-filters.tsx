@@ -1,6 +1,6 @@
   "use client"
 
-  import { Dog, FlaskConical, Leaf, Star, Music, Utensils } from "lucide-react"
+  import { Dog, FlaskConical, Leaf, Puzzle, Music, Utensils } from "lucide-react"
 
   interface CategoryFiltersProps {
     selectedCategories: string[]
@@ -9,10 +9,10 @@
 
   const categories = [
     { 
-      id: "featured", 
-      label: "Featured Events", 
-      icon: Star,
-      description: "Don't miss highlights",
+      id: "fun", 
+      label: "Fun and Games", 
+      icon: Puzzle,
+      description: "Games, crafts, & more",
     },
     { 
       id: "animals", 
@@ -47,14 +47,14 @@
   ]
 
   const categoryAccents: Record<string, string> = {
-    featured: "var(--color-highlight)",   // pink
+    fun: "#ec4899",   // pink
     animals: "#e8b04a",                   // soft warm gold
     science: "#1fa2c9",                   // cyan (already in chart-4)  
     nature: "#4fa36b",                    // soft natural green
     arts: "#7b6bd6",                      // muted violet
     food: "#d46a4f",                      // warm coral
   }
-
+  
   export function CategoryFilters({ selectedCategories, toggleCategory }: CategoryFiltersProps) {
     return (
       <div className="w-full xl:w-48 xl:flex-shrink-0">

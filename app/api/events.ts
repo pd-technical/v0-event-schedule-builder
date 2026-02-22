@@ -22,6 +22,12 @@ export async function getEvents(): Promise<Event[]> {
                     name,
                     latitude,
                     longitude
+                ),
+                event_tags (
+                    tags (
+                        id,
+                        name
+                    )
                 )
             `)
         .order("name", { ascending: true });
@@ -37,6 +43,8 @@ export async function getEvents(): Promise<Event[]> {
 
 
     console.log("RAW supabase data:", data);
+    console.log("FIRST ROW FULL:", data?.[0]);
+    console.log("FIRST ROW event_tags:", data?.[0]?.event_tags);
 
     const mapped = data.map((row: any) => ({
         id: row.id,
@@ -50,6 +58,7 @@ export async function getEvents(): Promise<Event[]> {
         location_details: row.location_details || " ", 
         category: row.category,
         showtime: row.showtime,
+        tags: row.event_tags?.map((et: any) => et.tags.name) || [],
     }));
 
     const sorted = mapped.sort((a, b) => 
