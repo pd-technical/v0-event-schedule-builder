@@ -5,7 +5,7 @@ import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Tooltip, useMap } from "react-leaflet";
 import type { Event, ScheduledEvent } from "@/app/page";
 import RoutingMachine from "./routing-machine";
-import { formatTime } from "@/lib/time";
+import { formatTime } from "@/app/lib/time";
 
 /* Fit map bounds to scheduled events when exporting */
 function FitBoundsOnExport({

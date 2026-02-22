@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/app/lib/supabaseClient";
 import type { Event } from "@/app/page";
 
 export async function getEvents(): Promise<Event[]> {
