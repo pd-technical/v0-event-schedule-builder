@@ -11,9 +11,11 @@ import { formatTime } from "@/lib/time";
 function FitBoundsOnExport({
   points,
   isExporting,
+  routeBoundsRef,
 }: {
   points: { lat: number; lng: number }[];
   isExporting: boolean;
+  routeBoundsRef?: React.MutableRefObject<L.LatLngBounds | null>;
 }) {
   const map = useMap();
 
@@ -24,14 +26,19 @@ function FitBoundsOnExport({
     const prevSnap = map.options.zoomSnap;
     map.options.zoomSnap = 0;
 
-    const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng]));
+    const routeBounds = routeBoundsRef?.current;
+    const bounds =
+      routeBounds && routeBounds.isValid()
+        ? routeBounds
+        : L.latLngBounds(points.map((p) => [p.lat, p.lng] as [number, number]));
+
     const zoom = Math.min(map.getBoundsZoom(bounds, false, L.point(40, 40)), 18);
     map.setView(bounds.getCenter(), zoom, { animate: false });
 
     return () => {
       map.options.zoomSnap = prevSnap;
     };
-  }, [isExporting, points, map]);
+  }, [isExporting, points, map, routeBoundsRef]);
 
   return null;
 }
@@ -233,6 +240,7 @@ export default function CampusMapInner({
   const hoveredIcon = useMemo(() => createHoveredIcon(), []);
 
   const markerRefs = useRef(new Map<string, L.Marker>());
+  const routeBoundsRef = useRef<L.LatLngBounds | null>(null);
 
   /* Close all tooltips when export starts */
   useEffect(() => {
@@ -329,8 +337,12 @@ export default function CampusMapInner({
         <FitBoundsOnExport
           points={routePoints}
           isExporting={!!isExporting}
+          routeBoundsRef={routeBoundsRef}
         />
-        <RoutingMachine points={routePoints} />
+        <RoutingMachine
+          points={routePoints}
+          onRouteBounds={(bounds) => { routeBoundsRef.current = bounds; }}
+        />
       </MapContainer>
     </div>
   );
