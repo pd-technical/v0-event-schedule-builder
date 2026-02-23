@@ -165,6 +165,7 @@ interface Props {
   scheduledEvents: ScheduledEvent[];
   hoveredEvent: string | null;
   setHoveredEvent: (id: string | null) => void;
+  shouldPanToHovered?: boolean;
   onMarkerClick?: (eventId: string) => void;
   resultsPage: number;
   pageSize: number;
@@ -177,6 +178,7 @@ export default function CampusMapInner({
   scheduledEvents,
   hoveredEvent,
   setHoveredEvent,
+  shouldPanToHovered = false,
   onMarkerClick,
   resultsPage,
   pageSize,
@@ -274,14 +276,16 @@ export default function CampusMapInner({
   function FlyToHoveredEvent({
     hoveredEvent,
     events,
+    shouldPan,
   }: {
     hoveredEvent: string | null
     events: (Event | ScheduledEvent)[]
+    shouldPan: boolean
   }) {
     const map = useMap()
 
     useEffect(() => {
-      if (!hoveredEvent) return
+      if (!shouldPan || !hoveredEvent) return
 
       const event = events.find((e) => e.id === hoveredEvent)
       if (!event) return
@@ -290,7 +294,7 @@ export default function CampusMapInner({
         animate: true,
         duration: 0.5,
       })
-    }, [hoveredEvent, events, map])
+    }, [hoveredEvent, events, map, shouldPan])
 
     return null
   }
@@ -367,6 +371,7 @@ export default function CampusMapInner({
         <FlyToHoveredEvent
           hoveredEvent={hoveredEvent}
           events={eventsOnMap}
+          shouldPan={shouldPanToHovered}
         />
         <RoutingMachine
           points={routePoints}

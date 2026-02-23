@@ -8,6 +8,7 @@ interface CampusMapProps {
   scheduledEvents: ScheduledEvent[];
   hoveredEvent: string | null;
   setHoveredEvent: (id: string | null) => void;
+  shouldPanToHovered?: boolean;
   onMarkerClick?: (eventId: string) => void;
   resultsPage: number;
   pageSize: number;
