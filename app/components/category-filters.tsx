@@ -12,7 +12,7 @@
   const categories = [
     { 
       id: "family", 
-      label: "Family friendly", 
+      label: "Family Friendly", 
       icon: Laugh,
     },
     { 
@@ -80,11 +80,15 @@
           <option value="time">Time</option>
         </select>
 
+      </div>
+         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+          FILTER BY
+        </h3>
         {/* Active badge */}
         {selectedCategories.length > 0 && (
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center justify-between pt-1 mb-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/50 border border-border">
-              <span className="w-2 h-2 rounded-full bg-accent" />
+              <span className="w-2 h-2 rounded-full bg-pink-500" />
               <span className="text-xs font-semibold text-primary">
                 {selectedCategories.length} active
               </span>
@@ -103,10 +107,6 @@
             </button>
           </div>
         )}
-      </div>
-         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-          FILTER BY
-        </h3>
       {/* CATEGORY LIST */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1
                       xl:flex-col xl:gap-2 xl:overflow-visible xl:mx-0 xl:pb-0">
@@ -119,7 +119,7 @@
               key={category.id}
               onClick={() => toggleCategory(category.id)}
               className={`
-                relative flex items-start gap-3 p-3 rounded-xl border
+                relative flex items-start gap-3 p-2 rounded-lg border
                 transition-all duration-200 text-left
                 flex-shrink-0 w-auto min-w-[170px] xl:w-full
                 border-border
