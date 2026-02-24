@@ -12,7 +12,7 @@
   const categories = [
     { 
       id: "family", 
-      label: "Family Friendly", 
+      label: "Family friendly", 
       icon: Laugh,
     },
     { 
@@ -53,8 +53,8 @@
 
       {/* HEADER */}
       <div className="space-y-3">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          Filters
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+          SORT BY
         </h3>
 
         <select
@@ -104,7 +104,9 @@
           </div>
         )}
       </div>
-
+         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+          FILTER BY
+        </h3>
       {/* CATEGORY LIST */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1
                       xl:flex-col xl:gap-2 xl:overflow-visible xl:mx-0 xl:pb-0">
