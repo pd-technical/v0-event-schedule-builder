@@ -102,7 +102,7 @@ export function EventList({
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              <span className="text-sm font-medium text-primary">
+              <span className="text-nowrap text-sm font-medium text-primary">
                 {page + 1} / {totalPages}
               </span>
 
