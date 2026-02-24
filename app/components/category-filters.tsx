@@ -1,6 +1,6 @@
   "use client"
 
-  import { Dog, FlaskConical, Leaf, Puzzle, Music, Utensils } from "lucide-react"
+  import { Dog, FlaskConical, Palette, Laugh, Music, Utensils } from "lucide-react"
 
   interface CategoryFiltersProps {
     selectedCategories: string[]
@@ -13,7 +13,7 @@
     { 
       id: "family", 
       label: "Family Friendly", 
-      icon: Puzzle,
+      icon: Laugh,
     },
     { 
       id: "animals", 
@@ -28,12 +28,12 @@
     { 
       id: "music", 
       label: "Music", 
-      icon: Leaf,
+      icon: Music,
     },
     { 
       id: "arts", 
       label: "Art", 
-      icon: Music,
+      icon: Palette,
     },
     { 
       id: "food", 
