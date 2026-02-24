@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Tooltip, useMap } from "react-leaflet";
 import type { Event, ScheduledEvent } from "@/app/page";
@@ -289,6 +289,10 @@ export default function CampusMapInner({
     return () => cancelAnimationFrame(t);
   }, [hoveredEvent, isExporting]);
 
+  const handleRouteBounds = useCallback((bounds: L.LatLngBounds) => {
+    routeBoundsRef.current = bounds;
+  }, []);
+
   function FlyToHoveredEvent({
     hoveredEvent,
     events,
@@ -392,7 +396,7 @@ export default function CampusMapInner({
         />
         <RoutingMachine
           points={routePoints}
-          onRouteBounds={(bounds) => { routeBoundsRef.current = bounds; }}
+          onRouteBounds={handleRouteBounds}
         />
       </MapContainer>
     </div>

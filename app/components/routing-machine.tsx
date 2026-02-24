@@ -118,7 +118,9 @@ export default function RoutingMachine({
 
     return () => {
       try {
-        routingControl?.remove();
+        // Prevent in-flight async responses from crashing on null _map
+        (routingControl as any)._clearLines = () => {};
+        routingControl.remove();
       } catch {}
     };
   }, [points, map, onRouteBounds]);
