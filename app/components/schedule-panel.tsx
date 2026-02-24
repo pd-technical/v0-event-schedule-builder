@@ -69,6 +69,7 @@ export function SchedulePanel({
 
   return (
     <div
+      data-onboarding="schedule-panel"
       className={`w-full bg-card border border-border rounded-lg shadow-lg transition-all lg:absolute lg:left-auto lg:right-4 lg:top-4 lg:bottom-auto lg:w-72 lg:z-[1000] ${isCollapsed ? "h-auto" : "lg:max-h-[440px]"
         }`}
     >

@@ -12,6 +12,7 @@ import { supabase } from "@/app/lib/supabaseClient"
 import { getEvents } from "@/app/api/events"
 import { rankedEventMatchesSearch } from "@/app/lib/searchUtils"
 import { exportSchedulePdf } from "@/app/lib/exportPdf"
+import { OnboardingProvider } from "@/app/components/onboarding/onboarding-provider"
 
 export interface Event {
   id: string
@@ -201,6 +202,7 @@ export default function PicnicDayPage() {
   }
 
   return (
+    <OnboardingProvider>
     <div className="min-h-screen bg-background">
       <NavBar />
 
@@ -210,45 +212,49 @@ export default function PicnicDayPage() {
           <div className="flex flex-col gap-5 md:gap-6 lg:flex-row lg:gap-8">
             {/* Search, Filters, Events — first when stacked; left column on large */}
             <div className="order-1 flex flex-col min-w-0 lg:flex-1 lg:max-w-[520px] xl:max-w-[600px]">
-              <SearchSection
-                events={events}
-                searchHistory={searchHistory}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                onSearchSubmit={(value) => {
-                  const finalQuery = (value ?? searchQuery).trim()
-                  if (!finalQuery) {
-                    setSearchQuery("")
-                    setSubmittedSearchQuery("")
+              <div data-onboarding="search-section">
+                <SearchSection
+                  events={events}
+                  searchHistory={searchHistory}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  onSearchSubmit={(value) => {
+                    const finalQuery = (value ?? searchQuery).trim()
+                    if (!finalQuery) {
+                      setSearchQuery("")
+                      setSubmittedSearchQuery("")
+                      setResultsPage(0)
+                      return
+                    }
+
+                    setSearchQuery(finalQuery)
+                    setSubmittedSearchQuery(finalQuery)
                     setResultsPage(0)
-                    return
-                  }
 
-                  setSearchQuery(finalQuery)
-                  setSubmittedSearchQuery(finalQuery)
-                  setResultsPage(0)
-
-                  setSearchHistory(prev => {
-                    const updated = [
-                      finalQuery,
-                      ...prev.filter(q => q !== finalQuery)
-                    ]
-                    return updated.slice(0, 5)
-                  })
-                }}
-                clearSearchHistory={clearSearchHistory}
-              />
+                    setSearchHistory(prev => {
+                      const updated = [
+                        finalQuery,
+                        ...prev.filter(q => q !== finalQuery)
+                      ]
+                      return updated.slice(0, 5)
+                    })
+                  }}
+                  clearSearchHistory={clearSearchHistory}
+                />
+              </div>
 
               <div className="flex flex-col gap-6 mt-6 min-w-0 xl:flex-row xl:items-start">
-                <CategoryFilters
-                  selectedCategories={selectedCategories}
-                  toggleCategory={toggleCategory}
-                  sortOption={sortOption}
-                  setSortOption={setSortOption}
-                />
-                <div className="flex-1 min-w-0">
+                <div data-onboarding="category-filters">
+                  <CategoryFilters
+                    selectedCategories={selectedCategories}
+                    toggleCategory={toggleCategory}
+                    sortOption={sortOption}
+                    setSortOption={setSortOption}
+                  />
+                </div>
+                <div className="flex-1 min-w-0" data-onboarding="event-list">
                   <EventList
                     events={eventsForCurrentPage}
                     allFilteredCount={filteredEvents.length}
@@ -297,5 +303,6 @@ export default function PicnicDayPage() {
         </div>
       </main>
     </div>
+    </OnboardingProvider>
   )
 }

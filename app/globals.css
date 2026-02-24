@@ -158,3 +158,20 @@
     opacity: 0;
   }
 }
+
+/* Onboarding spotlight overlay */
+.onboarding-spotlight {
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  border: 2px solid var(--accent);
+  animation: spotlightPulse 1.5s ease-in-out infinite;
+  transition: top 0.15s ease-out, left 0.15s ease-out, width 0.15s ease-out, height 0.15s ease-out;
+}
+
+@keyframes spotlightPulse {
+  0%, 100% {
+    border-color: var(--accent);
+  }
+  50% {
+    border-color: var(--primary);
+  }
+}
