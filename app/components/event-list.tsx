@@ -19,6 +19,7 @@ interface EventListProps {
   totalPages: number
   onPageChange: (page: number) => void
   searchQuery: string
+  onBrowseAll: () => void
 }
 
 export function EventList({
@@ -34,7 +35,8 @@ export function EventList({
   page,
   totalPages,
   onPageChange,
-  searchQuery
+  searchQuery,
+  onBrowseAll,
 }: EventListProps) {
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null)
   const listScrollRef = useRef<HTMLDivElement>(null)
@@ -58,48 +60,71 @@ export function EventList({
   const end = Math.min((page + 1) * pageSize, allFilteredCount)
 
   return (
-    <div className="flex-1">
-      <div className="relative">
-        <h3 className="text-xs font-semibold text-primary uppercase tracking-wide leading-none mb-4 pl-1 relative">
-          {allFilteredCount} Events Found
-          <span className="absolute left-1 -bottom-1 h-[2px] w-12 bg-accent rounded-full" />
-          {searchQuery.trim() && (
-            <span className="normal-case font-normal text-muted-foreground ml-1">
-              for "<span className="text-foreground">{searchQuery}</span>"
-            </span>
+    <div className="flex-1 xl:-mt-2">
+      <div className="flex items-center justify-between mb-4">
+
+        {/* LEFT — Title */}
+        <div className="relative">
+          <h3 className="text-xs font-semibold text-primary uppercase tracking-wide leading-none">
+            {searchQuery.trim().length === 0 ? (
+              <>All Events ({allFilteredCount})</>
+            ) : (
+              <>
+                {allFilteredCount} Events Found
+                <span className="normal-case font-normal text-muted-foreground ml-1">
+                  for "<span className="text-foreground">{searchQuery.trim()}</span>"
+                </span>
+              </>
+            )}
+          </h3>
+        </div>
+
+        {/* RIGHT — Sort + Pagination */}
+        <div className="flex items-center gap-6 text-xs">
+
+          {/* PAGINATION */}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => onPageChange(Math.max(0, page - 1))}
+                disabled={page === 0}
+                className="
+                  px-3 py-1.5
+                  rounded-md
+                  border border-border
+                  bg-secondary/50
+                  text-primary
+                  hover:bg-accent hover:text-accent-foreground
+                  transition
+                  disabled:opacity-30 disabled:cursor-not-allowed
+                "
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <span className="text-sm font-medium text-primary">
+                {page + 1} / {totalPages}
+              </span>
+
+              <button
+                onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
+                disabled={page >= totalPages - 1}
+                className="
+                  px-3 py-1.5
+                  rounded-md
+                  border border-border
+                  bg-secondary/50
+                  text-primary
+                  hover:bg-accent hover:text-accent-foreground
+                  transition
+                  disabled:opacity-30 disabled:cursor-not-allowed
+                "
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           )}
-          {allFilteredCount > pageSize && (
-            <span className="normal-case font-normal text-muted-foreground ml-1">
-              (showing {start}–{end})
-            </span>
-          )}
-        </h3>
-
-        {totalPages > 1 && (
-          <div className="absolute right-0 -top-1 flex items-center gap-1 pr-1">
-            <button
-              type="button"
-              onClick={() => onPageChange(Math.max(0, page - 1))}
-              disabled={page === 0}
-              className="p-1.5 rounded-lg border border-primary/30 text-primary bg-card hover:bg-primary hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
-            <span className="text-xs font-medium text-primary px-2">
-              {page + 1} / {totalPages}
-            </span>
-
-            <button
-              type="button"
-              onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
-              disabled={page >= totalPages - 1}
-              className="p-1.5 rounded-lg border border-primary/30 text-primary bg-card hover:bg-primary hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+        </div>
       </div>
       <div className="mt-4">
         <div
@@ -117,13 +142,12 @@ export function EventList({
                 data-event-id={event.id}
                 onMouseEnter={() => setHoveredEvent(event.id)}
                 onMouseLeave={() => setHoveredEvent(null)}
-                className={`relative border rounded-lg transition-all duration-200 ease-out ${
-                  isHovered
-                    ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 shadow-md"
-                    : scheduled
-                      ? "border-[var(--color-primary)] bg-[var(--color-secondary)] shadow-md"
-                      : "bg-card border-border shadow-sm"
-                }`}
+                className={`relative border rounded-lg transition-all duration-200 ease-out ${isHovered
+                  ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 shadow-md"
+                  : scheduled
+                    ? "border-[var(--color-primary)] bg-[var(--color-secondary)] shadow-md"
+                    : "bg-card border-border shadow-sm"
+                  }`}
               >
                 {isHovered && (
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent rounded-l-lg" />
@@ -131,7 +155,7 @@ export function EventList({
                 {/* Main Row */}
                 <div className="flex items-start gap-3 p-3">
                   <button
-                     onClick={() => {
+                    onClick={() => {
                       setExpandedEvent(isExpanded ? null : event.id)
                       setHoveredEvent(event.id)
                     }}
@@ -230,8 +254,27 @@ export function EventList({
 
           {events.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
-              <p className="text-sm">No events match your search.</p>
-              <p className="text-xs mt-1">Try different keywords or filters.</p>
+              {searchQuery.trim().length > 0 ? (
+                <>
+                  <p className="text-sm font-medium">
+                    No results for "{searchQuery.trim()}"
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm font-medium">
+                  No events available
+                </p>
+              )}
+
+              <p className="text-xs mt-2">
+                Try different keywords or filters.
+              </p>
+              <button
+                onClick={onBrowseAll}
+                className="mt-3 text-xs font-semibold text-accent hover:underline"
+              >
+                Browse all events
+              </button>
             </div>
           )}
         </div>

@@ -41,6 +41,7 @@ export default function PicnicDayPage() {
   const [activeTab, setActiveTab] = useState<"browse" | "popular" | "nearby">("browse")
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null)
   const [shouldPanToHovered, setShouldPanToHovered] = useState(false)
+  const [sortOption, setSortOption] = useState<"alphabetical" | "time">("alphabetical")
 
   const setHoveredEventFromList = useCallback((id: string | null) => {
     setHoveredEvent(id)
@@ -60,10 +61,10 @@ export default function PicnicDayPage() {
   const categoryToTags: Record<string, string[]> = { 
     animals: ["animals"],
     science: ["science", "engineering", "talks", "math", "space"],
-    nature: ["plants", "animals", "science"],
-    arts: ["music", "art", "crafts", "exhibits", "culture"],
+    music: ["music"],
+    arts: ["art", "crafts", "exhibits", "culture"],
     food: ["food"],
-    fun: ["games", "relax", "kids"],
+    family: ["games", "kids"],
   }
 
   useEffect(() => {
@@ -84,20 +85,35 @@ export default function PicnicDayPage() {
     }, [events, submittedSearchQuery])
 
   const filteredEvents = useMemo(() => {
-    if (selectedCategories.length === 0) return searchRanked;
+    let result = searchRanked
+    // Category filtering
+    if (selectedCategories.length > 0) {
+      result = result.filter((event) =>
+        selectedCategories.some((category) => {
+          const validTags = categoryToTags[category] || []
 
-    return searchRanked.filter((event) =>
-      selectedCategories.some((category) => {
-        const validTags = categoryToTags[category] || [];
-
-        return validTags.some((tag) =>
-          event.tags?.some(
-            (eventTag) => eventTag.toLowerCase() === tag.toLowerCase()
+          return validTags.some((tag) =>
+            event.tags?.some(
+              (eventTag) =>
+                eventTag.toLowerCase() === tag.toLowerCase()
+            )
           )
-        );
-      })
-    );
-  }, [searchRanked, selectedCategories]);
+        })
+      )
+    }
+    // Sorting
+    if (sortOption === "time") {
+      result = [...result].sort((a, b) =>
+        a.startTime.localeCompare(b.startTime)
+      )
+    } else {
+      // default alphabetical
+      result = [...result].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      )
+    }
+    return result
+  }, [searchRanked, selectedCategories, sortOption])
 
   const RESULTS_PAGE_SIZE = 20
   const totalResultsPages = Math.max(1, Math.ceil(filteredEvents.length / RESULTS_PAGE_SIZE))
@@ -136,6 +152,13 @@ export default function PicnicDayPage() {
     }, 700)
   }, [])
 
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setSubmittedSearchQuery("")
+      setResultsPage(0)
+    }
+  }, [searchQuery])
+
   const removeFromSchedule = useCallback((eventId: string) => {
     setScheduledEvents(prev => prev.filter(e => e.id !== eventId))
   }, [])
@@ -168,6 +191,13 @@ export default function PicnicDayPage() {
     } finally {
       setIsExportingPdf(false)
     }
+  }
+
+  const handleBrowseAllEvents = () => {
+    setSearchQuery("")
+    setSubmittedSearchQuery("")
+    setSelectedCategories([])
+    setResultsPage(0)
   }
 
   return (
@@ -215,6 +245,8 @@ export default function PicnicDayPage() {
                 <CategoryFilters
                   selectedCategories={selectedCategories}
                   toggleCategory={toggleCategory}
+                  sortOption={sortOption}
+                  setSortOption={setSortOption}
                 />
                 <div className="flex-1 min-w-0">
                   <EventList
@@ -231,6 +263,7 @@ export default function PicnicDayPage() {
                     totalPages={totalResultsPages}
                     onPageChange={setResultsPage}
                     searchQuery={submittedSearchQuery}
+                    onBrowseAll={handleBrowseAllEvents}
                   />
                 </div>
               </div>
