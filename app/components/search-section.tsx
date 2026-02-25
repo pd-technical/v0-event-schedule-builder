@@ -1,8 +1,9 @@
 "use client"
 
-import { Search, Clock, X } from "lucide-react"
+import { Search, Clock, X, HelpCircle } from "lucide-react"
 import { useMemo, useState } from "react"
 import type { Event } from "@/app/page"
+import { useOnboarding } from "@/app/components/onboarding/onboarding-provider"
 
 interface SearchSectionProps {
   events: Event[]
@@ -31,6 +32,7 @@ export function SearchSection({
   onSearchSubmit,
   clearSearchHistory
 }: SearchSectionProps) {
+  const { restart } = useOnboarding()
   const dropdownItems = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
 
@@ -49,21 +51,31 @@ export function SearchSection({
   const [isFocused, setIsFocused] = useState(false)
   return (
     <div className="bg-card rounded-lg border border-border p-4">
-      {/* Tabs */}
-      <div className="flex gap-1 mb-4 overflow-x-auto">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-150 ${
-              activeTab === tab.id
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-secondary text-secondary-foreground hover:bg-muted"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Tabs + Help */}
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="flex gap-1 overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-150 ${
+                activeTab === tab.id
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-secondary text-secondary-foreground hover:bg-muted"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={restart}
+          className="p-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          aria-label="Help"
+          title="Replay tutorial"
+        >
+          <HelpCircle className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Search Input */}
