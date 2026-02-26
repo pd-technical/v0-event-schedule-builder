@@ -116,6 +116,16 @@ export default function RoutingMachine({
       }
     });
 
+    // LRM registers defaultErrorHandler (which calls console.error) in its constructor
+    // via this.on('routingerror', this.defaultErrorHandler, this). Overriding the
+    // instance property doesn't work — Leaflet stores the function reference, not a
+    // property lookup. Removing all routingerror listeners then re-adding our own
+    // console.warn handler is the correct approach.
+    routingControl.off("routingerror");
+    routingControl.on("routingerror", (e: any) => {
+      console.warn("Route could not be calculated:", e?.error?.message ?? e);
+    });
+
     return () => {
       try {
         // Prevent in-flight async responses from crashing on null _map

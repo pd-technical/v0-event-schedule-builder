@@ -42,13 +42,15 @@ function FitBoundsOnExport({
     const prevSnap = map.options.zoomSnap;
     map.options.zoomSnap = 0;
 
+    const pointsBounds = L.latLngBounds(points.map((p) => [p.lat, p.lng] as [number, number]));
     const routeBounds = routeBoundsRef?.current;
+    // Always include all pin locations; extend with route geometry if available
     const bounds =
       routeBounds && routeBounds.isValid()
-        ? routeBounds
-        : L.latLngBounds(points.map((p) => [p.lat, p.lng] as [number, number]));
+        ? routeBounds.extend(pointsBounds)
+        : pointsBounds;
 
-    const zoom = Math.min(map.getBoundsZoom(bounds, false, L.point(40, 40)), 18);
+    const zoom = Math.min(map.getBoundsZoom(bounds, false, L.point(80, 80)), 18);
     map.setView(bounds.getCenter(), zoom, { animate: false });
 
     return () => {

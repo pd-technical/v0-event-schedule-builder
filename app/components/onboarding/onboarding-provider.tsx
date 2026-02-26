@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react"
 import { hasSeenOnboarding, markOnboardingSeen } from "@/app/lib/cookies"
 import { TUTORIAL_STEPS } from "./tutorial-steps"
 import { WelcomeDialog } from "./welcome-dialog"
@@ -12,21 +12,33 @@ interface OnboardingContextValue {
   restart: () => void
 }
 
-const OnboardingContext = createContext<OnboardingContextValue>({ restart: () => {} })
+const OnboardingContext = createContext<OnboardingContextValue>({
+  restart: () => {},
+})
 
 export function useOnboarding() {
   return useContext(OnboardingContext)
 }
 
-export function OnboardingProvider({ children }: { children: ReactNode }) {
+interface OnboardingProviderProps {
+  children: ReactNode
+  onResetSearch?: () => void
+}
+
+export function OnboardingProvider({
+  children,
+  onResetSearch,
+}: OnboardingProviderProps) {
   const [phase, setPhase] = useState<Phase>("checking")
   const [step, setStep] = useState(0)
+
+  const onResetSearchRef = useRef(onResetSearch)
+  useEffect(() => { onResetSearchRef.current = onResetSearch }, [onResetSearch])
 
   useEffect(() => {
     if (hasSeenOnboarding()) {
       setPhase("done")
     } else {
-      // Delay to let the page render (especially map tiles)
       const timer = setTimeout(() => setPhase("welcome"), 800)
       return () => clearTimeout(timer)
     }
@@ -35,6 +47,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const finish = useCallback(() => {
     markOnboardingSeen()
     setPhase("done")
+    onResetSearchRef.current?.()
   }, [])
 
   const handleStart = useCallback(() => {
@@ -43,14 +56,12 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const handleNext = useCallback(() => {
-    setStep((s) => {
-      if (s >= TUTORIAL_STEPS.length - 1) {
-        finish()
-        return s
-      }
-      return s + 1
-    })
-  }, [finish])
+    if (step >= TUTORIAL_STEPS.length - 1) {
+      finish()
+    } else {
+      setStep(step + 1)
+    }
+  }, [finish, step])
 
   const handleBack = useCallback(() => {
     setStep((s) => Math.max(0, s - 1))

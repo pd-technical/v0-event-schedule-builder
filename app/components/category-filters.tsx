@@ -1,58 +1,58 @@
-  "use client"
+"use client"
 
-  import { Dog, FlaskConical, Palette, Laugh, Music, Utensils } from "lucide-react"
+import { Dog, FlaskConical, Palette, Laugh, Music, Utensils } from "lucide-react"
 
-  interface CategoryFiltersProps {
-    selectedCategories: string[]
-    toggleCategory: (category: string) => void
-    sortOption: "alphabetical" | "time"
-    setSortOption: (option: "alphabetical" | "time") => void
-  }
+interface CategoryFiltersProps {
+  selectedCategories: string[]
+  toggleCategory: (category: string) => void
+  sortOption: "alphabetical" | "time"
+  setSortOption: (option: "alphabetical" | "time") => void
+}
 
-  const categories = [
-    { 
-      id: "family", 
-      label: "Family Friendly", 
-      icon: Laugh,
-    },
-    { 
-      id: "animals", 
-      label: "Animals", 
-      icon: Dog,
-    },
-    { 
-      id: "science", 
-      label: "STEM", 
-      icon: FlaskConical,
-    },
-    { 
-      id: "music", 
-      label: "Music", 
-      icon: Music,
-    },
-    { 
-      id: "arts", 
-      label: "Art", 
-      icon: Palette,
-    },
-    { 
-      id: "food", 
-      label: "Food", 
-      icon: Utensils,
-    },
-  ]
-  
-  export function CategoryFilters({
-  selectedCategories,
-  toggleCategory,
-  sortOption,
-  setSortOption,
+const categories = [
+  {
+    id: "family",
+    label: "Family Friendly",
+    icon: Laugh,
+  },
+  {
+    id: "animals",
+    label: "Animals",
+    icon: Dog,
+  },
+  {
+    id: "science",
+    label: "STEM",
+    icon: FlaskConical,
+  },
+  {
+    id: "music",
+    label: "Music",
+    icon: Music,
+  },
+  {
+    id: "arts",
+    label: "Art",
+    icon: Palette,
+  },
+  {
+    id: "food",
+    label: "Food",
+    icon: Utensils,
+  },
+]
+
+export function CategoryFilters({
+selectedCategories,
+toggleCategory,
+sortOption,
+setSortOption,
 }: CategoryFiltersProps) {
   return (
     <div className="w-full xl:w-44 xl:flex-shrink-0 space-y-6">
 
-      {/* HEADER */}
-      <div className="space-y-3">
+      {/* SORT BY */}
+      <div data-onboarding="sort-section" className="space-y-3">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
           SORT BY
         </h3>
@@ -81,8 +81,9 @@
         </select>
 
       </div>
-         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-          FILTER BY
+      <div data-onboarding="category-filters">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+          CATEGORIES
         </h3>
         {/* Active badge */}
         {selectedCategories.length > 0 && (
@@ -107,44 +108,45 @@
             </button>
           </div>
         )}
-      {/* CATEGORY LIST */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1
-                      xl:flex-col xl:gap-2 xl:overflow-visible xl:mx-0 xl:pb-0">
-        {categories.map((category) => {
-          const Icon = category.icon
-          const isSelected = selectedCategories.includes(category.id)
+        {/* CATEGORY LIST */}
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1
+                        xl:flex-col xl:gap-2 xl:overflow-visible xl:mx-0 xl:pb-0">
+          {categories.map((category) => {
+            const Icon = category.icon
+            const isSelected = selectedCategories.includes(category.id)
 
-          return (
-            <button
-              key={category.id}
-              onClick={() => toggleCategory(category.id)}
-              className={`
-                relative flex items-start gap-3 p-2 rounded-lg border
-                transition-all duration-200 text-left
-                flex-shrink-0 w-auto min-w-[170px] xl:w-full
-                border-border
-                hover:bg-pink-500/5
-                ${isSelected
-                  ? "bg-pink-500/10 border-pink-500/50 shadow-sm"
-                  : ""
-                }
-              `}
-              style={{
-                borderLeft: "4px solid #ec4899",
-              }}
-              >
-              <Icon
-                className="w-4 h-4 mt-0.5 flex-shrink-0 text-pink-500"
-              />
+            return (
+              <button
+                key={category.id}
+                onClick={() => toggleCategory(category.id)}
+                className={`
+                  relative flex items-start gap-3 p-2 rounded-lg border
+                  transition-all duration-200 text-left
+                  flex-shrink-0 w-auto min-w-[170px] xl:w-full
+                  border-border
+                  hover:bg-pink-500/5
+                  ${isSelected
+                    ? "bg-pink-500/10 border-pink-500/50 shadow-sm"
+                    : ""
+                  }
+                `}
+                style={{
+                  borderLeft: "4px solid #ec4899",
+                }}
+                >
+                <Icon
+                  className="w-4 h-4 mt-0.5 flex-shrink-0 text-pink-500"
+                />
 
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-foreground">
-                  {category.label}
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-foreground">
+                    {category.label}
+                  </div>
                 </div>
-              </div>
-            </button>
-          )
-        })}
+              </button>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

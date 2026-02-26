@@ -202,16 +202,22 @@ export default function PicnicDayPage() {
   }
 
   return (
-    <OnboardingProvider>
-    <div className="min-h-screen bg-background">
+    <OnboardingProvider
+      onResetSearch={() => {
+        setSearchQuery("")
+        setSubmittedSearchQuery("")
+        setSelectedCategories([])
+      }}
+    >
+    <div className="min-h-screen lg:h-screen lg:flex lg:flex-col lg:overflow-hidden bg-background">
       <NavBar />
 
-      <main className="pt-3 pb-8 px-4 sm:px-5 md:px-6 md:pt-5 lg:pt-6">
-        <div className="max-w-[1600px] mx-auto">
+      <main className="pt-3 pb-4 px-4 sm:px-5 md:px-6 md:pt-5 lg:pt-4 lg:pb-4 lg:flex-1 lg:min-h-0">
+        <div className="max-w-[1600px] mx-auto lg:h-full">
           {/* Mobile/tablet: single column (search, list, then map, schedule). Large: row (search left, map right) */}
-          <div className="flex flex-col gap-5 md:gap-6 lg:flex-row lg:gap-8">
+          <div className="flex flex-col gap-5 md:gap-6 lg:flex-row lg:gap-8 lg:h-full">
             {/* Search, Filters, Events — first when stacked; left column on large */}
-            <div className="order-1 flex flex-col min-w-0 lg:flex-1 lg:max-w-[520px] xl:max-w-[600px]">
+            <div className="order-1 flex flex-col min-w-0 lg:flex-1 lg:max-w-[520px] xl:max-w-[600px] lg:min-h-0">
               <div data-onboarding="search-section">
                 <SearchSection
                   events={events}
@@ -245,16 +251,14 @@ export default function PicnicDayPage() {
                 />
               </div>
 
-              <div className="flex flex-col gap-6 mt-6 min-w-0 xl:flex-row xl:items-start">
-                <div data-onboarding="category-filters">
-                  <CategoryFilters
-                    selectedCategories={selectedCategories}
-                    toggleCategory={toggleCategory}
-                    sortOption={sortOption}
-                    setSortOption={setSortOption}
-                  />
-                </div>
-                <div className="flex-1 min-w-0" data-onboarding="event-list">
+              <div className="flex flex-col gap-6 mt-6 min-w-0 xl:flex-row lg:flex-1 lg:min-h-0">
+                <CategoryFilters
+                  selectedCategories={selectedCategories}
+                  toggleCategory={toggleCategory}
+                  sortOption={sortOption}
+                  setSortOption={setSortOption}
+                />
+                <div className="flex-1 min-w-0 lg:min-h-0 lg:flex lg:flex-col" data-onboarding="event-list">
                   <EventList
                     events={eventsForCurrentPage}
                     allFilteredCount={filteredEvents.length}

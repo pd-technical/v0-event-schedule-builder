@@ -175,7 +175,7 @@ export function SearchSection({
 
       {/* Quick Search Tags */}
       <div className="flex flex-wrap gap-2 mt-5 mb-1">
-        {["children's discovery fair", "entertainment", "student organization fair", "exhibits", "animal events", "food"].map((tag) => (
+        {["battle of the bands", "chemistry show", "chick handling", "cockroach racing", "doxie derby", "laser maze", "maggot art", "meet the microbes", "mosquito control", "orphan kitten project", "fashion show", "popcorn giveaway", "food trucks", "slime time", "weather balloon"].map((tag) => (
           <button
             key={tag}
             onClick={() => setSearchQuery(tag)}

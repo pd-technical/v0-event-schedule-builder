@@ -78,6 +78,15 @@ export function SpotlightOverlay({ step, onNext, onBack, onSkip }: SpotlightOver
     }
   }, [reposition])
 
+  // Reposition when the target element itself changes size (e.g. category badge appearing)
+  useEffect(() => {
+    const el = document.querySelector(`[data-onboarding="${current.target}"]`)
+    if (!el) return
+    const observer = new ResizeObserver(reposition)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [current.target, reposition])
+
   // Keyboard navigation
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -110,7 +119,7 @@ export function SpotlightOverlay({ step, onNext, onBack, onSkip }: SpotlightOver
       {/* Backdrop always renders — no flash between steps */}
       <div
         className="fixed inset-0 z-[2000]"
-        onClick={onSkip}
+        style={{ pointerEvents: "none" }}
       />
 
       {/* Spotlight always renders — 0x0 center fallback keeps box-shadow overlay visible between steps */}
@@ -195,13 +204,13 @@ export function SpotlightOverlay({ step, onNext, onBack, onSkip }: SpotlightOver
                 </button>
               )}
               <button
-                onClick={onNext}
-                className="flex h-9 min-w-[44px] items-center justify-center gap-1 rounded-lg bg-[var(--primary)] px-4 text-sm font-semibold text-white transition-colors hover:bg-[var(--primary)]/90"
-              >
-                {isLast ? "Done!" : (
-                  <>Next <ChevronRight className="h-4 w-4" /></>
-                )}
-              </button>
+                  onClick={onNext}
+                  className="flex h-9 min-w-[44px] items-center justify-center gap-1 rounded-lg bg-[var(--primary)] px-4 text-sm font-semibold text-white transition-colors hover:bg-[var(--primary)]/90"
+                >
+                  {isLast ? "Finish Tutorial" : (
+                    <>Next <ChevronRight className="h-4 w-4" /></>
+                  )}
+                </button>
             </div>
           </div>
         </div>
