@@ -2,6 +2,13 @@ import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
 import type { ScheduledEvent } from "@/app/page"
 
+function compactTime(time: string): string {
+  const [hours, minutes] = time.split(":").map(Number)
+  const period = hours >= 12 ? "pm" : "am"
+  const h = hours % 12 || 12
+  return minutes === 0 ? `${h}${period}` : `${h}:${String(minutes).padStart(2, "0")}${period}`
+}
+
 export async function exportSchedulePdf(scheduledEvents: ScheduledEvent[]) {
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" })
   const pageWidth = pdf.internal.pageSize.getWidth()
@@ -84,18 +91,22 @@ export async function exportSchedulePdf(scheduledEvents: ScheduledEvent[]) {
     pdf.setFontSize(9)
     pdf.setFont("helvetica", "normal")
     pdf.setTextColor(100, 100, 100)
-    pdf.text(`${event.startTime} – ${event.endTime}  |  ${event.location}`, margin + 9, y)
+    pdf.text(`${compactTime(event.startTime)} – ${compactTime(event.endTime)}  |  ${event.location}`, margin + 9, y)
     y += 5
 
     // Description (truncated)
     if (event.description) {
-      const desc = event.description.length > 120
-        ? event.description.slice(0, 120) + "..."
-        : event.description
       pdf.setFontSize(8)
-      const descLines = pdf.splitTextToSize(desc, contentWidth - 12)
-      pdf.text(descLines, margin + 9, y)
-      y += descLines.length * 3.5 + 2
+      const descLines: string[] = pdf.splitTextToSize(event.description, contentWidth - 12)
+      for (const line of descLines) {
+        if (y > pdf.internal.pageSize.getHeight() - 20) {
+          pdf.addPage()
+          y = margin
+        }
+        pdf.text(line, margin + 9, y)
+        y += 3.5
+      }
+      y += 2
     }
 
     y += 4
