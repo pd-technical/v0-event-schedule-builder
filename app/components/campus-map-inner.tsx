@@ -314,7 +314,7 @@ export default function CampusMapInner({
 
       map.panTo([event.lat, event.lng], {
         animate: true,
-        duration: 0.5,
+        duration: 2.0,
       })
     }, [hoveredEvent, events, map, shouldPan])
 

@@ -5,8 +5,8 @@ import { Dog, FlaskConical, Palette, Laugh, Music, Utensils } from "lucide-react
 interface CategoryFiltersProps {
   selectedCategories: string[]
   toggleCategory: (category: string) => void
-  sortOption: "alphabetical" | "time"
-  setSortOption: (option: "alphabetical" | "time") => void
+  sortOption: "relevance" | "alphabetical" | "time"
+  setSortOption: (option: "relevance" | "alphabetical" | "time") => void
 }
 
 const categories = [
@@ -66,7 +66,7 @@ setSortOption,
         <select
           value={sortOption}
           onChange={(e) =>
-            setSortOption(e.target.value as "alphabetical" | "time")
+            setSortOption(e.target.value as "relevance" | "time")
           }
           className="
             w-full
@@ -82,8 +82,9 @@ setSortOption,
             transition
           "
         >
-          <option value="alphabetical">Relevance</option>
+          <option value="relevance">Relevance</option>
           <option value="time">Time</option>
+          <option value="alphabetical">Alphabetical</option>
         </select>
 
       </div>

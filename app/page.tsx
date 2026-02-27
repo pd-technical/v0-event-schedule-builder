@@ -42,7 +42,7 @@ export default function PicnicDayPage() {
   const [activeTab, setActiveTab] = useState<"browse" | "popular" | "nearby">("browse")
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null)
   const [shouldPanToHovered, setShouldPanToHovered] = useState(false)
-  const [sortOption, setSortOption] = useState<"alphabetical" | "time">("alphabetical")
+  const [sortOption, setSortOption] = useState<"relevance" | "alphabetical" | "time">("relevance")
 
   const setHoveredEventFromList = useCallback((id: string | null) => {
     setHoveredEvent(id)
@@ -87,7 +87,7 @@ export default function PicnicDayPage() {
 
   const filteredEvents = useMemo(() => {
     let result = searchRanked
-    // Category filtering
+
     if (selectedCategories.length > 0) {
       result = result.filter((event) =>
         selectedCategories.some((category) => {
@@ -102,19 +102,36 @@ export default function PicnicDayPage() {
         })
       )
     }
-    // Sorting
+
+    let sorted = [...result]
+
     if (sortOption === "time") {
-      result = [...result].sort((a, b) =>
-        a.startTime.localeCompare(b.startTime)
-      )
-    } else {
-      // default alphabetical
-      result = [...result].sort((a, b) =>
+      sorted.sort((a, b) => {
+        const startCompare = a.startTime.localeCompare(b.startTime)
+
+        if (startCompare !== 0) return startCompare
+
+        // If start times are equal → earlier end time first
+        return a.endTime.localeCompare(b.endTime)
+      })
+    }
+
+    else if (sortOption === "alphabetical") {
+      sorted.sort((a, b) =>
         a.name.localeCompare(b.name)
       )
     }
-    return result
-  }, [searchRanked, selectedCategories, sortOption])
+
+    else if (sortOption === "relevance") {
+      if (!submittedSearchQuery.trim()) {
+        sorted.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        )
+      }
+    }
+
+    return sorted
+  }, [searchRanked, selectedCategories, sortOption, submittedSearchQuery])
 
   const RESULTS_PAGE_SIZE = 20
   const totalResultsPages = Math.max(1, Math.ceil(filteredEvents.length / RESULTS_PAGE_SIZE))

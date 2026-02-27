@@ -175,10 +175,13 @@ export function SearchSection({
 
       {/* Quick Search Tags */}
       <div className="flex flex-wrap gap-2 mt-5 mb-1">
-        {["battle of the bands", "chemistry show", "chick handling", "cockroach racing", "doxie derby", "laser maze", "meet the microbes", "orphan kitten project", "fashion show", "popcorn giveaway", "slime time", "weather balloon"].map((tag) => (
+        {["battle of the bands", "chemistry show", "chick handling", "cockroach racing", "doxie derby", "laser maze"].map((tag) => (
           <button
             key={tag}
-            onClick={() => setSearchQuery(tag)}
+            onClick={() => {
+              setSearchQuery(tag)
+              onSearchSubmit(tag)
+            }}
             className="px-3 py-1 text-xs font-medium bg-accent/20 text-accent-foreground rounded-full hover:bg-accent/30 transition-colors"
           >
             {tag}
