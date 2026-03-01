@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useCallback, useEffect, useMemo } from "react"
-import { NavBar } from "@/app/components/nav-bar"
 import { SearchSection } from "@/app/components/search-section"
 import { CategoryFilters } from "@/app/components/category-filters"
 import { EventList } from "@/app/components/event-list"
@@ -227,8 +226,6 @@ export default function PicnicDayPage() {
       }}
     >
     <div className="min-h-screen bg-background">
-      <NavBar />
-
       <main className="pt-3 pb-4 px-4 sm:px-5 md:px-6 md:pt-5 lg:pt-4 lg:pb-4">
         <div className="max-w-[1600px] mx-auto">
           {/* Mobile/tablet: single column (search, list, then map, schedule). Large: row (search left, map right) */}
