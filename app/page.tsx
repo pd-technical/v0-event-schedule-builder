@@ -6,9 +6,8 @@ import { CategoryFilters } from "@/app/components/category-filters"
 import { EventList } from "@/app/components/event-list"
 import { CampusMap } from "@/app/components/campus-map"
 import { SchedulePanel } from "@/app/components/schedule-panel"
-import { supabase } from "@/app/lib/supabaseClient"
 
-import { getEvents } from "@/app/api/events"
+import { getEvents } from "@/app/lib/fetchEvents"
 import { rankedEventMatchesSearch } from "@/app/lib/searchUtils"
 import { exportSchedulePdf } from "@/app/lib/exportPdf"
 import { OnboardingProvider } from "@/app/components/onboarding/onboarding-provider"
@@ -58,7 +57,7 @@ export default function PicnicDayPage() {
   const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [isExportingPdf, setIsExportingPdf] = useState(false)
 
-  const categoryToTags: Record<string, string[]> = { 
+  const categoryToTags: Record<string, string[]> = {
     animals: ["animals"],
     science: ["science", "engineering", "talks", "math", "space"],
     music: ["music"],
@@ -68,21 +67,21 @@ export default function PicnicDayPage() {
   }
 
   useEffect(() => {
-  async function loadEvents() {
-    try {
-      const data = await getEvents()
-      setEvents(data)
-    } catch (error) {
-      console.error("Failed to load events:", error)
+    async function loadEvents() {
+      try {
+        const data = await getEvents()
+        setEvents(data)
+      } catch (error) {
+        console.error("Failed to load events:", error)
+      }
     }
-  }
-  loadEvents()
-}, [])
+    loadEvents()
+  }, [])
 
   const searchRanked = useMemo(() => {
-      if (!submittedSearchQuery.trim()) return events
-      return rankedEventMatchesSearch(events, submittedSearchQuery)
-    }, [events, submittedSearchQuery])
+    if (!submittedSearchQuery.trim()) return events
+    return rankedEventMatchesSearch(events, submittedSearchQuery)
+  }, [events, submittedSearchQuery])
 
   const filteredEvents = useMemo(() => {
     let result = searchRanked
@@ -225,102 +224,102 @@ export default function PicnicDayPage() {
         setSelectedCategories([])
       }}
     >
-    <div className="min-h-screen bg-background">
-      <main className="pt-3 pb-4 px-4 sm:px-5 md:px-6 md:pt-5 lg:pt-4 lg:pb-4">
-        <div className="max-w-[1600px] mx-auto">
-          {/* Mobile/tablet: single column (search, list, then map, schedule). Large: row (search left, map right) */}
-          <div className="flex flex-col gap-5 md:gap-6 lg:flex-row lg:gap-8">
-            {/* Search, Filters, Events — first when stacked; left column on large */}
-            <div className="order-1 flex flex-col min-w-0 lg:flex-1 lg:max-w-[520px] xl:max-w-[600px] lg:sticky lg:top-[56px] lg:h-[calc(100vh-56px-2rem)] lg:min-h-0">
-              <div data-onboarding="search-section">
-                <SearchSection
-                  events={events}
-                  searchHistory={searchHistory}
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                  onSearchSubmit={(value) => {
-                    const finalQuery = (value ?? searchQuery).trim()
-                    if (!finalQuery) {
-                      setSearchQuery("")
-                      setSubmittedSearchQuery("")
+      <div className="min-h-screen bg-background">
+        <main className="pt-3 pb-4 px-4 sm:px-5 md:px-6 md:pt-5 lg:pt-4 lg:pb-4">
+          <div className="max-w-[1600px] mx-auto">
+            {/* Mobile/tablet: single column (search, list, then map, schedule). Large: row (search left, map right) */}
+            <div className="flex flex-col gap-5 md:gap-6 lg:flex-row lg:gap-8">
+              {/* Search, Filters, Events — first when stacked; left column on large */}
+              <div className="order-1 flex flex-col min-w-0 lg:flex-1 lg:max-w-[520px] xl:max-w-[600px] lg:sticky lg:top-[56px] lg:h-[calc(100vh-56px-2rem)] lg:min-h-0">
+                <div data-onboarding="search-section">
+                  <SearchSection
+                    events={events}
+                    searchHistory={searchHistory}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    onSearchSubmit={(value) => {
+                      const finalQuery = (value ?? searchQuery).trim()
+                      if (!finalQuery) {
+                        setSearchQuery("")
+                        setSubmittedSearchQuery("")
+                        setResultsPage(0)
+                        return
+                      }
+
+                      setSearchQuery(finalQuery)
+                      setSubmittedSearchQuery(finalQuery)
                       setResultsPage(0)
-                      return
-                    }
 
-                    setSearchQuery(finalQuery)
-                    setSubmittedSearchQuery(finalQuery)
-                    setResultsPage(0)
-
-                    setSearchHistory(prev => {
-                      const updated = [
-                        finalQuery,
-                        ...prev.filter(q => q !== finalQuery)
-                      ]
-                      return updated.slice(0, 5)
-                    })
-                  }}
-                  clearSearchHistory={clearSearchHistory}
-                />
-              </div>
-
-              <div className="flex flex-col gap-6 mt-6 min-w-0 xl:flex-row lg:flex-1 lg:min-h-0">
-                <CategoryFilters
-                  selectedCategories={selectedCategories}
-                  toggleCategory={toggleCategory}
-                  sortOption={sortOption}
-                  setSortOption={setSortOption}
-                />
-                <div className="flex-1 min-w-0 lg:min-h-0 lg:flex lg:flex-col" data-onboarding="event-list">
-                  <EventList
-                    events={eventsForCurrentPage}
-                    allFilteredCount={filteredEvents.length}
-                    scheduledEvents={scheduledEvents}
-                    addToSchedule={addToSchedule}
-                    removeFromSchedule={removeFromSchedule}
-                    hoveredEvent={hoveredEvent}
-                    setHoveredEvent={setHoveredEventFromList}
-                    scrollToEventId={scrollToEventId}
-                    onScrollToEventDone={() => setScrollToEventId(null)}
-                    page={resultsPage}
-                    totalPages={totalResultsPages}
-                    onPageChange={setResultsPage}
-                    searchQuery={submittedSearchQuery}
-                    onBrowseAll={handleBrowseAllEvents}
+                      setSearchHistory(prev => {
+                        const updated = [
+                          finalQuery,
+                          ...prev.filter(q => q !== finalQuery)
+                        ]
+                        return updated.slice(0, 5)
+                      })
+                    }}
+                    clearSearchHistory={clearSearchHistory}
                   />
                 </div>
+
+                <div className="flex flex-col gap-6 mt-6 min-w-0 xl:flex-row lg:flex-1 lg:min-h-0">
+                  <CategoryFilters
+                    selectedCategories={selectedCategories}
+                    toggleCategory={toggleCategory}
+                    sortOption={sortOption}
+                    setSortOption={setSortOption}
+                  />
+                  <div className="flex-1 min-w-0 lg:min-h-0 lg:flex lg:flex-col" data-onboarding="event-list">
+                    <EventList
+                      events={eventsForCurrentPage}
+                      allFilteredCount={filteredEvents.length}
+                      scheduledEvents={scheduledEvents}
+                      addToSchedule={addToSchedule}
+                      removeFromSchedule={removeFromSchedule}
+                      hoveredEvent={hoveredEvent}
+                      setHoveredEvent={setHoveredEventFromList}
+                      scrollToEventId={scrollToEventId}
+                      onScrollToEventDone={() => setScrollToEventId(null)}
+                      page={resultsPage}
+                      totalPages={totalResultsPages}
+                      onPageChange={setResultsPage}
+                      searchQuery={submittedSearchQuery}
+                      onBrowseAll={handleBrowseAllEvents}
+                    />
+                  </div>
+                </div>
+              </div>
+
+
+
+              {/* Map + Schedule — second when stacked; right column on large */}
+              <div className="order-2 w-full min-w-0 flex flex-col gap-4 relative lg:flex-1 lg:gap-0 lg:min-w-[360px] min-h-[320px] lg:sticky lg:top-[56px] lg:h-[calc(100vh-56px-2rem)] lg:min-h-0">
+                <CampusMap
+                  events={filteredEvents}
+                  scheduledEvents={scheduledEvents}
+                  hoveredEvent={hoveredEvent}
+                  setHoveredEvent={setHoveredEventFromMap}
+                  shouldPanToHovered={shouldPanToHovered}
+                  onMarkerClick={handleMapMarkerClick}
+                  resultsPage={resultsPage}
+                  pageSize={RESULTS_PAGE_SIZE}
+                  recentlyAddedId={recentlyAddedId}
+                  isExporting={isExportingPdf}
+                />
+                <SchedulePanel
+                  scheduledEvents={scheduledEvents}
+                  removeFromSchedule={removeFromSchedule}
+                  reorderSchedule={reorderSchedule}
+                  onExport={handleExportPdf}
+                  isExporting={isExportingPdf}
+                />
               </div>
             </div>
-
-            
-
-            {/* Map + Schedule — second when stacked; right column on large */}
-            <div className="order-2 w-full min-w-0 flex flex-col gap-4 relative lg:flex-1 lg:gap-0 lg:min-w-[360px] min-h-[320px] lg:sticky lg:top-[56px] lg:h-[calc(100vh-56px-2rem)] lg:min-h-0">
-              <CampusMap
-                events={filteredEvents}
-                scheduledEvents={scheduledEvents}
-                hoveredEvent={hoveredEvent}
-                setHoveredEvent={setHoveredEventFromMap}
-                shouldPanToHovered={shouldPanToHovered}
-                onMarkerClick={handleMapMarkerClick}
-                resultsPage={resultsPage}
-                pageSize={RESULTS_PAGE_SIZE}
-                recentlyAddedId={recentlyAddedId}
-                isExporting={isExportingPdf}
-              />
-              <SchedulePanel
-                scheduledEvents={scheduledEvents}
-                removeFromSchedule={removeFromSchedule}
-                reorderSchedule={reorderSchedule}
-                onExport={handleExportPdf}
-                isExporting={isExportingPdf}
-              />
-            </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
     </OnboardingProvider>
   )
 }

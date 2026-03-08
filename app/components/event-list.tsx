@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react"
 import { Plus, Check, MapPin, Clock, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import type { Event, ScheduledEvent } from "@/app/page"
-import { formatTimeRange, formatTime } from "@/app/lib/time"
 
 interface EventListProps {
   events: Event[]
@@ -171,7 +170,7 @@ export function EventList({
                         {/* TIME */}
                         <div className="flex items-center gap-1 whitespace-nowrap text-primary font-semibold">
                           <Clock className="w-3 h-3 text-accent flex-shrink-0" />
-                          <span>{formatTime(event.startTime)} - {formatTime(event.endTime)}</span>
+                          <span>{event.startTime || "8:00 AM"} - {event.endTime || "9:00 PM"}</span>
                         </div>
 
                         {/* LOCATION */}
