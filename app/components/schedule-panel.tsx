@@ -5,7 +5,6 @@ import React from "react"
 import { useState, useRef } from "react"
 import { X, GripVertical, AlertTriangle, Calendar, Download, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
 import type { ScheduledEvent } from "@/app/page"
-import { formatTime } from "@/app/lib/time"
 
 interface SchedulePanelProps {
   scheduledEvents: ScheduledEvent[]
@@ -151,7 +150,7 @@ export function SchedulePanel({
 
 
                         <p className="text-[10px] text-muted-foreground">
-                          {formatTime(event.startTime)} · {event.location}
+                          {(event.startTime)} · {event.location}
                           {event.location_details && (
                             <> — {event.location_details}</>
                           )}

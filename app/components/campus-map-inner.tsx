@@ -5,7 +5,6 @@ import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Tooltip, useMap } from "react-leaflet";
 import type { Event, ScheduledEvent } from "@/app/page";
 import RoutingMachine from "./routing-machine";
-import { formatTime } from "@/app/lib/time";
 
 /* Re-tile when container resizes (prevents gray area at bottom) */
 function InvalidateSizeOnResize() {
@@ -352,8 +351,8 @@ export default function CampusMapInner({
           const icon = isScheduled
             ? createScheduledNumberedIcon(scheduleIndex!, isNewlyAdded)
             : isHovered
-            ? hoveredIcon
-            : availableIcon;
+              ? hoveredIcon
+              : availableIcon;
 
           return (
             <Marker
@@ -379,7 +378,7 @@ export default function CampusMapInner({
               >
                 <div className="font-medium">{event.name}</div>
                 <div className="text-muted-foreground text-xs">
-                  {formatTime(event.startTime)}
+                  {event.startTime}
                 </div>
               </Tooltip>
             </Marker>

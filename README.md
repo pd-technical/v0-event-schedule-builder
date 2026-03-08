@@ -1,14 +1,14 @@
 # Event schedule builder
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
-
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/technical-5785s-projects/v0-event-schedule-builder)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/dXJNkGX1IN9)
 
 ## Overview
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+The Picnic Day Schedule Builder helps visitors plan their day at UC Davis's annual Picnic Day event. Picnic Day features over a hundred different activities and locations of interest spread out all over campus. The team wanted a central page that allows attendees to explore and plan their day efficiently.
+
+This tool allows users to browse events, explore locations through an interactive map, and build a personalized schedule and walking route for the day.
+
+Event data is maintained in the MyMaps Google Sheets, and synchronized into a local SQLite database. The application then exposes the data through API routes that feed the data to the front end.
 
 ## Deployment
 
@@ -16,11 +16,23 @@ Your project is live at:
 
 **[https://vercel.com/technical-5785s-projects/v0-event-schedule-builder](https://vercel.com/technical-5785s-projects/v0-event-schedule-builder)**
 
-## Build your app
+# Build your app
 
-Continue building your app on:
+## Initialize and Sync the Picnic Day Database
+1. Install dependencies
+`npm install`
 
-**[https://v0.app/chat/dXJNkGX1IN9](https://v0.app/chat/dXJNkGX1IN9)**
+2. Create .env 
+`CSV_URL=your_google_sheet_csv_url`
+
+3. Initialize the database
+`npx tsx scripts/init-db.ts`
+
+4. Sync events from the spreadsheet
+`npx tsx scripts/run-sync.ts`
+
+5. Updating the database later (if spreadsheet changes)
+Run `npx tsx scripts/run-sync.ts` once more, and rerun the server.
 
 ## Walking routes on the map
 
@@ -38,9 +50,48 @@ To enable walking routes:
 
 If the token is not set, the map falls back to the default routing provider (driving-style routes).
 
-## How It Works
+# More information about the Picnic Day Database.
+## How it Works
+### CSV Source
+Event data comes from the Google Sheets CSV export.
+`sync-csv`:
+- downloads the CSV
+- parses each row
+- converts row into event object
+- upserts the database
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+### Database Schema
+The database has 4 main tables.
+The precise schema can be found in `init-db`
+
+LOCATIONS:
+| Column | Description |
+|-------------|------|
+| id | unique location ID |
+| name | location name |
+| address | location address |
+| latitude | map latitude |
+| longitude | map longitude |
+
+EVENTS: 
+| Column | Description |
+|-------------|------|
+| id | unique location ID |
+| location_id | references to the location table |
+| name | event name |
+| description | event description |
+| start_time | start time |
+| end_time | end time |
+| category | event category (ex: CDF, ENT, EXH, etc) |
+| location_detail | specifities (room number, in front, to the side, etc) |
+| show_time | n/a for now, here only because some events might require in the future |
+
+
+TAGS:
+| Column | Description |
+|-------------|------|
+| id | tag id |
+| name | tag name |
+
+EVENT_TAGS:
+Many-to-many relationship between events and tags.
