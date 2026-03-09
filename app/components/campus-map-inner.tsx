@@ -60,6 +60,39 @@ function FitBoundsOnExport({
   return null;
 }
 
+/* Fit map to show all search result markers when the events list changes */
+function FitBoundsToSearchResults({
+  events,
+  skip,
+}: {
+  events: (Event | ScheduledEvent)[];
+  skip?: boolean;
+}) {
+  const map = useMap();
+  const prevEventsKeyRef = useRef<string>("");
+
+  useEffect(() => {
+    if (skip || events.length === 0) return;
+
+    const eventsKey = events.map((e) => e.id).join(",");
+    if (eventsKey === prevEventsKeyRef.current) return;
+    prevEventsKeyRef.current = eventsKey;
+
+    const bounds = L.latLngBounds(
+      events.map((e) => [e.lat, e.lng] as [number, number])
+    );
+    const padding = L.point(48, 48);
+    const maxZoom = 18;
+    const zoom = Math.min(
+      map.getBoundsZoom(bounds, false, padding),
+      maxZoom
+    );
+    map.setView(bounds.getCenter(), zoom, { animate: true, duration: 0.4 });
+  }, [events, map, skip]);
+
+  return null;
+}
+
 /* =========================
    Dot Offset Logic
 ========================= */
@@ -390,6 +423,7 @@ export default function CampusMapInner({
           isExporting={!!isExporting}
           routeBoundsRef={routeBoundsRef}
         />
+        <FitBoundsToSearchResults events={events} skip={!!isExporting} />
         <FlyToHoveredEvent
           hoveredEvent={hoveredEvent}
           events={eventsOnMap}
