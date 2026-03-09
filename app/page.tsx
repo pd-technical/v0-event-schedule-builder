@@ -37,7 +37,6 @@ export default function PicnicDayPage() {
   const [submittedSearchQuery, setSubmittedSearchQuery] = useState("")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [scheduledEvents, setScheduledEvents] = useState<ScheduledEvent[]>([])
-  const [activeTab, setActiveTab] = useState<"browse" | "popular" | "nearby">("browse")
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null)
   const [shouldPanToHovered, setShouldPanToHovered] = useState(false)
   const [sortOption, setSortOption] = useState<"relevance" | "alphabetical" | "time">("relevance")
@@ -237,8 +236,6 @@ export default function PicnicDayPage() {
                     searchHistory={searchHistory}
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
                     onSearchSubmit={(value) => {
                       const finalQuery = (value ?? searchQuery).trim()
                       if (!finalQuery) {

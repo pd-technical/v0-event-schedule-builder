@@ -10,27 +10,17 @@ interface SearchSectionProps {
   searchHistory: string[]
   searchQuery: string
   setSearchQuery: (query: string) => void
-  activeTab: "browse" | "popular" | "nearby"
-  setActiveTab: (tab: "browse" | "popular" | "nearby") => void
   onSearchSubmit: (value?: string) => void
   clearSearchHistory: () => void
 }
 
-const tabs = [
-  { id: "browse" as const, label: "Browse All" },
-  { id: "popular" as const, label: "Popular" },
-  { id: "nearby" as const, label: "Near Me" },
-]
-
-export function SearchSection({ 
+export function SearchSection({
   events,
   searchHistory,
-  searchQuery, 
-  setSearchQuery, 
-  activeTab, 
-  setActiveTab,
+  searchQuery,
+  setSearchQuery,
   onSearchSubmit,
-  clearSearchHistory
+  clearSearchHistory,
 }: SearchSectionProps) {
   const { restart } = useOnboarding()
   const dropdownItems = useMemo(() => {
@@ -51,35 +41,9 @@ export function SearchSection({
   const [isFocused, setIsFocused] = useState(false)
   return (
     <div className="bg-card rounded-lg border border-border p-4">
-      {/* Tabs + Help */}
-      <div className="flex items-center justify-between gap-2 mb-4">
-        <div className="flex gap-1 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-150 ${
-                activeTab === tab.id
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-secondary text-secondary-foreground hover:bg-muted"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={restart}
-          className="p-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-          aria-label="Help"
-          title="Replay tutorial"
-        >
-          <HelpCircle className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Search Input */}
-      <div className="relative w-full">
+      {/* Search Input + Help */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -122,7 +86,7 @@ export function SearchSection({
           </button>
         </form>
 
-        {isFocused && dropdownItems.length > 0 && (
+          {isFocused && dropdownItems.length > 0 && (
           <div className="absolute z-30 mt-2 w-full bg-card border border-border rounded-lg shadow-[0_10px_25px_rgba(2,40,81,0.08)] max-h-60 overflow-y-auto">
 
             {/* Header Row */}
@@ -169,24 +133,15 @@ export function SearchSection({
             ))}
           </div>
         )}
-
-
-      </div>
-
-      {/* Quick Search Tags */}
-      <div className="flex flex-wrap gap-2 mt-5 mb-1">
-        {["battle of the bands", "chemistry show", "chick handling", "cockroach racing", "doxie derby", "laser maze"].map((tag) => (
-          <button
-            key={tag}
-            onClick={() => {
-              setSearchQuery(tag)
-              onSearchSubmit(tag)
-            }}
-            className="px-3 py-1 text-xs font-medium bg-accent/20 text-accent-foreground rounded-full hover:bg-accent/30 transition-colors"
-          >
-            {tag}
-          </button>
-        ))}
+        </div>
+        <button
+          onClick={restart}
+          className="flex-shrink-0 py-3.5 px-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
+          aria-label="Help"
+          title="Replay tutorial"
+        >
+          <HelpCircle className="w-5 h-5" />
+        </button>
       </div>
     </div>
   )
