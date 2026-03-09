@@ -21,10 +21,11 @@ async function sync () {
       columns: true,
       skip_empty_lines: true,
   }) as CSVRow[];
+  const csvEventIds: string[] = [];
 
   for (const row of rows) {
     const { event, location } = normalizeEvent(row);
-
+    csvEventIds.push(event.id);
     // insert the event and locations into the database
     // if the location already exists (based on name), update it with any new information and return the id. If it doesn't exist, create it and return the new id.
     const locationRow = db.prepare(`
@@ -89,6 +90,18 @@ async function sync () {
         `).run(event.id, tagId);
       }
     }
+  }
+  // cleanup removed events
+  const placeholders = csvEventIds.map(() => "?").join(", ");
+  if (placeholders.length > 0) {
+    db.prepare(`
+      DELETE FROM event_tags
+      WHERE event_id NOT IN (${placeholders})
+    `).run(...csvEventIds);
+    db.prepare(`
+      DELETE FROM events
+      WHERE id NOT IN (${placeholders})
+    `).run(...csvEventIds);
   }
 }
 
