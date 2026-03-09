@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Tooltip, useMap } from "react-leaflet";
 import type { Event, ScheduledEvent } from "@/app/page";
@@ -202,6 +202,7 @@ export default function CampusMapInner({
   recentlyAddedId,
   isExporting,
 }: Props) {
+  const [showScheduleOnly, setShowScheduleOnly] = useState(false)
   /* Leaflet icon fix */
   useEffect(() => {
     delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -231,6 +232,10 @@ export default function CampusMapInner({
       return scheduledEvents as (Event | ScheduledEvent)[];
     }
 
+    if (showScheduleOnly) {
+      return scheduledEvents as (Event | ScheduledEvent)[];
+    }
+
     const eventsForCurrentPage = events.slice(
       resultsPage * pageSize,
       (resultsPage + 1) * pageSize
@@ -249,7 +254,15 @@ export default function CampusMapInner({
     }
 
     return Array.from(byId.values());
-  }, [events, scheduledEvents, resultsPage, pageSize, hoveredEvent, isExporting]);
+  }, [
+    events,
+    scheduledEvents,
+    resultsPage,
+    pageSize,
+    hoveredEvent,
+    isExporting,
+    showScheduleOnly,
+  ]);
 
   /* Offset positions */
   const offsetPositions = useOffsetPositions(eventsOnMap);
@@ -321,7 +334,40 @@ export default function CampusMapInner({
   }
 
   return (
-    <div data-onboarding="campus-map" className="w-full min-h-[320px] h-[400px] lg:h-auto lg:flex-1 lg:min-h-0">
+    <div
+      data-onboarding="campus-map"
+      className="relative w-full min-h-[320px] h-[400px] lg:h-auto lg:flex-1 lg:min-h-0"
+    >
+      <div className="absolute bottom-4 left-4 z-[2000] flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-lg border border-gray-200">
+        <span
+          className={`text-xs font-semibold ${
+            !showScheduleOnly ? "text-[#022851]" : "text-gray-500"
+          }`}
+        >
+          All
+        </span>
+
+        <button
+          onClick={() => setShowScheduleOnly(!showScheduleOnly)}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            showScheduleOnly ? "bg-[#022851]" : "bg-gray-300"
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+              showScheduleOnly ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
+
+        <span
+          className={`text-xs font-semibold ${
+            showScheduleOnly ? "text-[#022851]" : "text-gray-500"
+          }`}
+        >
+          Schedule
+        </span>
+      </div>
       <MapContainer
         className="h-full w-full"
         center={[38.5382, -121.7617]}
