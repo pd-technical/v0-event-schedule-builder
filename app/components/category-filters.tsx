@@ -133,25 +133,20 @@ setSortOption,
         </div>
         {/* Active badge */}
         {selectedCategories.length > 0 && (
-          <div className="flex items-center justify-between mt-3 mb-3">  
-            {/* <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/50 border border-border">
-              <span className="w-2 h-2 rounded-full bg-pink-500 " />
-              <span className="">
-                {selectedCategories.length} active
-              </span>
-            </div> */}
+          <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
+            
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-pink-500" />
+              {selectedCategories.length} filter{selectedCategories.length !== 1 && "s"} active
+            </span>
 
             <button
               onClick={() => selectedCategories.forEach(toggleCategory)}
-              className="
-                text-[11px] font-medium
-                text-muted-foreground
-                hover:text-pink-500
-                transition
-              "
+              className="font-medium hover:text-pink-500 transition"
             >
-              Clear All
+              Clear all
             </button>
+
           </div>
         )}
       </div>
