@@ -131,7 +131,28 @@ export default function PicnicDayPage() {
     return sorted
   }, [searchRanked, selectedCategories, sortOption, submittedSearchQuery])
 
-  const RESULTS_PAGE_SIZE = 20
+  const [RESULTS_PAGE_SIZE, setResultsPageSize] = useState(20)
+
+  useEffect(() => {
+  const updateSize = () => {
+    const width = window.innerWidth
+
+    if (width < 640) {
+      setResultsPageSize(5)   // phones
+    } 
+    else if (width < 1024) {
+      setResultsPageSize(10)  // tablets / iPad
+    } 
+    else {
+      setResultsPageSize(20)  // desktop
+    }
+  }
+  updateSize()
+  window.addEventListener("resize", updateSize)
+
+  return () => window.removeEventListener("resize", updateSize)
+  }, [])
+
   const totalResultsPages = Math.max(1, Math.ceil(filteredEvents.length / RESULTS_PAGE_SIZE))
   const eventsForCurrentPage = filteredEvents.slice(
     resultsPage * RESULTS_PAGE_SIZE,
@@ -271,7 +292,7 @@ export default function PicnicDayPage() {
                     sortOption={sortOption}
                     setSortOption={setSortOption}
                   />
-                  <div className="flex-1 min-w-0 lg:min-h-0 lg:flex lg:flex-col" data-onboarding="event-list">
+                  <div className="flex-1 min-w-0 lg:min-h-0 lg:flex lg:flex-col -mt-2" data-onboarding="event-list">
                     <EventList
                       events={eventsForCurrentPage}
                       allFilteredCount={filteredEvents.length}
