@@ -1,10 +1,11 @@
-# Custom ignores
-*.sqlite3
-volumes/*
-# Unignore specific folders
-!volumes/.gitkeep
-!templates/*
+# Docker Ignores
+Dockerfile
+docker-compose.yml
+.dockerignore
+volumes/
+*.sqlite
 
+# Below is copied from .gitignore
 # dependencies
 /node_modules
 

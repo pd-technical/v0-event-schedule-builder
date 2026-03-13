@@ -1,0 +1,13 @@
+services:
+  scheduler:
+    container_name: scheduler
+    image: "${IMAGE:-picnicday/scheduler}"
+    pull_policy: "${PULL_POLICY:-build}"
+    build: .
+    restart: unless-stopped
+    environment:
+      DB_PATH: "./volumes/database.sqlite3"
+    volumes:
+      - ./volumes:/app/volumes:rw
+    ports:
+      - "3000:3000"

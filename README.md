@@ -19,20 +19,17 @@ Your project is live at:
 # Build your app
 
 ## Initialize and Sync the Picnic Day Database
-1. Install dependencies
-`npm install`
-
-2. Create .env 
-`CSV_URL=your_google_sheet_csv_url`
-
-3. Initialize the database
-`npx tsx scripts/init-db.ts`
-
-4. Sync events from the spreadsheet
-`npx tsx scripts/run-sync.ts`
-
-5. Updating the database later (if spreadsheet changes)
-Run `npx tsx scripts/run-sync.ts` once more, and rerun the server.
+1. Install dependencies: `npm install`
+2. Create a `.env` file containing:
+   ```
+   CSV_URL=your_google_sheet_csv_url
+   ```
+3. (Optional) Copy the sample database: `cp templates/database.sqlite3 ./database.sqlite3`
+   > An empty database will be created on startup if this step is skipped
+4. Start the server to initialize the database: `npm run dev`
+5. Sync events from the spreadsheet: `npx tsx scripts/run-sync.ts`
+   > This can be rerun whenever the spreadsheet changes
+6. (Optional) Stop and restart the server
 
 ## Walking routes on the map
 
@@ -42,11 +39,11 @@ To enable walking routes:
 
 1. Create a [Mapbox account](https://account.mapbox.com/) and copy your **default public access token** (or create a new one).
 2. Add it to your environment:
-   - **Local:** create `.env.local` in the project root and add:
-     ```bash
-     NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_mapbox_access_token_here
-     ```
-   - **Vercel:** in your project settings, add `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` as an environment variable.
+	- **Local:** create `.env.local` in the project root and add:
+	  ```bash
+	  NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_mapbox_access_token_here
+	  ```
+	- **Vercel:** in your project settings, add `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` as an environment variable.
 
 If the token is not set, the map falls back to the default routing provider (driving-style routes).
 
@@ -62,7 +59,7 @@ Event data comes from the Google Sheets CSV export.
 
 ### Database Schema
 The database has 4 main tables.
-The precise schema can be found in `init-db`
+The precise schema can be found in `app/lib/db/db.ts`
 
 LOCATIONS:
 | Column | Description |
@@ -73,7 +70,7 @@ LOCATIONS:
 | latitude | map latitude |
 | longitude | map longitude |
 
-EVENTS: 
+EVENTS:
 | Column | Description |
 |-------------|------|
 | id | unique location ID |
@@ -85,7 +82,6 @@ EVENTS:
 | category | event category (ex: CDF, ENT, EXH, etc) |
 | location_detail | specifities (room number, in front, to the side, etc) |
 | show_time | n/a for now, here only because some events might require in the future |
-
 
 TAGS:
 | Column | Description |
