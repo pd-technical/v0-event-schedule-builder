@@ -247,7 +247,7 @@ export default function PicnicDayPage() {
     >
       <main className="h-screen flex flex-col bg-background px-4 sm:px-5 md:px-6 py-3 overflow-hidden">
             {/* Mobile/tablet: single column (search, list, then map, schedule). Large: row (search left, map right) */}
-            <div className="flex flex-col gap-5 md:gap-6 lg:flex-row lg:gap-8 flex-1 min-h-0">
+            <div className="flex flex-col gap-5 md:gap-6 lg:flex-row lg:gap-4 flex-1 min-h-0">
               {/* Search, Filters, Events — first when stacked; left column on large */}
               <div className="order-1 flex flex-col min-w-0 lg:flex-1 lg:max-w-[520px] xl:max-w-[600px] lg:sticky lg:min-h-0">
                 <div data-onboarding="search-section">
@@ -315,7 +315,7 @@ export default function PicnicDayPage() {
 
 
               {/* Map + Schedule — second when stacked; right column on large */}
-              <div className="order-2 w-full min-w-0 flex flex-col gap-4 relative lg:flex-1 lg:gap-0 lg:min-w-[360px] min-h-[320px] lg:sticky lg:min-h-0">
+              <div className="order-2 w-full min-w-0 flex flex-col gap-6 relative lg:flex-1 lg:gap-0 lg:min-w-[360px] min-h-[320px] lg:sticky lg:min-h-0">
                 <CampusMap
                   events={filteredEvents}
                   scheduledEvents={scheduledEvents}
