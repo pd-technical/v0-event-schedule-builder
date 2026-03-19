@@ -8,6 +8,7 @@ interface EventListProps {
   events: Event[]
   allFilteredCount: number
   scheduledEvents: ScheduledEvent[]
+  pageSize: number
   addToSchedule: (event: Event) => void
   removeFromSchedule: (eventId: string) => void
   hoveredEvent: string | null
@@ -19,12 +20,14 @@ interface EventListProps {
   onPageChange: (page: number) => void
   searchQuery: string
   onBrowseAll: () => void
+
 }
 
 export function EventList({
   events,
   allFilteredCount,
   scheduledEvents,
+  pageSize,
   addToSchedule,
   removeFromSchedule,
   hoveredEvent,
@@ -64,16 +67,9 @@ export function EventList({
   }
 }, [page])
 
-  const pageSize = 20
-  const start = page * pageSize + 1
-  const end = Math.min((page + 1) * pageSize, allFilteredCount)
-
   return (
     <div className="flex-1 lg:flex lg:flex-col lg:min-h-0">
-      <div className="flex items-center justify-between mb-3">
-
-        {/* LEFT — Title */}
-        <div className="relative">
+      <div className="flex items-center gap-4 mb-3">
           <h3 className="text-xs font-semibold text-primary uppercase tracking-wide leading-none">
             {searchQuery.trim().length === 0 ? (
               <>All Events ({allFilteredCount})</>
@@ -86,14 +82,13 @@ export function EventList({
               </>
             )}
           </h3>
-        </div>
 
         {/* RIGHT — Sort + Pagination */}
-        <div className="flex items-center gap-6 text-xs">
+        <div className="ml-auto flex items-center gap-2 text-xs">
 
           {/* PAGINATION */}
           {totalPages > 1 && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => onPageChange(Math.max(0, page - 1))}
                 disabled={page === 0}
@@ -140,7 +135,7 @@ export function EventList({
       <div className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
         <div
           ref={listScrollRef}
-          className="space-y-2 lg:flex-1 lg:overflow-y-auto pr-2 -mr-2 lg:mr-0"
+          className="space-y-2 lg:flex-1 lg:overflow-y-auto lg:mr-0"
         >
           {events.map((event) => {
             const scheduled = isScheduled(event.id)
