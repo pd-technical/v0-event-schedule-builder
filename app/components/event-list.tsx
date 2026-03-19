@@ -8,6 +8,7 @@ interface EventListProps {
   events: Event[]
   allFilteredCount: number
   scheduledEvents: ScheduledEvent[]
+  pageSize: number
   addToSchedule: (event: Event) => void
   removeFromSchedule: (eventId: string) => void
   hoveredEvent: string | null
@@ -19,12 +20,14 @@ interface EventListProps {
   onPageChange: (page: number) => void
   searchQuery: string
   onBrowseAll: () => void
+
 }
 
 export function EventList({
   events,
   allFilteredCount,
   scheduledEvents,
+  pageSize,
   addToSchedule,
   removeFromSchedule,
   hoveredEvent,
@@ -64,15 +67,9 @@ export function EventList({
   }
 }, [page])
 
-  const pageSize = 20
-  const start = page * pageSize + 1
-  const end = Math.min((page + 1) * pageSize, allFilteredCount)
-
   return (
     <div className="flex-1 lg:flex lg:flex-col lg:min-h-0">
       <div className="flex items-center justify-between mb-3">
-
-        {/* LEFT — Title */}
         <div className="relative">
           <h3 className="text-xs font-semibold text-primary uppercase tracking-wide leading-none">
             {searchQuery.trim().length === 0 ? (
