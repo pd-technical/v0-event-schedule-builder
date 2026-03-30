@@ -244,6 +244,8 @@ export default function PicnicDayPage() {
         setSubmittedSearchQuery("")
         setSelectedCategories([])
       }}
+      onClearSchedule={() => setScheduledEvents([])}
+      scheduledEventCount={scheduledEvents.length}
     >
       <main className="h-screen flex flex-col bg-background px-4 sm:px-5 md:px-6 py-3 overflow-hidden">
             {/* Mobile/tablet: single column (search, list, then map, schedule). Large: row (search left, map right) */}
@@ -283,14 +285,14 @@ export default function PicnicDayPage() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-6 mt-6 min-w-0 xl:flex-row lg:flex-1 lg:min-h-0">
+                <div data-onboarding="event-list" className="flex flex-col gap-6 mt-6 min-w-0 xl:flex-row lg:flex-1 lg:min-h-0">
                   <CategoryFilters
                     selectedCategories={selectedCategories}
                     toggleCategory={toggleCategory}
                     sortOption={sortOption}
                     setSortOption={setSortOption}
                   />
-                  <div className="flex-1 min-w-0 lg:min-h-0 lg:flex lg:flex-col -mt-2" data-onboarding="event-list">
+                  <div className="flex-1 min-w-0 lg:min-h-0 lg:flex lg:flex-col -mt-2">
                     <EventList
                       events={eventsForCurrentPage}
                       allFilteredCount={filteredEvents.length}
@@ -315,7 +317,7 @@ export default function PicnicDayPage() {
 
 
               {/* Map + Schedule — second when stacked; right column on large */}
-              <div className="order-2 w-full min-w-0 flex flex-col gap-6 relative lg:flex-1 lg:gap-0 lg:min-w-[360px] min-h-[320px] lg:sticky lg:min-h-0">
+              <div data-onboarding="map-area" className="order-2 w-full min-w-0 flex flex-col gap-6 relative lg:flex-1 lg:gap-0 lg:min-w-[360px] min-h-[320px] lg:sticky lg:min-h-0">
                 <CampusMap
                   events={filteredEvents}
                   scheduledEvents={scheduledEvents}

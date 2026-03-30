@@ -124,12 +124,26 @@ export interface RankedMatch<T extends SearchableEvent = SearchableEvent> {
 }
 
 /**
- * Computes the best match tier and tiebreaker for one event.
- * Tier 1: exact phrase or exact event name match.
- * Tier 2: substring match of original query words.
- * Tier 3: substring match of synonym/related terms only.
- * Tier 4: fuzzy (typo) match of query words only.
+ * Field weights: matches in name/tags are worth more than description.
+ * This ensures "music" matches an event named "Music Festival" before
+ * one that merely mentions music in its description.
  */
+const FIELD_WEIGHTS = { name: 10, tags: 6, location: 4, description: 1 } as const;
+
+function fieldScore(event: SearchableEvent, word: string): number {
+  let score = 0;
+  const nameLower = event.name.toLowerCase();
+  const locLower = event.location.toLowerCase();
+  const descLower = event.description.toLowerCase();
+  const tags = ((event as any).tags ?? []) as string[];
+
+  if (nameLower.includes(word)) score += FIELD_WEIGHTS.name;
+  if (tags.some((t: string) => t.toLowerCase().includes(word))) score += FIELD_WEIGHTS.tags;
+  if (locLower.includes(word)) score += FIELD_WEIGHTS.location;
+  if (descLower.includes(word)) score += FIELD_WEIGHTS.description;
+  return score;
+}
+
 function scoreEvent<T extends SearchableEvent>(event: T, query: string): RankedMatch<T> | null {
   const q = query.trim();
   if (!q) return { event, tier: 1, tiebreaker: 0 };
@@ -148,28 +162,36 @@ function scoreEvent<T extends SearchableEvent>(event: T, query: string): RankedM
   const synonymTerms = searchTerms.filter((t) => !queryWordsSet.has(t));
 
   // Tier 1: exact phrase or exact event name
-  if (combinedNorm.includes(queryLower) || toWords(event.name).join(" ") === toWords(q).join(" ")) {
-    return { event, tier: 1, tiebreaker: 1 };
+  const nameWordsJoined = toWords(event.name).join(" ");
+  const queryWordsJoined = toWords(q).join(" ");
+  if (nameWordsJoined === queryWordsJoined) {
+    return { event, tier: 1, tiebreaker: 100 };
+  }
+  if (event.name.toLowerCase().includes(queryLower)) {
+    return { event, tier: 1, tiebreaker: 50 };
+  }
+  if (combinedNorm.includes(queryLower)) {
+    return { event, tier: 1, tiebreaker: 10 };
   }
 
-  // Tier 2: substring match of original query words
-  let substringCount = 0;
+  // Tier 2: substring match of original query words — weighted by field
+  let substringScore = 0;
   for (const w of queryWords) {
     if (w.length < 2) continue;
-    if (combined.includes(w)) substringCount++;
+    substringScore += fieldScore(event, w);
   }
-  if (substringCount > 0) {
-    return { event, tier: 2, tiebreaker: substringCount };
+  if (substringScore > 0) {
+    return { event, tier: 2, tiebreaker: substringScore };
   }
 
   // Tier 3: synonym/related term as exact substring (no fuzzy)
-  let synonymCount = 0;
+  let synonymScore = 0;
   for (const term of synonymTerms) {
     if (term.length < 2) continue;
-    if (combined.includes(term)) synonymCount++;
+    synonymScore += fieldScore(event, term);
   }
-  if (synonymCount > 0) {
-    return { event, tier: 3, tiebreaker: synonymCount };
+  if (synonymScore > 0) {
+    return { event, tier: 3, tiebreaker: synonymScore };
   }
 
   // Tier 4: fuzzy match of query words only (typos)

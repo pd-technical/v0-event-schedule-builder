@@ -3,10 +3,24 @@ import html2canvas from "html2canvas"
 import type { ScheduledEvent } from "@/app/page"
 
 function compactTime(time: string): string {
-  const [hours, minutes] = time.split(":").map(Number)
-  const period = hours >= 12 ? "pm" : "am"
+  // Handle already-formatted times like "10:00 AM" or "1:30 PM"
+  const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i)
+  if (!match) return time
+
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  const period = match[3]
+
+  if (period) {
+    // Already in 12-hour format
+    const p = period.toLowerCase()
+    return minutes === 0 ? `${hours}${p}` : `${hours}:${String(minutes).padStart(2, "0")}${p}`
+  }
+
+  // 24-hour format fallback
+  const p = hours >= 12 ? "pm" : "am"
   const h = hours % 12 || 12
-  return minutes === 0 ? `${h}${period}` : `${h}:${String(minutes).padStart(2, "0")}${period}`
+  return minutes === 0 ? `${h}${p}` : `${h}:${String(minutes).padStart(2, "0")}${p}`
 }
 
 export async function exportSchedulePdf(scheduledEvents: ScheduledEvent[]) {
