@@ -5,8 +5,9 @@ import { hasSeenOnboarding, markOnboardingSeen } from "@/app/lib/cookies"
 import { TUTORIAL_STEPS } from "./tutorial-steps"
 import { WelcomeDialog } from "./welcome-dialog"
 import { SpotlightOverlay } from "./spotlight-overlay"
+import { PersonalizationDialog } from "./personalization-dialog"
 
-type Phase = "checking" | "welcome" | "tutorial" | "done"
+type Phase = "checking" | "welcome" | "tutorial" | "personalization" | "done"
 
 interface OnboardingContextValue {
   restart: () => void
@@ -23,17 +24,24 @@ export function useOnboarding() {
 interface OnboardingProviderProps {
   children: ReactNode
   onResetSearch?: () => void
+  onClearSchedule?: () => void
+  scheduledEventCount?: number
 }
 
 export function OnboardingProvider({
   children,
   onResetSearch,
+  onClearSchedule,
+  scheduledEventCount = 0,
 }: OnboardingProviderProps) {
   const [phase, setPhase] = useState<Phase>("checking")
   const [step, setStep] = useState(0)
 
   const onResetSearchRef = useRef(onResetSearch)
   useEffect(() => { onResetSearchRef.current = onResetSearch }, [onResetSearch])
+
+  const onClearScheduleRef = useRef(onClearSchedule)
+  useEffect(() => { onClearScheduleRef.current = onClearSchedule }, [onClearSchedule])
 
   useEffect(() => {
     if (hasSeenOnboarding()) {
@@ -48,6 +56,7 @@ export function OnboardingProvider({
     markOnboardingSeen()
     setPhase("done")
     onResetSearchRef.current?.()
+    onClearScheduleRef.current?.()
   }, [])
 
   const handleStart = useCallback(() => {
@@ -57,11 +66,11 @@ export function OnboardingProvider({
 
   const handleNext = useCallback(() => {
     if (step >= TUTORIAL_STEPS.length - 1) {
-      finish()
+      setPhase("personalization")
     } else {
       setStep(step + 1)
     }
-  }, [finish, step])
+  }, [step])
 
   const handleBack = useCallback(() => {
     setStep((s) => Math.max(0, s - 1))
@@ -84,7 +93,11 @@ export function OnboardingProvider({
           onNext={handleNext}
           onBack={handleBack}
           onSkip={finish}
+          scheduledEventCount={scheduledEventCount}
         />
+      )}
+      {phase === "personalization" && (
+        <PersonalizationDialog onComplete={finish} />
       )}
     </OnboardingContext.Provider>
   )

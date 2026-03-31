@@ -209,6 +209,7 @@ export function SchedulePanel({
           {scheduledEvents.length > 0 && (
             <div className="p-3 border-t border-border">
               <button
+                data-onboarding="export-button"
                 onClick={onExport}
                 disabled={isExporting}
                 className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
