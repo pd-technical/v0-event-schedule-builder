@@ -6,6 +6,75 @@ import { MapContainer, TileLayer, Marker, Tooltip, useMap } from "react-leaflet"
 import type { Event, ScheduledEvent } from "@/app/page";
 import RoutingMachine from "./routing-machine";
 
+const NAVY = "#022851";
+
+function isFoodTruck(event: Event | ScheduledEvent) {
+  return event.name.toLowerCase().includes("food truck");
+}
+
+function createFoodTruckIcon(): L.DivIcon {
+  const size = 28;
+
+  const html = `
+    <div style="
+      width:${size}px;
+      height:${size}px;
+      border-radius:50%;
+      background:white;
+      border:2px solid #ffbf00;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:17px;
+      line-height:1;
+      box-shadow:0 2px 6px rgba(0,0,0,0.25);
+    ">
+      🍔
+    </div>
+  `;
+
+  return L.divIcon({
+    html,
+    className: "event-marker-foodtruck",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
+
+function getMarkerIcon({
+  event,
+  isScheduled,
+  scheduleIndex,
+  isHovered,
+  isNewlyAdded,
+  icons
+}: {
+  event: Event | ScheduledEvent
+  isScheduled: boolean
+  scheduleIndex?: number
+  isHovered: boolean
+  isNewlyAdded: boolean
+  icons: {
+    available: L.DivIcon
+    hovered: L.DivIcon
+    foodTruck: L.DivIcon
+  }
+}) {
+  if (isScheduled) {
+    return createScheduledNumberedIcon(scheduleIndex!, isNewlyAdded);
+  }
+
+  if (isFoodTruck(event)) {
+    return icons.foodTruck;
+  }
+
+  if (isHovered) {
+    return icons.hovered;
+  }
+
+  return icons.available;
+}
+
 /* Re-tile when container resizes (prevents gray area at bottom) */
 function InvalidateSizeOnResize() {
   const map = useMap();
@@ -143,11 +212,35 @@ function useOffsetPositions(
   }, [events]);
 }
 
+function FlyToHoveredEvent({
+    hoveredEvent,
+    events,
+    shouldPan,
+  }: {
+    hoveredEvent: string | null
+    events: (Event | ScheduledEvent)[]
+    shouldPan: boolean
+  }) {
+    const map = useMap()
+
+    useEffect(() => {
+      if (!shouldPan || !hoveredEvent) return
+
+      const event = events.find((e) => e.id === hoveredEvent)
+      if (!event) return
+
+      map.panTo([event.lat, event.lng], {
+        animate: true,
+        duration: 2.0,
+      })
+    }, [hoveredEvent, events, map, shouldPan])
+
+    return null
+  }
+
 /* =========================
    Icon Logic
 ========================= */
-
-const NAVY = "#022851";
 
 function createAvailableIcon(): L.DivIcon {
   const size = 20;
@@ -288,8 +381,11 @@ export default function CampusMapInner({
   const offsetPositions = useOffsetPositions(eventsOnMap);
 
   /* Icons */
-  const availableIcon = useMemo(() => createAvailableIcon(), []);
-  const hoveredIcon = useMemo(() => createHoveredIcon(), []);
+  const icons = useMemo(() => ({
+    available: createAvailableIcon(),
+    hovered: createHoveredIcon(),
+    foodTruck: createFoodTruckIcon()
+  }), []);
 
   const markerRefs = useRef(new Map<string, L.Marker>());
   const routeBoundsRef = useRef<L.LatLngBounds | null>(null);
@@ -327,32 +423,6 @@ export default function CampusMapInner({
     routeBoundsRef.current = bounds;
   }, []);
 
-  function FlyToHoveredEvent({
-    hoveredEvent,
-    events,
-    shouldPan,
-  }: {
-    hoveredEvent: string | null
-    events: (Event | ScheduledEvent)[]
-    shouldPan: boolean
-  }) {
-    const map = useMap()
-
-    useEffect(() => {
-      if (!shouldPan || !hoveredEvent) return
-
-      const event = events.find((e) => e.id === hoveredEvent)
-      if (!event) return
-
-      map.panTo([event.lat, event.lng], {
-        animate: true,
-        duration: 2.0,
-      })
-    }, [hoveredEvent, events, map, shouldPan])
-
-    return null
-  }
-
   return (
     <div data-onboarding="campus-map" className="w-full min-h-[320px] h-[400px] lg:h-auto lg:flex-1 lg:min-h-0">
       <MapContainer
@@ -381,11 +451,14 @@ export default function CampusMapInner({
           const [lat, lng] =
             offsetPositions.get(event.id) ?? [event.lat, event.lng];
 
-          const icon = isScheduled
-            ? createScheduledNumberedIcon(scheduleIndex!, isNewlyAdded)
-            : isHovered
-              ? hoveredIcon
-              : availableIcon;
+          const icon = getMarkerIcon({
+            event,
+            isScheduled,
+            scheduleIndex,
+            isHovered,
+            isNewlyAdded,
+            icons
+          });
 
           return (
             <Marker

@@ -40,6 +40,10 @@ export function EventList({
   searchQuery,
   onBrowseAll,
 }: EventListProps) {
+  function isFoodTruck(event: Event) {
+    return event.name.toLowerCase().includes("food truck")
+  }
+
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null)
   const listScrollRef = useRef<HTMLDivElement>(null)
 
@@ -170,7 +174,10 @@ export function EventList({
                     <ChevronDown className={`w-4 h-4 mt-1 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""
                       }`} />
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-foreground">
+                      <h4 className="font-medium text-foreground flex items-center gap-2">
+                        {isFoodTruck(event) && (
+                          <span className="text-base">🍔</span>
+                        )}
                         {event.name}
                       </h4>
                       <div className="mt-1 text-xs text-muted-foreground space-y-1">
