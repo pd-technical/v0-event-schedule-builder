@@ -43,13 +43,13 @@ export function SearchSection({
     <div className="bg-card rounded-lg border border-border p-4">
       {/* Search Input + Help */}
       <div className="flex items-center gap-2">
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
         <form
           onSubmit={(e) => {
             e.preventDefault()
             onSearchSubmit(searchQuery)
           }}
-          className="flex w-full"
+          className="flex w-full min-w-0"
         >
           {/* Input */}
           <input
@@ -61,6 +61,7 @@ export function SearchSection({
             placeholder="Search for events..."
             className="
               flex-1
+              min-w-0
               px-4
               py-3
               bg-secondary
