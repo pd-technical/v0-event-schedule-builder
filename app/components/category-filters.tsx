@@ -1,6 +1,6 @@
 "use client"
 
-import { Dog, FlaskConical, Palette, Laugh, Music, Utensils } from "lucide-react"
+import { Dog, FlaskConical, Palette, Laugh, Music, Utensils, Users } from "lucide-react"
 
 interface CategoryFiltersProps {
   selectedCategories: string[]
@@ -14,37 +14,43 @@ const categories = [
     id: "family",
     label: "Family Friendly",
     icon: Laugh,
-    color: "#f59e0b", // amber
+    color: "#f59e0b",
   },
   {
     id: "animals",
     label: "Animals",
     icon: Dog,
-    color: "#8b5cf6", // violet
+    color: "#8b5cf6",
   },
   {
     id: "science",
     label: "STEM",
     icon: FlaskConical,
-    color: "#ef4444", // red
+    color: "#ef4444",
   },
   {
     id: "music",
     label: "Music",
     icon: Music,
-    color: "#3b82f6", // blue
+    color: "#3b82f6",
   },
   {
-    id: "arts",
-    label: "Art",
+    id: "creative",
+    label: "Creative",
     icon: Palette,
-    color: "#ec4899", // pink
+    color: "#ec4899",
   },
   {
     id: "food",
     label: "Food",
     icon: Utensils,
-    color: "#10b981", // emerald
+    color: "#10b981",
+  },
+  {
+    id: "community",
+    label: "Community",
+    icon: Users,
+    color: "#6366f1",
   },
 ]
 
