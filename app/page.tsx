@@ -256,8 +256,6 @@ export default function PicnicDayPage() {
                     searchHistory={searchHistory}
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
                     onSearchSubmit={(value) => {
                       const finalQuery = (value ?? searchQuery).trim()
                       if (!finalQuery) {
@@ -336,6 +334,16 @@ export default function PicnicDayPage() {
                   isExporting={isExportingPdf}
                 />
               </div>
+            </div>
+            <div className="w-full mt-2 pt-3 border-t border-border text-xs text-muted-foreground flex items-center justify-center gap-2">
+              <a
+                href="GOOGLE_FORM_LINK_HERE"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary font-medium hover:underline"
+              >
+                Share feedback
+              </a>
             </div>
         </main>
     </OnboardingProvider>
