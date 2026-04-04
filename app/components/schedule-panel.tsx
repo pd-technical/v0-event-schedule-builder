@@ -78,11 +78,8 @@ export function SchedulePanel({
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-primary" />
+          <Calendar className="w-4 h-4 text-foreground" />
           <h3 className="text-sm font-semibold text-foreground">My Schedule</h3>
-          <span className="px-1.5 py-0.5 text-[10px] font-medium bg-primary text-primary-foreground rounded-full">
-            {scheduledEvents.length}
-          </span>
         </div>
         <ChevronUp className={`w-4 h-4 text-muted-foreground transition-transform ${isCollapsed ? "rotate-180" : ""
           }`} />
@@ -122,7 +119,7 @@ export function SchedulePanel({
                     </div>
 
                     {/* Index Number */}
-                    <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center bg-primary text-primary-foreground rounded-full text-[10px] font-bold mt-0.5">
+                    <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center bg-highlight text-highlight-foreground rounded-full text-[10px] font-bold mt-0.5">
                       {index + 1}
                     </div>
 

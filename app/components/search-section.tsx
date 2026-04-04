@@ -63,15 +63,15 @@ export function SearchSection({
               flex-1
               px-4
               py-3
-              bg-secondary
-              border border-primary/20
+              bg-card
+              border border-border
               rounded-l-lg
               text-foreground
               placeholder:text-muted-foreground
               focus:outline-none
               focus:ring-2
-              focus:ring-primary/25
-              focus:border-primary
+              focus:ring-primary/15
+              focus:border-primary/40
               transition-all
             "
           />
@@ -91,7 +91,7 @@ export function SearchSection({
 
             {/* Header Row */}
             <div className="flex items-center justify-between px-4 pt-3 pb-2">
-              <span className="text-xs font-semibold text-accent uppercase tracking-wide">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Recent Searches
               </span>
 
@@ -146,7 +146,7 @@ export function SearchSection({
       </div>
        {/* Quick Search Tags */}
       <div className="flex flex-wrap gap-2 mt-3">
-        <div className="px-1 py-1 text-(--color-muted-foreground) text-xs italic ">Suggested Searches</div>
+        <div className="px-1 py-1 text-muted-foreground text-xs italic">Suggested Searches</div>
         {["battle of the bands", "chemistry show", "chick handling", "cockroach racing", "doxie derby", "laser maze"].map((tag) => (
           <button
             key={tag}

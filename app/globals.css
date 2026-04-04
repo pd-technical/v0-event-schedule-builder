@@ -4,40 +4,60 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #f5f9fd;
-  --foreground: #0b2f5b;
+  --background: #eef3f7;
+  --foreground: #17375e;
 
   --card: #ffffff;
-  --card-foreground: #0b2f5b;
+  --card-foreground: #17375e;
 
-  --primary: #123c73; 
-  --primary-foreground: #ffffff;
+  --primary: #6FCFEB;
+  --primary-foreground: #17375e;
 
-  --secondary: #d9ecfa;
+  --primary-text: #136F8A;
 
-  --accent: #ffbf00; 
-  --accent-foreground: #0b2f5b;
+  --secondary: #f5f8f3;
+  --secondary-foreground: #17375e;
 
-  --muted-foreground: #4b5d73;
+  --accent: #f4e96b;
+  --accent-foreground: #17375e;
 
-  --border: #cfe0ee;
+  --muted: #f1f4f6;
+  --muted-foreground: #5d6d7e;
+
+  --border: #d3dde5;
+
+  --highlight: #3DAE2B;
+  --highlight-foreground: #ffffff;
 }
 
 @theme inline {
   --font-sans: 'Proxima Nova', 'system-ui', sans-serif;
   --font-mono: 'Geist Mono', monospace;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
   --color-border: var(--border);
+
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+
+  --color-primary-text: var(--primary-text);
 }
 
 button {
@@ -59,8 +79,8 @@ button:disabled {
   width: 20px;
   height: 20px;
   border-radius: 9999px;
-  background: #022851;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  background: var(--highlight);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   overflow: visible;
   z-index: 1;
 }
@@ -73,7 +93,7 @@ button:disabled {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  border: 2px solid #daaa00;
+  border: 2px solid var(--accent);
   animation: scheduledRipple 0.7s ease-out forwards;
   z-index: 2;
   pointer-events: none;

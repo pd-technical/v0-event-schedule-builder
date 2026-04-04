@@ -147,11 +147,22 @@ function useOffsetPositions(
    Icon Logic
 ========================= */
 
-const NAVY = "#022851";
+const MARKER_BASE = "#17375e";
+const PRIMARY = "#00B2E3";
+const HIGHLIGHT = "#3DAE2B";
 
 function createAvailableIcon(): L.DivIcon {
   const size = 20;
-  const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:white;border:2px solid ${NAVY};box-shadow:0 1px 3px rgba(0,0,0,0.2);"></div>`;
+  const html = `
+    <div style="
+      width:${size}px;
+      height:${size}px;
+      border-radius:50%;
+      background:white;
+      border:2px solid ${MARKER_BASE};
+      box-shadow:0 1px 3px rgba(0,0,0,0.18);
+    "></div>
+  `;
   return L.divIcon({
     html,
     className: "event-marker-available",
@@ -167,9 +178,9 @@ function createHoveredIcon(): L.DivIcon {
       width:${size}px;
       height:${size}px;
       border-radius:50%;
-      background:#daaa00;
-      border:2px solid ${NAVY};
-      box-shadow:0 0 0 2px rgba(218,170,0,0.3);
+      background:${PRIMARY};
+      border:2px solid ${MARKER_BASE};
+      box-shadow:0 0 0 2px rgba(0,178,227,0.25);
       transform:scale(1.15);
       transition:all 0.2s ease;
     "></div>

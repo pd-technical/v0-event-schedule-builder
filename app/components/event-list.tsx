@@ -70,7 +70,7 @@ export function EventList({
   return (
     <div className="flex-1 lg:flex lg:flex-col lg:min-h-0">
       <div className="flex items-center gap-4 mb-3">
-          <h3 className="text-xs font-semibold text-primary uppercase tracking-wide leading-none">
+          <h3 className="text-xs font-semibold text-foreground uppercase tracking-wide leading-none">
             {searchQuery.trim().length === 0 ? (
               <>All Events ({allFilteredCount})</>
             ) : (
@@ -96,9 +96,10 @@ export function EventList({
                   px-3 py-1.5
                   rounded-md
                   border border-border
-                  bg-secondary/50
+                  bg-card
                   text-primary
-                  hover:bg-accent hover:text-accent-foreground
+                  hover:bg-primary/10
+                  hover:text-primary
                   transition
                   disabled:opacity-30 disabled:cursor-not-allowed
                 "
@@ -106,7 +107,7 @@ export function EventList({
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              <span className="text-nowrap text-sm font-medium text-primary">
+              <span className="text-nowrap text-sm font-medium text-muted-foreground">
                 {page + 1} / {totalPages}
               </span>
 
@@ -117,12 +118,13 @@ export function EventList({
                   px-3 py-1.5
                   rounded-md
                   border border-border
-                  bg-secondary/50
-                  text-primary
-                  hover:bg-accent hover:text-accent-foreground
+                  bg-card
+                  text-primary-text
+                  hover:bg-primary/10
+                  hover:text-primary-text
                   transition
                   disabled:opacity-30 disabled:cursor-not-allowed
-                  disabled:hover:bg-secondary/50
+                  disabled:hover:bg-card
                   disabled:hover:text-primary
                 "
               >
@@ -149,14 +151,14 @@ export function EventList({
                 onMouseEnter={() => setHoveredEvent(event.id)}
                 onMouseLeave={() => setHoveredEvent(null)}
                 className={`relative border rounded-lg transition-all duration-200 ease-out ${isHovered
-                  ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 shadow-md"
+                  ? "border-primary/35 bg-primary/5 shadow-md"
                   : scheduled
-                    ? "border-[var(--color-primary)] bg-[var(--color-secondary)] shadow-md"
+                    ? "border-highlight/40 bg-highlight/5 shadow-md"
                     : "bg-card border-border shadow-sm"
                   }`}
               >
                 {isHovered && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent rounded-l-lg" />
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-lg" />
                 )}
                 {/* Main Row */}
                 <div className="flex items-start gap-3 p-3">
@@ -175,8 +177,8 @@ export function EventList({
                       </h4>
                       <div className="mt-1 text-xs text-muted-foreground space-y-1">
                         {/* TIME */}
-                        <div className="flex items-center gap-1 whitespace-nowrap text-primary font-semibold">
-                          <Clock className="w-3 h-3 text-accent flex-shrink-0" />
+                        <div className="flex items-center gap-1 whitespace-nowrap text-primary-text font-semibold">
+                          <Clock className="w-3 h-3 text-primary-text flex-shrink-0" />
                           <span>{event.startTime || "8:00 AM"} - {event.endTime || "9:00 PM"}</span>
                         </div>
 
@@ -185,6 +187,9 @@ export function EventList({
                           <MapPin className="w-3 h-3 flex-shrink-0" />
                           <span className="truncate">
                             {event.location}
+                            {(event.location_details || event.location_details) && (
+                              <> — {event.location_details || event.location_details}</>
+                            )}
                           </span>
                         </div>
                       </div>
@@ -195,8 +200,8 @@ export function EventList({
                     onClick={() =>
                       scheduled ? removeFromSchedule(event.id) : addToSchedule(event)}
                     className={`flex-shrink-0 p-2 rounded-full transition-all ${scheduled
-                      ? "bg-accent text-accent-foreground"
-                      : "bg-secondary hover:bg-primary hover:text-primary-foreground text-muted-foreground"
+                      ? "bg-highlight text-highlight-foreground"
+                      : "bg-primary/10 text-primary-text hover:bg-primary hover:text-primary-foreground"
                       }`}
                   >
                     {scheduled ? (
@@ -236,7 +241,7 @@ export function EventList({
                                     text-[11px]
                                     font-medium
                                     bg-primary/10
-                                    text-primary
+                                    text-primary-text
                                     rounded-full
                                     capitalize
                                   "
@@ -277,7 +282,7 @@ export function EventList({
               </p>
               <button
                 onClick={onBrowseAll}
-                className="mt-3 text-xs font-semibold text-accent hover:underline"
+                className="mt-3 text-xs font-semibold text-primary-text hover:underline"
               >
                 Browse all events
               </button>
