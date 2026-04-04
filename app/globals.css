@@ -59,7 +59,7 @@ button:disabled {
   width: 20px;
   height: 20px;
   border-radius: 9999px;
-  background: #022851;
+  background: var(--primary);
   box-shadow: 0 1px 3px rgba(0,0,0,0.25);
   overflow: visible;
   z-index: 1;
@@ -73,7 +73,7 @@ button:disabled {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  border: 2px solid #daaa00;
+  border: 2px solid var(--accent);
   animation: scheduledRipple 0.7s ease-out forwards;
   z-index: 2;
   pointer-events: none;

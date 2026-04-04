@@ -58,12 +58,13 @@ export default function PicnicDayPage() {
   const [activeTab, setActiveTab] = useState<"browse" | "popular" | "nearby">("browse")
 
   const categoryToTags: Record<string, string[]> = {
-    animals: ["animals"],
-    science: ["science", "engineering", "talks", "math", "space"],
-    music: ["music"],
-    arts: ["art", "crafts", "exhibits", "culture"],
-    food: ["food"],
-    family: ["games", "kids"],
+    family: ["kids", "toddlers", "fun", "activities", "games"],
+    animals: ["animals", "bugs", "insects", "pets"],
+    science: ["science", "education", "tech", "engineering", "math"],
+    music: ["music", "performance"],
+    creative: ["art", "crafts"],
+    food: ["food", "drink", "coffee"],
+    community: ["cultural", "culture", "personal", "services"],
   }
 
   useEffect(() => {
@@ -258,8 +259,6 @@ export default function PicnicDayPage() {
                     searchHistory={searchHistory}
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
                     onSearchSubmit={(value) => {
                       const finalQuery = (value ?? searchQuery).trim()
                       if (!finalQuery) {
