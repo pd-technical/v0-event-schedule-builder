@@ -6,7 +6,9 @@ import { MapContainer, TileLayer, Marker, Tooltip, useMap } from "react-leaflet"
 import type { Event, ScheduledEvent } from "@/app/page";
 import RoutingMachine from "./routing-machine";
 
-const NAVY = "#022851";
+const NAVY = "#123c73";
+const GOLD = "#ffbf00";
+const GOLD_DARK = "#d89f00";
 
 function isFoodTruck(event: Event | ScheduledEvent) {
   return event.name.toLowerCase().includes("food truck");
@@ -21,7 +23,7 @@ function createFoodTruckIcon(): L.DivIcon {
       height:${size}px;
       border-radius:50%;
       background:white;
-      border:2px solid #ffbf00;
+      border:2px solid ${GOLD};
       display:flex;
       align-items:center;
       justify-content:center;
@@ -260,9 +262,9 @@ function createHoveredIcon(): L.DivIcon {
       width:${size}px;
       height:${size}px;
       border-radius:50%;
-      background:#daaa00;
+      background:${GOLD};
       border:2px solid ${NAVY};
-      box-shadow:0 0 0 2px rgba(218,170,0,0.3);
+      box-shadow:0 0 0 2px rgba(255,191,0,0.3);
       transform:scale(1.15);
       transition:all 0.2s ease;
     "></div>

@@ -14,43 +14,36 @@ const categories = [
     id: "family",
     label: "Family Friendly",
     icon: Laugh,
-    color: "#f59e0b",
   },
   {
     id: "animals",
     label: "Animals",
     icon: Dog,
-    color: "#8b5cf6",
   },
   {
     id: "science",
     label: "STEM",
     icon: FlaskConical,
-    color: "#ef4444",
   },
   {
     id: "music",
     label: "Music",
     icon: Music,
-    color: "#3b82f6",
   },
   {
     id: "creative",
     label: "Creative",
     icon: Palette,
-    color: "#ec4899",
   },
   {
     id: "food",
     label: "Food",
     icon: Utensils,
-    color: "#10b981",
   },
   {
     id: "community",
     label: "Community",
     icon: Users,
-    color: "#6366f1",
   },
 ]
 
