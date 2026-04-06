@@ -5,13 +5,18 @@ import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Tooltip, useMap } from "react-leaflet";
 import type { Event, ScheduledEvent } from "@/app/page";
 import RoutingMachine from "./routing-machine";
+import { renderToStaticMarkup } from "react-dom/server";
+import { LuUtensils } from "react-icons/lu";
+import { Check, CheckCheck } from "lucide-react";
 
 const NAVY = "#123c73";
 const GOLD = "#ffbf00";
 const GOLD_DARK = "#d89f00";
 
 function isFoodTruck(event: Event | ScheduledEvent) {
-  return event.name.toLowerCase().includes("food truck");
+  return event.tags?.some(
+    (tag) => tag.toLowerCase().includes("food")
+  );
 }
 
 function createFoodTruckIcon(): L.DivIcon {
@@ -31,7 +36,7 @@ function createFoodTruckIcon(): L.DivIcon {
       line-height:1;
       box-shadow:0 2px 6px rgba(0,0,0,0.25);
     ">
-      🍔
+      ${renderToStaticMarkup(<LuUtensils color={GOLD_DARK} />)}
     </div>
   `;
 
@@ -170,7 +175,6 @@ function FitBoundsToSearchResults({
 
 // Same-location threshold (~1–2m)
 const LOCATION_KEY_DECIMALS = 5;
-const OFFSET_RADIUS_DEG = 0.00012;
 
 function locationKey(lat: number, lng: number): string {
   return `${lat.toFixed(LOCATION_KEY_DECIMALS)},${lng.toFixed(
@@ -202,9 +206,14 @@ function useOffsetPositions(
         if (n === 1) {
           out.set(e.id, [e.lat, e.lng]);
         } else {
-          const angle = (2 * Math.PI * i) / n;
-          const lat = e.lat + OFFSET_RADIUS_DEG * Math.cos(angle);
-          const lng = e.lng + OFFSET_RADIUS_DEG * Math.sin(angle);
+          // radius grows with number of points
+          const radius = 0.0001 + i * 0.00005;
+
+          const angle = i * 0.8; // spiral instead of circle
+
+          const lat = e.lat + radius * Math.cos(angle);
+          const lng = e.lng + radius * Math.sin(angle);
+
           out.set(e.id, [lat, lng]);
         }
       }
@@ -307,6 +316,7 @@ function createScheduledNumberedIcon(
 
 interface Props {
   events: Event[];
+  browseEvents: Event[];
   scheduledEvents: ScheduledEvent[];
   hoveredEvent: string | null;
   setHoveredEvent: (id: string | null) => void;
@@ -320,6 +330,7 @@ interface Props {
 
 export default function CampusMapInner({
   events,
+  browseEvents,
   scheduledEvents,
   hoveredEvent,
   setHoveredEvent,
@@ -331,6 +342,7 @@ export default function CampusMapInner({
   isExporting,
 }: Props) {
   const [showScheduleOnly, setShowScheduleOnly] = useState(false)
+  const [showFoodOnly, setShowFoodOnly] = useState(false);
   /* Leaflet icon fix */
   useEffect(() => {
     delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -360,36 +372,54 @@ export default function CampusMapInner({
       return scheduledEvents as (Event | ScheduledEvent)[];
     }
 
-    if (showScheduleOnly) {
-      return scheduledEvents as (Event | ScheduledEvent)[];
-    }
-
-    const eventsForCurrentPage = events.slice(
+    const eventsForCurrentPage = browseEvents.slice(
       resultsPage * pageSize,
       (resultsPage + 1) * pageSize
     );
 
+    const hovered = hoveredEvent
+      ? browseEvents.find((e) => e.id === hoveredEvent)
+      : undefined;
+
     const byId = new Map<string, Event | ScheduledEvent>();
 
-    scheduledEvents.forEach((e) => byId.set(e.id, e));
-    eventsForCurrentPage.forEach((e) => {
-      if (!byId.has(e.id)) byId.set(e.id, e);
-    });
+    // base set:
+    // - if schedule is on, show scheduled events
+    // - otherwise show scheduled + current page events + hovered
+    if (showScheduleOnly) {
+      scheduledEvents.forEach((e) => byId.set(e.id, e));
+    } else {
+      scheduledEvents.forEach((e) => byId.set(e.id, e));
+      eventsForCurrentPage.forEach((e) => {
+        if (!byId.has(e.id)) byId.set(e.id, e);
+      });
 
-    if (hoveredEvent) {
-      const hovered = events.find((e) => e.id === hoveredEvent);
-      if (hovered && !byId.has(hovered.id)) byId.set(hovered.id, hovered);
+      if (hovered && !byId.has(hovered.id)) {
+        byId.set(hovered.id, hovered);
+      }
+    }
+
+    // food toggle is additive:
+    // add food events on top of whatever is already visible
+    if (showFoodOnly) {
+      events.forEach((e) => {
+        if (isFoodTruck(e) && !byId.has(e.id)) {
+          byId.set(e.id, e);
+        }
+      });
     }
 
     return Array.from(byId.values());
   }, [
     events,
+    browseEvents,
     scheduledEvents,
     resultsPage,
     pageSize,
     hoveredEvent,
     isExporting,
     showScheduleOnly,
+    showFoodOnly,
   ]);
 
   /* Offset positions */
@@ -443,36 +473,48 @@ export default function CampusMapInner({
       data-onboarding="campus-map"
       className="relative w-full min-h-[320px] h-[400px] lg:h-auto lg:flex-1 lg:min-h-0"
     >
-      <div className="absolute bottom-4 left-4 z-[2000] flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-lg border border-gray-200">
-        <span
-          className={`text-xs font-semibold ${
-            !showScheduleOnly ? "text-[#022851]" : "text-gray-500"
-          }`}
-        >
-          All
-        </span>
+      <div className="absolute bottom-4 left-4 z-[2000]">
+      <div className="rounded-xl border border-border/70 bg-card/90 px-2.5 py-2 shadow-lg backdrop-blur-md">
+        
+        <div className="mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Map filters
+        </div>
 
-        <button
-          onClick={() => setShowScheduleOnly(!showScheduleOnly)}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-            showScheduleOnly ? "bg-[#022851]" : "bg-gray-300"
-          }`}
-        >
-          <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-              showScheduleOnly ? "translate-x-6" : "translate-x-1"
+        <div className="flex items-center gap-2">
+          
+          {/* Schedule */}
+          <button
+            type="button"
+            onClick={() => setShowScheduleOnly((prev) => !prev)}
+            aria-pressed={showScheduleOnly}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all duration-150 active:scale-[0.96] ${
+              showScheduleOnly
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "border border-border bg-card text-primary hover:bg-secondary"
             }`}
-          />
-        </button>
+          >
+            <Check className="h-3 w-3" />
+            Schedule
+          </button>
 
-        <span
-          className={`text-xs font-semibold ${
-            showScheduleOnly ? "text-[#022851]" : "text-gray-500"
-          }`}
-        >
-          Schedule
-        </span>
+          {/* Food */}
+          <button
+            type="button"
+            onClick={() => setShowFoodOnly((prev) => !prev)}
+            aria-pressed={showFoodOnly}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all duration-150 active:scale-[0.96] ${
+              showFoodOnly
+                ? "bg-accent text-accent-foreground shadow-sm"
+                : "border border-border bg-card text-muted-foreground hover:bg-secondary"
+            }`}
+          >
+            <LuUtensils size={12} />
+            Food
+          </button>
+
+        </div>
       </div>
+    </div>
       <MapContainer
         className="h-full w-full"
         center={[38.5382, -121.7617]}
@@ -544,7 +586,10 @@ export default function CampusMapInner({
           isExporting={!!isExporting}
           routeBoundsRef={routeBoundsRef}
         />
-        <FitBoundsToSearchResults events={events} skip={!!isExporting} />
+        <FitBoundsToSearchResults
+          events={showFoodOnly ? eventsOnMap : browseEvents}
+          skip={!!isExporting || shouldPanToHovered}
+        />
         <FlyToHoveredEvent
           hoveredEvent={hoveredEvent}
           events={eventsOnMap}
