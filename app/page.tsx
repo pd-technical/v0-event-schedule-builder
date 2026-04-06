@@ -10,6 +10,11 @@ import { SchedulePanel } from "@/app/components/schedule-panel"
 import { getEvents } from "@/app/lib/fetchEvents"
 import { rankedEventMatchesSearch } from "@/app/lib/searchUtils"
 import { exportSchedulePdf } from "@/app/lib/exportPdf"
+import {
+  readScheduleCache,
+  writeScheduleCache,
+  scheduleFromCachedIds,
+} from "@/app/lib/scheduleCache"
 import { OnboardingProvider } from "@/app/components/onboarding/onboarding-provider"
 
 export interface Event {
@@ -56,6 +61,8 @@ export default function PicnicDayPage() {
   const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [isExportingPdf, setIsExportingPdf] = useState(false)
   const [activeTab, setActiveTab] = useState<"browse" | "popular" | "nearby">("browse")
+  const [eventsReady, setEventsReady] = useState(false)
+  const [scheduleCacheReady, setScheduleCacheReady] = useState(false)
 
   const categoryToTags: Record<string, string[]> = {
     family: ["kids", "toddlers", "fun", "activities", "games"],
@@ -74,10 +81,35 @@ export default function PicnicDayPage() {
         setEvents(data)
       } catch (error) {
         console.error("Failed to load events:", error)
+      } finally {
+        setEventsReady(true)
       }
     }
     loadEvents()
   }, [])
+
+  // Restore schedule from localStorage after events load (2-day expiry handled in scheduleCache).
+  // Refreshing the saved timestamp on restore keeps the cache alive while someone uses Picnic Day.
+  useEffect(() => {
+    if (!eventsReady) return
+    if (events.length > 0) {
+      const cached = readScheduleCache()
+      if (cached?.orderedEventIds.length) {
+        const restored = scheduleFromCachedIds(cached.orderedEventIds, events)
+        if (restored.length > 0) {
+          setScheduledEvents(restored)
+          writeScheduleCache(restored.map((e) => e.id))
+        }
+      }
+    }
+    setScheduleCacheReady(true)
+  }, [eventsReady, events])
+
+  useEffect(() => {
+    if (!scheduleCacheReady) return
+    if (events.length === 0) return
+    writeScheduleCache(scheduledEvents.map((e) => e.id))
+  }, [scheduledEvents, scheduleCacheReady, events.length])
 
   const searchRanked = useMemo(() => {
     if (!submittedSearchQuery.trim()) return events
