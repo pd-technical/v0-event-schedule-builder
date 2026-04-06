@@ -72,74 +72,71 @@ export function EventList({
 }, [page])
 
   return (
-    <div className="flex-1 lg:flex lg:flex-col lg:min-h-0">
-      <div className="flex items-center gap-4 mb-3">
-          <h3 className="text-xs font-semibold text-primary uppercase tracking-wide leading-none">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden lg:min-h-0">
+      <div className="mb-3 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
+        <h3 className="min-w-0 text-xs font-semibold uppercase tracking-wide text-primary">
             {searchQuery.trim().length === 0 ? (
               <>All Events ({allFilteredCount})</>
             ) : (
               <>
-                {allFilteredCount} Events Found
-                <span className="normal-case font-normal text-muted-foreground ml-1">
-                  for "<span className="text-foreground">{searchQuery.trim()}</span>"
+                {allFilteredCount} Events Found{" "}
+                <span className="normal-case font-normal text-muted-foreground">
+                  for &quot;
+                  <span className="break-all text-foreground">{searchQuery.trim()}</span>
+                  &quot;
                 </span>
               </>
             )}
           </h3>
 
-        {/* RIGHT — Sort + Pagination */}
-        <div className="ml-auto flex items-center gap-2 text-xs">
+        {/* RIGHT — Pagination */}
+        <div className="flex shrink-0 items-center gap-2 text-xs sm:ml-auto sm:shrink-0">
 
-          {/* PAGINATION */}
+          {/* PAGINATION — fixed hit area so icons aren’t clipped by tight line boxes */}
           {totalPages > 1 && (
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={() => onPageChange(Math.max(0, page - 1))}
                 disabled={page === 0}
                 className="
-                  px-3 py-1.5
-                  rounded-md
-                  border border-border
-                  bg-secondary/50
-                  text-primary
-                  hover:bg-accent hover:text-accent-foreground
-                  transition
-                  disabled:opacity-30 disabled:cursor-not-allowed
+                  inline-flex h-9 w-9 shrink-0 items-center justify-center
+                  rounded-md border border-border bg-secondary/50 text-primary
+                  transition hover:bg-accent hover:text-accent-foreground
+                  disabled:cursor-not-allowed disabled:opacity-30
                 "
+                aria-label="Previous page"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="h-4 w-4" strokeWidth={2.25} />
               </button>
 
-              <span className="text-nowrap text-sm font-medium text-primary">
+              <span className="text-nowrap text-sm font-medium leading-none text-primary">
                 {page + 1} / {totalPages}
               </span>
 
               <button
+                type="button"
                 onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
                 disabled={page >= totalPages - 1}
                 className="
-                  px-3 py-1.5
-                  rounded-md
-                  border border-border
-                  bg-secondary/50
-                  text-primary
-                  hover:bg-accent hover:text-accent-foreground
-                  transition
-                  disabled:opacity-30 disabled:cursor-not-allowed
-                  disabled:hover:bg-secondary/50
-                  disabled:hover:text-primary
+                  inline-flex h-9 w-9 shrink-0 items-center justify-center
+                  rounded-md border border-border bg-secondary/50 text-primary
+                  transition hover:bg-accent hover:text-accent-foreground
+                  disabled:cursor-not-allowed disabled:opacity-30
+                  disabled:hover:bg-secondary/50 disabled:hover:text-primary
                 "
+                aria-label="Next page"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="h-4 w-4" strokeWidth={2.25} />
               </button>
             </div>
           )}
         </div>
       </div>
-      <div className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col lg:min-h-0">
         <div
           ref={listScrollRef}
-          className="space-y-2 lg:flex-1 lg:overflow-y-auto lg:mr-0"
+          className="min-w-0 space-y-2 overflow-x-hidden overflow-y-auto lg:flex-1"
         >
           {events.map((event) => {
             const scheduled = isScheduled(event.id)
@@ -152,7 +149,7 @@ export function EventList({
                 data-event-id={event.id}
                 onMouseEnter={() => setHoveredEvent(event.id)}
                 onMouseLeave={() => setHoveredEvent(null)}
-                className={`relative border rounded-lg transition-all duration-200 ease-out ${isHovered
+                className={`relative min-w-0 overflow-hidden rounded-lg border transition-all duration-200 ease-out ${isHovered
                   ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 shadow-md"
                   : scheduled
                     ? "border-[var(--color-primary)] bg-[var(--color-secondary)] shadow-md"
@@ -163,37 +160,41 @@ export function EventList({
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent rounded-l-lg" />
                 )}
                 {/* Main Row */}
-                <div className="flex items-start gap-3 p-3">
+                <div className="flex min-w-0 items-start gap-3 p-3">
                   <button
                     onClick={() => {
                       setExpandedEvent(isExpanded ? null : event.id)
                       setHoveredEvent(event.id)
                     }}
-                    className="flex-1 flex items-start gap-3 text-left"
+                    className="flex min-w-0 flex-1 items-start gap-3 text-left"
                   >
-                    <ChevronDown className={`w-4 h-4 mt-1 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""
+                    <ChevronDown className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""
                       }`} />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-foreground flex items-center gap-2">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="flex min-w-0 items-start gap-2 font-medium text-foreground">
                         {isFoodTruck(event) && (
-                          <span className="text-base">🍔</span>
+                          <span className="shrink-0 text-base leading-6">🍔</span>
                         )}
-                        {event.name}
+                        <span className="min-w-0 flex-1 break-words [overflow-wrap:anywhere]">
+                          {event.name}
+                        </span>
                       </h4>
-                      <div className="mt-1 text-xs text-muted-foreground space-y-1">
+                      <div className="mt-1 space-y-1 text-xs text-muted-foreground">
                         {/* TIME */}
-                        <div className="flex items-center gap-1 whitespace-nowrap text-primary font-semibold">
-                          <Clock className="w-3 h-3 text-accent flex-shrink-0" />
-                          <span>{event.startTime || "8:00 AM"} - {event.endTime || "9:00 PM"}</span>
+                        <div className="flex min-w-0 items-center gap-1 font-semibold text-primary">
+                          <Clock className="h-3 w-3 shrink-0 text-accent" />
+                          <span className="min-w-0 truncate">
+                            {event.startTime || "8:00 AM"} - {event.endTime || "9:00 PM"}
+                          </span>
                         </div>
 
                         {/* LOCATION */}
-                        <div className="flex items-center gap-1 min-w-0">
-                          <MapPin className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">
+                        <div className="flex min-w-0 items-center gap-1">
+                          <MapPin className="h-3 w-3 shrink-0" />
+                            <span className="min-w-0 break-words">
                               {event.location}
-                              {(event.location_details || event.location_details) && (
-                              <> — {event.location_details || event.location_details}</>
+                              {event.location_details && (
+                              <> — {event.location_details}</>
                             )}
                           </span>
                         </div>
@@ -220,14 +221,14 @@ export function EventList({
                 {/* Expanded Details */}
                 {isExpanded && (
                   <div className="border-t border-primary/10 bg-secondary/30">
-                    <div className="flex items-start gap-3 p-3">
+                    <div className="flex min-w-0 items-start gap-3 p-3">
 
                       {/* Chevron column spacer (matches Chevron width) */}
-                      <div className="w-4" />
+                      <div className="w-4 shrink-0" />
 
                       {/* Content column (aligns with title/time/location above) */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-muted-foreground leading-relaxed">
+                      <div className="min-w-0 flex-1">
+                        <p className="break-words text-sm leading-relaxed text-muted-foreground">
                           {event.description}
                         </p>
 
@@ -260,7 +261,7 @@ export function EventList({
                       </div>
 
                       {/* Plus button column spacer (matches button width) */}
-                      <div className="w-8" />
+                      <div className="w-8 shrink-0" />
                     </div>
                   </div>
                 )}

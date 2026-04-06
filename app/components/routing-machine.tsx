@@ -98,6 +98,9 @@ export default function RoutingMachine({
       );
     }
 
+    const container = map.getContainer?.();
+    if (!container?.isConnected) return;
+
     const routingControl = L.Routing.control({
       waypoints: waypointsForRouter,
       router,
@@ -107,7 +110,14 @@ export default function RoutingMachine({
       fitSelectedRoutes: false, // keep user's zoom/pan; don't auto-fit to route
       show: false,
       lineOptions: ROUTE_LINE_OPTIONS,
-    }).addTo(map);
+    });
+
+    try {
+      routingControl.addTo(map);
+    } catch (e) {
+      console.warn("Route could not be calculated:", e);
+      return;
+    }
 
     routingControl.on("routesfound", (e: { routes: Array<{ coordinates: L.LatLng[] }> }) => {
       const coords = e.routes[0]?.coordinates;

@@ -54,7 +54,7 @@ sortOption,
 setSortOption,
 }: CategoryFiltersProps) {
   return (
-    <div className="w-full xl:w-44 xl:flex-shrink-0 space-y-6">
+    <div className="min-w-0 w-full space-y-6 xl:w-44 xl:shrink-0">
 
       {/* SORT BY */}
       <div data-onboarding="sort-section" className="space-y-3">
@@ -92,8 +92,7 @@ setSortOption,
           FILTER BY
         </h3>
         {/* CATEGORY LIST */}
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1
-                        xl:flex-col xl:gap-2 xl:overflow-visible xl:mx-0 xl:pb-0">
+        <div className="flex flex-wrap gap-2 pb-1 xl:flex-col xl:flex-nowrap xl:gap-2 xl:pb-0">
           {categories.map((category) => {
             const Icon = category.icon
             const isSelected = selectedCategories.includes(category.id)
@@ -103,8 +102,8 @@ setSortOption,
                 key={category.id}
                 onClick={() => toggleCategory(category.id)}
                 className={`
-                  relative flex items-start gap-3 p-2 rounded-lg border
-                  transition-all duration-200 text-left flex-shrink-0 w-auto min-w-[170px] xl:w-full
+                  relative box-border flex min-w-0 items-start gap-3 rounded-lg border p-2
+                  text-left transition-all duration-200 w-full sm:w-[calc(50%-0.25rem)] xl:w-full
                   border-border
                   hover:bg-pink-500/5
                   ${isSelected

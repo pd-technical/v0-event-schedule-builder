@@ -6,6 +6,7 @@ import { TUTORIAL_STEPS } from "./tutorial-steps"
 import { WelcomeDialog } from "./welcome-dialog"
 import { SpotlightOverlay } from "./spotlight-overlay"
 import { PersonalizationDialog } from "./personalization-dialog"
+import type { PersonalizationPillId } from "@/app/lib/personalizationInterests"
 
 type Phase = "checking" | "welcome" | "tutorial" | "personalization" | "done"
 
@@ -25,6 +26,8 @@ interface OnboardingProviderProps {
   children: ReactNode
   onResetSearch?: () => void
   onClearSchedule?: () => void
+  /** Called when the user finishes personalization with 3 picks (schedule is not cleared). */
+  onPersonalizationComplete?: (interestIds: PersonalizationPillId[]) => void
   scheduledEventCount?: number
 }
 
@@ -32,16 +35,26 @@ export function OnboardingProvider({
   children,
   onResetSearch,
   onClearSchedule,
+  onPersonalizationComplete,
   scheduledEventCount = 0,
 }: OnboardingProviderProps) {
   const [phase, setPhase] = useState<Phase>("checking")
   const [step, setStep] = useState(0)
 
   const onResetSearchRef = useRef(onResetSearch)
-  useEffect(() => { onResetSearchRef.current = onResetSearch }, [onResetSearch])
+  useEffect(() => {
+    onResetSearchRef.current = onResetSearch
+  }, [onResetSearch])
 
   const onClearScheduleRef = useRef(onClearSchedule)
-  useEffect(() => { onClearScheduleRef.current = onClearSchedule }, [onClearSchedule])
+  useEffect(() => {
+    onClearScheduleRef.current = onClearSchedule
+  }, [onClearSchedule])
+
+  const onPersonalizationCompleteRef = useRef(onPersonalizationComplete)
+  useEffect(() => {
+    onPersonalizationCompleteRef.current = onPersonalizationComplete
+  }, [onPersonalizationComplete])
 
   useEffect(() => {
     if (hasSeenOnboarding()) {
@@ -52,11 +65,19 @@ export function OnboardingProvider({
     }
   }, [])
 
-  const finish = useCallback(() => {
+  /** Skip tutorial, decline personalization, or close dialog — reset search and clear schedule. */
+  const finishSkipped = useCallback(() => {
     markOnboardingSeen()
     setPhase("done")
     onResetSearchRef.current?.()
     onClearScheduleRef.current?.()
+  }, [])
+
+  /** User completed personalization: keep schedule, only reset search/filters. */
+  const finishPersonalized = useCallback(() => {
+    markOnboardingSeen()
+    setPhase("done")
+    onResetSearchRef.current?.()
   }, [])
 
   const handleStart = useCallback(() => {
@@ -81,23 +102,28 @@ export function OnboardingProvider({
     setPhase("welcome")
   }, [])
 
+  const handlePersonalized = useCallback((interestIds: PersonalizationPillId[]) => {
+    onPersonalizationCompleteRef.current?.(interestIds)
+    finishPersonalized()
+  }, [finishPersonalized])
+
   return (
     <OnboardingContext.Provider value={{ restart }}>
       {children}
       {phase === "welcome" && (
-        <WelcomeDialog onStart={handleStart} onSkip={finish} />
+        <WelcomeDialog onStart={handleStart} onSkip={finishSkipped} />
       )}
       {phase === "tutorial" && (
         <SpotlightOverlay
           step={step}
           onNext={handleNext}
           onBack={handleBack}
-          onSkip={finish}
+          onSkip={finishSkipped}
           scheduledEventCount={scheduledEventCount}
         />
       )}
       {phase === "personalization" && (
-        <PersonalizationDialog onComplete={finish} />
+        <PersonalizationDialog onDecline={finishSkipped} onPersonalized={handlePersonalized} />
       )}
     </OnboardingContext.Provider>
   )

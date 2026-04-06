@@ -11,6 +11,11 @@ import { getEvents } from "@/app/lib/fetchEvents"
 import { rankedEventMatchesSearch } from "@/app/lib/searchUtils"
 import { exportSchedulePdf } from "@/app/lib/exportPdf"
 import { OnboardingProvider } from "@/app/components/onboarding/onboarding-provider"
+import {
+  orderEventsByPersonalization,
+  eventsForHardcodedPersonalizationPicks,
+  type PersonalizationPillId,
+} from "@/app/lib/personalizationInterests"
 
 export interface Event {
   id: string
@@ -55,7 +60,9 @@ export default function PicnicDayPage() {
   const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null)
   const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [isExportingPdf, setIsExportingPdf] = useState(false)
-  const [activeTab, setActiveTab] = useState<"browse" | "popular" | "nearby">("browse")
+  const [personalInterests, setPersonalInterests] = useState<PersonalizationPillId[] | null>(null)
+  const [personalizationSeedPending, setPersonalizationSeedPending] =
+    useState<PersonalizationPillId[] | null>(null)
 
   const categoryToTags: Record<string, string[]> = {
     family: ["kids", "toddlers", "fun", "activities", "games"],
@@ -79,10 +86,34 @@ export default function PicnicDayPage() {
     loadEvents()
   }, [])
 
+  useEffect(() => {
+    if (!personalizationSeedPending || events.length === 0) return
+    const ids = personalizationSeedPending
+    const picked = eventsForHardcodedPersonalizationPicks(events, ids)
+    const sortedByTime = [...picked].sort((a, b) =>
+      a.startTime.localeCompare(b.startTime)
+    )
+    setScheduledEvents(
+      sortedByTime.map((e, i) => ({ ...e, orderIndex: i }))
+    )
+    setPersonalizationSeedPending(null)
+    setResultsPage(0)
+  }, [personalizationSeedPending, events])
+
+  const handlePersonalizationComplete = useCallback((interestIds: PersonalizationPillId[]) => {
+    setPersonalInterests(interestIds)
+    setPersonalizationSeedPending(interestIds)
+  }, [])
+
   const searchRanked = useMemo(() => {
-    if (!submittedSearchQuery.trim()) return events
-    return rankedEventMatchesSearch(events, submittedSearchQuery)
-  }, [events, submittedSearchQuery])
+    if (submittedSearchQuery.trim()) {
+      return rankedEventMatchesSearch(events, submittedSearchQuery)
+    }
+    if (personalInterests?.length) {
+      return orderEventsByPersonalization(events, personalInterests)
+    }
+    return events
+  }, [events, submittedSearchQuery, personalInterests])
 
   const filteredEvents = useMemo(() => {
     let result = searchRanked
@@ -122,15 +153,13 @@ export default function PicnicDayPage() {
     }
 
     else if (sortOption === "relevance") {
-      if (!submittedSearchQuery.trim()) {
-        sorted.sort((a, b) =>
-          a.name.localeCompare(b.name)
-        )
+      if (!submittedSearchQuery.trim() && !personalInterests?.length) {
+        sorted.sort((a, b) => a.name.localeCompare(b.name))
       }
     }
 
     return sorted
-  }, [searchRanked, selectedCategories, sortOption, submittedSearchQuery])
+  }, [searchRanked, selectedCategories, sortOption, submittedSearchQuery, personalInterests])
 
   const [RESULTS_PAGE_SIZE, setResultsPageSize] = useState(20)
 
@@ -246,6 +275,7 @@ export default function PicnicDayPage() {
         setSelectedCategories([])
       }}
       onClearSchedule={() => setScheduledEvents([])}
+      onPersonalizationComplete={handlePersonalizationComplete}
       scheduledEventCount={scheduledEvents.length}
     >
       <main className="h-screen flex flex-col bg-background px-4 sm:px-5 md:px-6 py-3 overflow-hidden">
@@ -284,14 +314,14 @@ export default function PicnicDayPage() {
                   />
                 </div>
 
-                <div data-onboarding="event-list" className="flex flex-col gap-6 mt-6 min-w-0 xl:flex-row lg:flex-1 lg:min-h-0">
+                <div data-onboarding="event-list" className="mt-6 flex min-h-0 min-w-0 flex-1 flex-col gap-6 overflow-x-hidden lg:min-h-0 xl:flex-row">
                   <CategoryFilters
                     selectedCategories={selectedCategories}
                     toggleCategory={toggleCategory}
                     sortOption={sortOption}
                     setSortOption={setSortOption}
                   />
-                  <div className="flex-1 min-w-0 lg:min-h-0 lg:flex lg:flex-col -mt-2">
+                  <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden lg:min-h-0 lg:flex lg:flex-col">
                     <EventList
                       events={eventsForCurrentPage}
                       allFilteredCount={filteredEvents.length}
