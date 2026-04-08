@@ -63,6 +63,7 @@ export default function PicnicDayPage() {
   const [activeTab, setActiveTab] = useState<"browse" | "popular" | "nearby">("browse")
   const [eventsReady, setEventsReady] = useState(false)
   const [scheduleCacheReady, setScheduleCacheReady] = useState(false)
+  const [isMobileBlocked, setIsMobileBlocked] = useState(false)
 
   const categoryToTags: Record<string, string[]> = {
     family: ["kids", "toddlers", "fun", "activities", "games"],
@@ -179,6 +180,8 @@ export default function PicnicDayPage() {
     else {
       setResultsPageSize(20)  // desktop
     }
+
+    setIsMobileBlocked(width < 768)
   }
   updateSize()
   window.addEventListener("resize", updateSize)
@@ -280,6 +283,17 @@ export default function PicnicDayPage() {
       onClearSchedule={() => setScheduledEvents([])}
       scheduledEventCount={scheduledEvents.length}
     >
+      {isMobileBlocked ? (
+        <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white via-slate-50 to-blue-50 px-6 py-10 text-center">
+          <div className="max-w-md w-full rounded-2xl bg-white/80 backdrop-blur shadow-xl ring-1 ring-slate-200 px-6 py-7 flex flex-col items-center gap-4">
+            <div className="text-4xl">🚧</div>
+            <h1 className="text-xl font-semibold text-slate-800">Scheduler under construction</h1>
+            <p className="text-sm text-slate-600">
+              We&rsquo;re still polishing the mobile experience. Please switch to a desktop or laptop to see the scheduler in action. Thanks for your patience!
+            </p>
+          </div>
+        </main>
+      ) : (
       <main className="h-screen flex flex-col bg-background px-4 sm:px-5 md:px-6 py-3 overflow-hidden">
             {/* Mobile/tablet: single column (search, list, then map, schedule). Large: row (search left, map right) */}
             <div className="flex flex-col gap-5 md:gap-6 lg:flex-row lg:gap-4 flex-1 min-h-0">
@@ -371,6 +385,7 @@ export default function PicnicDayPage() {
               </div>
             </div>
         </main>
+      )}
     </OnboardingProvider>
   )
 }
