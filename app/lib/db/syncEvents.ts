@@ -71,6 +71,12 @@ async function sync () {
       event.showtime
     );
 
+    // delete existing tags for the event
+    db.prepare(`
+      DELETE FROM event_tags
+      WHERE event_id = ?
+    `).run(event.id);
+
     // insert tags and event_tags
     for (const tag of event.tags || []) {
       const tagRow = db.prepare(`
@@ -86,7 +92,6 @@ async function sync () {
         db.prepare(`
           INSERT INTO event_tags (event_id, tag_id)
           VALUES (?, ?)
-          ON CONFLICT(event_id, tag_id) DO NOTHING
         `).run(event.id, tagId);
       }
     }
