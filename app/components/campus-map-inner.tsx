@@ -624,6 +624,8 @@ export default function CampusMapInner({
           const isScheduled = scheduleIndex != null;
           const isHovered = hoveredEvent === event.id;
           const isNewlyAdded = recentlyAddedId === event.id;
+          const isFood = isFoodTruck(event);
+          const isRestroomEvent = isRestroom(event);
 
           const [lat, lng] =
             offsetPositions.get(event.id) ?? [event.lat, event.lng];
@@ -637,6 +639,17 @@ export default function CampusMapInner({
             icons
           });
 
+          // Layer order: scheduled (top) > regular search results > food/restrooms
+          let zIndex = 0;
+          if (isScheduled) {
+            zIndex = 200;
+          } else if (isFood || isRestroomEvent) {
+            zIndex = 40;
+          } else {
+            zIndex = 120;
+          }
+          if (isHovered) zIndex += 15;
+
           return (
             <Marker
               key={event.id}
@@ -646,7 +659,7 @@ export default function CampusMapInner({
               }}
               position={[lat, lng]}
               icon={icon}
-              zIndexOffset={isScheduled ? 100 : isHovered ? 50 : 0}
+              zIndexOffset={zIndex}
               eventHandlers={{
                 mouseover: () => setHoveredEvent(event.id),
                 mouseout: () => setHoveredEvent(null),
