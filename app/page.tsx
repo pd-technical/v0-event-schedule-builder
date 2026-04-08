@@ -15,6 +15,7 @@ import {
   writeScheduleCache,
   scheduleFromCachedIds,
 } from "@/app/lib/scheduleCache"
+import { exportScheduleIcs } from "@/app/lib/exportIcs"
 import { OnboardingProvider } from "@/app/components/onboarding/onboarding-provider"
 
 export interface Event {
@@ -283,6 +284,15 @@ export default function PicnicDayPage() {
     }
   }
 
+  const handleExportIcs = async () => {
+    setIsExportingPdf(true)
+    try {
+      await exportScheduleIcs(scheduledEvents)
+    } finally {
+      setIsExportingPdf(false)
+    }
+  }
+
   const handleBrowseAllEvents = () => {
     setSearchQuery("")
     setSubmittedSearchQuery("")
@@ -396,7 +406,8 @@ export default function PicnicDayPage() {
                   scheduledEvents={scheduledEvents}
                   removeFromSchedule={removeFromSchedule}
                   reorderSchedule={reorderSchedule}
-                  onExport={handleExportPdf}
+                  onExportPdf={handleExportPdf}
+                  onExportIcs={handleExportIcs}
                   isExporting={isExportingPdf}
                 />
               </div>

@@ -3,14 +3,15 @@
 import React from "react"
 
 import { useState, useRef } from "react"
-import { X, GripVertical, AlertTriangle, Calendar, Download, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
+import { X, GripVertical, AlertTriangle, Calendar, Download, ChevronUp, ChevronDown, Loader2, FileText, CalendarClock } from "lucide-react"
 import type { ScheduledEvent } from "@/app/page"
 
 interface SchedulePanelProps {
   scheduledEvents: ScheduledEvent[]
   removeFromSchedule: (eventId: string) => void
   reorderSchedule: (fromIndex: number, toIndex: number) => void
-  onExport: () => void
+  onExportPdf: () => void
+  onExportIcs: () => void
   isExporting: boolean
 }
 
@@ -34,13 +35,15 @@ export function SchedulePanel({
   scheduledEvents,
   removeFromSchedule,
   reorderSchedule,
-  onExport,
+  onExportPdf,
+  onExportIcs,
   isExporting,
 }: SchedulePanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const dragOverIndex = useRef<number | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [showExportMenu, setShowExportMenu] = useState(false)
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index)
@@ -207,16 +210,38 @@ export function SchedulePanel({
 
           {/* Footer */}
           {scheduledEvents.length > 0 && (
-            <div className="p-3 border-t border-border">
+            <div className="p-3 border-t border-border relative">
               <button
                 data-onboarding="export-button"
-                onClick={onExport}
+                onClick={() => setShowExportMenu((v) => !v)}
                 disabled={isExporting}
                 className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
               >
                 {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                 {isExporting ? "Exporting..." : "Export Schedule"}
+                <ChevronDown className={`w-4 h-4 transition-transform ${showExportMenu ? "rotate-180" : ""}`} />
               </button>
+
+              {showExportMenu && (
+                <div className="absolute left-3 right-3 mt-2 rounded-lg border border-border bg-card shadow-lg overflow-hidden z-10">
+                  <button
+                    onClick={() => { setShowExportMenu(false); onExportPdf(); }}
+                    disabled={isExporting}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors disabled:opacity-60"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Export as PDF
+                  </button>
+                  <button
+                    onClick={() => { setShowExportMenu(false); onExportIcs(); }}
+                    disabled={isExporting}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors disabled:opacity-60"
+                  >
+                    <CalendarClock className="w-4 h-4" />
+                    Export as iCal (.ics)
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </>
