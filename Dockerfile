@@ -11,6 +11,7 @@ FROM base AS build
 RUN npm ci
 
 COPY . .
+RUN mkdir -p volumes
 RUN npm run build
 
 
