@@ -67,6 +67,8 @@ button:disabled {
 
 .scheduled-marker svg {
   z-index: 3;
+  background: #123c73;
+  color: white;
 }
 
 .scheduled-ripple {

@@ -138,7 +138,15 @@ export default function PicnicDayPage() {
     );
   }
 
-  const nonFoodEvents = filteredEvents.filter((event) => !isFoodEvent(event));
+  function isRestroom(event: Event | ScheduledEvent) {
+    return event.tags?.some(
+      (tag) => tag.toLowerCase().includes("restroom")
+    );
+  }
+
+  const nonFoodEvents = filteredEvents.filter(
+    (event) => !isFoodEvent(event) && !isRestroom(event)
+  );
 
   const [RESULTS_PAGE_SIZE, setResultsPageSize] = useState(20)
 
