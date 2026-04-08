@@ -286,10 +286,10 @@ export default function PicnicDayPage() {
       {isMobileBlocked ? (
         <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white via-slate-50 to-blue-50 px-6 py-10 text-center">
           <div className="max-w-md w-full rounded-2xl bg-white/80 backdrop-blur shadow-xl ring-1 ring-slate-200 px-6 py-7 flex flex-col items-center gap-4">
-            <div className="text-4xl">🚧</div>
+            <div className="text-4xl">⚙️</div>
             <h1 className="text-xl font-semibold text-slate-800">Scheduler under construction</h1>
             <p className="text-sm text-slate-600">
-              We&rsquo;re still polishing the mobile experience. Please switch to a desktop or laptop to see the scheduler in action. Thanks for your patience!
+              We&rsquo;re still polishing the mobile experience. Please switch to a bigger screen to see the scheduler in action. Thanks for your patience!
             </p>
           </div>
         </main>
