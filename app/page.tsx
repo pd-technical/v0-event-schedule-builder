@@ -76,6 +76,17 @@ export default function PicnicDayPage() {
     community: ["cultural", "culture", "personal", "services"],
   }
 
+  function timeToMinutes(timeStr: string): number {
+    const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+    if (!match) return Number.POSITIVE_INFINITY
+    let hours = Number(match[1])
+    const minutes = Number(match[2])
+    const period = match[3].toUpperCase()
+    if (period === "PM" && hours !== 12) hours += 12
+    if (period === "AM" && hours === 12) hours = 0
+    return hours * 60 + minutes
+  }
+
   useEffect(() => {
     async function loadEvents() {
       try {
@@ -140,12 +151,12 @@ export default function PicnicDayPage() {
 
     if (sortOption === "time") {
       sorted.sort((a, b) => {
-        const startCompare = a.startTime.localeCompare(b.startTime)
+        const startCompare = timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
 
         if (startCompare !== 0) return startCompare
 
         // If start times are equal → earlier end time first
-        return a.endTime.localeCompare(b.endTime)
+        return timeToMinutes(a.endTime) - timeToMinutes(b.endTime)
       })
     }
 
