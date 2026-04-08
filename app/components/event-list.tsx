@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { Plus, Check, MapPin, Clock, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import type { Event, ScheduledEvent } from "@/app/page"
 
@@ -8,7 +8,6 @@ interface EventListProps {
   events: Event[]
   allFilteredCount: number
   scheduledEvents: ScheduledEvent[]
-  pageSize: number
   addToSchedule: (event: Event) => void
   removeFromSchedule: (eventId: string) => void
   hoveredEvent: string | null
@@ -20,14 +19,12 @@ interface EventListProps {
   onPageChange: (page: number) => void
   searchQuery: string
   onBrowseAll: () => void
-
 }
 
 export function EventList({
   events,
   allFilteredCount,
   scheduledEvents,
-  pageSize,
   addToSchedule,
   removeFromSchedule,
   hoveredEvent,
@@ -40,260 +37,212 @@ export function EventList({
   searchQuery,
   onBrowseAll,
 }: EventListProps) {
-  function isFoodTruck(event: Event) {
-    return event.name.toLowerCase().includes("food truck")
-  }
-
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null)
   const listScrollRef = useRef<HTMLDivElement>(null)
 
-  const isScheduled = (eventId: string) =>
-    scheduledEvents.some(e => e.id === eventId)
+  const scheduledIds = useMemo(
+    () => new Set(scheduledEvents.map((event) => event.id)),
+    [scheduledEvents]
+  )
 
-  // When scrollToEventId is set (e.g. after clicking a map marker), scroll list to that event and expand it
   useEffect(() => {
     if (!scrollToEventId || !listScrollRef.current) return
-    const el = listScrollRef.current.querySelector(`[data-event-id="${scrollToEventId}"]`)
+
+    const el = listScrollRef.current.querySelector<HTMLElement>(
+      `[data-event-id="${scrollToEventId}"]`
+    )
+
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "nearest" })
       setExpandedEvent(scrollToEventId)
     }
+
     onScrollToEventDone()
   }, [scrollToEventId, onScrollToEventDone])
 
-  // When page changes, scroll back to top of list
   useEffect(() => {
-  if (listScrollRef.current) {
-    listScrollRef.current.scrollTo({
+    listScrollRef.current?.scrollTo({
       top: 0,
-      behavior: "smooth", // optional
+      behavior: "smooth",
     })
-  }
-}, [page])
+  }, [page])
+
+  const trimmedQuery = searchQuery.trim()
+  const hasSearch = trimmedQuery.length > 0
 
   return (
-    <div className="flex-1 lg:flex lg:flex-col lg:min-h-0">
-      <div className="flex items-center gap-4 mb-3">
-          <h3 className="text-xs font-semibold text-primary uppercase tracking-wide leading-none">
-            {searchQuery.trim().length === 0 ? (
-              <>All Events ({allFilteredCount})</>
-            ) : (
-              <>
-                {allFilteredCount} Events Found
-                <span className="normal-case font-normal text-muted-foreground ml-1">
-                  for "<span className="text-foreground">{searchQuery.trim()}</span>"
-                </span>
-              </>
-            )}
+    <div className="flex-1 lg:flex lg:min-h-0 lg:flex-col">
+      <div className="mb-3 flex flex-wrap items-center gap-3 border-b border-border/60 pb-2">
+        <div className="min-w-0">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-primary">
+            {hasSearch ? `${events.length} Events Found` : `All Events (${allFilteredCount})`}
           </h3>
-
-        {/* RIGHT — Sort + Pagination */}
-        <div className="ml-auto flex items-center gap-2 text-xs">
-
-          {/* PAGINATION */}
-          {totalPages > 1 && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onPageChange(Math.max(0, page - 1))}
-                disabled={page === 0}
-                className="
-                  px-3 py-1.5
-                  rounded-md
-                  border border-border
-                  bg-secondary/50
-                  text-primary
-                  hover:bg-accent hover:text-accent-foreground
-                  transition
-                  disabled:opacity-30 disabled:cursor-not-allowed
-                "
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              <span className="text-nowrap text-sm font-medium text-primary">
-                {page + 1} / {totalPages}
-              </span>
-
-              <button
-                onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
-                disabled={page >= totalPages - 1}
-                className="
-                  px-3 py-1.5
-                  rounded-md
-                  border border-border
-                  bg-secondary/50
-                  text-primary
-                  hover:bg-accent hover:text-accent-foreground
-                  transition
-                  disabled:opacity-30 disabled:cursor-not-allowed
-                  disabled:hover:bg-secondary/50
-                  disabled:hover:text-primary
-                "
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+          {hasSearch && (
+            <p className="truncate text-xs text-muted-foreground">
+              for <span className="text-foreground">"{trimmedQuery}"</span>
+            </p>
           )}
         </div>
-      </div>
-      <div className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
-        <div
-          ref={listScrollRef}
-          className="space-y-2 lg:flex-1 lg:overflow-y-auto lg:mr-0"
-        >
-          {events.map((event) => {
-            const scheduled = isScheduled(event.id)
-            const isExpanded = expandedEvent === event.id
-            const isHovered = hoveredEvent === event.id
 
-            return (
-              <div
-                key={event.id}
-                data-event-id={event.id}
-                onMouseEnter={() => setHoveredEvent(event.id)}
-                onMouseLeave={() => setHoveredEvent(null)}
-                className={`relative border rounded-lg transition-all duration-200 ease-out ${isHovered
+        {totalPages > 1 && (
+          <div className="ml-auto flex items-center gap-2 text-xs">
+            <button
+              type="button"
+              aria-label="Previous page"
+              onClick={() => onPageChange(Math.max(0, page - 1))}
+              disabled={page === 0}
+              className="rounded-md border border-border bg-secondary/50 px-3 py-1.5 text-primary transition hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+
+            <span className="whitespace-nowrap text-sm font-medium text-primary">
+              {page + 1} / {totalPages}
+            </span>
+
+            <button
+              type="button"
+              aria-label="Next page"
+              onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
+              disabled={page >= totalPages - 1}
+              className="rounded-md border border-border bg-secondary/50 px-3 py-1.5 text-primary transition hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div
+        ref={listScrollRef}
+        className="space-y-2 lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-2"
+      >
+        {events.map((event) => {
+          const scheduled = scheduledIds.has(event.id)
+          const isExpanded = expandedEvent === event.id
+          const isHovered = hoveredEvent === event.id
+
+          return (
+            <div
+              key={event.id}
+              data-event-id={event.id}
+              onMouseEnter={() => setHoveredEvent(event.id)}
+              onMouseLeave={() => setHoveredEvent(null)}
+              className={`relative overflow-hidden rounded-xl border transition-all duration-200 ease-out ${
+                isHovered
                   ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 shadow-md"
                   : scheduled
                     ? "border-[var(--color-primary)] bg-[var(--color-secondary)] shadow-md"
-                    : "bg-card border-border shadow-sm"
-                  }`}
-              >
-                {isHovered && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent rounded-l-lg" />
-                )}
-                {/* Main Row */}
-                <div className="flex items-start gap-3 p-3">
-                  <button
-                    onClick={() => {
-                      setExpandedEvent(isExpanded ? null : event.id)
-                      setHoveredEvent(event.id)
-                    }}
-                    className="flex-1 flex items-start gap-3 text-left"
-                  >
-                    <ChevronDown className={`w-4 h-4 mt-1 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""
-                      }`} />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-foreground flex items-center gap-2">
-                        {isFoodTruck(event) && (
-                          <span className="text-base">🍔</span>
-                        )}
-                        {event.name}
-                      </h4>
-                      <div className="mt-1 text-xs text-muted-foreground space-y-1">
-                        {/* TIME */}
-                        <div className="flex items-center gap-1 whitespace-nowrap text-primary font-semibold">
-                          <Clock className="w-3 h-3 text-accent flex-shrink-0" />
-                          <span>{event.startTime || "8:00 AM"} - {event.endTime || "9:00 PM"}</span>
-                        </div>
-
-                        {/* LOCATION */}
-                        <div className="flex items-center gap-1 min-w-0">
-                          <MapPin className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">
-                              {event.location}
-                              {(event.location_details || event.location_details) && (
-                              <> — {event.location_details || event.location_details}</>
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      scheduled ? removeFromSchedule(event.id) : addToSchedule(event)}
-                    className={`flex-shrink-0 p-2 rounded-full transition-all ${scheduled
-                      ? "bg-accent text-accent-foreground"
-                      : "bg-secondary hover:bg-primary hover:text-primary-foreground text-muted-foreground"
-                      }`}
-                  >
-                    {scheduled ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
-                      <Plus className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-
-                {/* Expanded Details */}
-                {isExpanded && (
-                  <div className="border-t border-primary/10 bg-secondary/30">
-                    <div className="flex items-start gap-3 p-3">
-
-                      {/* Chevron column spacer (matches Chevron width) */}
-                      <div className="w-4" />
-
-                      {/* Content column (aligns with title/time/location above) */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {event.description}
-                        </p>
-
-                        <div className="flex flex-wrap items-center gap-2 mt-3">
-                          <span className="px-2 py-0.5 text-xs font-medium bg-highlight/10 text-highlight rounded-full capitalize">
-                            {event.category}
-                          </span>
-
-                          {event.tags && event.tags.length > 0 && (
-                            <>
-                              {event.tags.map((tag) => (
-                                <span
-                                  key={tag}
-                                  className="
-                                    px-2.5 py-0.5
-                                    text-[11px]
-                                    font-medium
-                                    bg-primary/10
-                                    text-primary
-                                    rounded-full
-                                    capitalize
-                                  "
-                                >
-                                  {tag}
-                                </span>
-                              ))}
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Plus button column spacer (matches button width) */}
-                      <div className="w-8" />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )
-          })}
-
-          {events.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              {searchQuery.trim().length > 0 ? (
-                <>
-                  <p className="text-sm font-medium">
-                    No results for "{searchQuery.trim()}"
-                  </p>
-                </>
-              ) : (
-                <p className="text-sm font-medium">
-                  No events available
-                </p>
+                    : "border-border/80 bg-card shadow-sm hover:border-primary/20 hover:shadow-md"
+              }`}
+            >
+              {isHovered && (
+                <div className="absolute bottom-0 left-0 top-0 w-1 rounded-l-lg bg-accent" />
               )}
 
-              <p className="text-xs mt-2">
-                Try different keywords or filters.
-              </p>
-              <button
-                onClick={onBrowseAll}
-                className="mt-3 text-xs font-semibold text-accent hover:underline"
-              >
-                Browse all events
-              </button>
+              <div className="flex items-start gap-3 p-3 min-w-0">
+                <button
+                  type="button"
+                  onClick={() => setExpandedEvent(isExpanded ? null : event.id)}
+                  className="flex min-w-0 flex-1 items-start gap-3 text-left"
+                  aria-expanded={isExpanded}
+                >
+                  <ChevronDown
+                    className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+                      isExpanded ? "rotate-180" : ""
+                    }`}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-medium text-foreground break-words">
+                      {event.name}
+                    </h4>
+
+                    <div className="mt-1 space-y-1 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1 whitespace-nowrap font-semibold text-primary">
+                        <Clock className="h-3 w-3 shrink-0 text-accent" />
+                        <span>
+                          {event.startTime || "8:00 AM"} - {event.endTime || "9:00 PM"}
+                        </span>
+                      </div>
+
+                      <div className="flex min-w-0 items-start gap-1">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span
+                          className={`block min-w-0 ${
+                            isExpanded ? "whitespace-normal break-words" : "truncate"
+                          }`}
+                        >
+                          {event.location}
+                          {event.location_details && <> — {event.location_details}</>}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  aria-label={scheduled ? "Remove from schedule" : "Add to schedule"}
+                  onClick={() =>
+                    scheduled ? removeFromSchedule(event.id) : addToSchedule(event)
+                  }
+                  className={`shrink-0 rounded-full p-2 transition-all ${
+                    scheduled
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-secondary text-muted-foreground hover:bg-primary hover:text-primary-foreground"
+                  }`}
+                >
+                  {scheduled ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                </button>
+              </div>
+
+              {isExpanded && (
+                <div className="border-t border-primary/10 bg-secondary/40 px-10 py-3">
+                  {event.description && (
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {event.description}
+                    </p>
+                  )}
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium capitalize text-primary">
+                      {event.category}
+                    </span>
+
+                    {event.tags?.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium capitalize text-primary"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          )
+        })}
+
+        {events.length === 0 && (
+          <div className="py-12 text-center text-muted-foreground">
+            {hasSearch ? (
+              <>
+                <p className="text-sm font-medium">No results for "{trimmedQuery}"</p>
+                <p className="mt-2 text-xs">Try different keywords or filters.</p>
+                <button
+                  type="button"
+                  onClick={onBrowseAll}
+                  className="mt-3 text-xs font-semibold text-accent hover:underline"
+                >
+                  Browse all events
+                </button>
+              </>
+            ) : (
+              <p className="text-sm font-medium">No events available.</p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

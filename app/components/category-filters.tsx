@@ -1,6 +1,6 @@
 "use client"
 
-import { Dog, FlaskConical, Palette, Laugh, Music, Utensils, Users } from "lucide-react"
+import { Dog, FlaskConical, Palette, Laugh, Music, Users } from "lucide-react"
 
 interface CategoryFiltersProps {
   selectedCategories: string[]
@@ -34,11 +34,6 @@ const categories = [
     id: "creative",
     label: "Creative",
     icon: Palette,
-  },
-  {
-    id: "food",
-    label: "Food",
-    icon: Utensils,
   },
   {
     id: "community",

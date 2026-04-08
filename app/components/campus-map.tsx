@@ -5,6 +5,7 @@ import type { Event, ScheduledEvent } from "@/app/page";
 
 interface CampusMapProps {
   events: Event[];
+  browseEvents: Event[];
   scheduledEvents: ScheduledEvent[];
   hoveredEvent: string | null;
   setHoveredEvent: (id: string | null) => void;

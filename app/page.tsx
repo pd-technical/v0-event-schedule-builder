@@ -164,6 +164,22 @@ export default function PicnicDayPage() {
 
     return sorted
   }, [searchRanked, selectedCategories, sortOption, submittedSearchQuery])
+  
+  function isFoodEvent(event: Event) {
+    return event.tags?.some((tag) =>
+      tag.toLowerCase().includes("food")
+    );
+  }
+
+  function isRestroom(event: Event | ScheduledEvent) {
+    return event.tags?.some(
+      (tag) => tag.toLowerCase().includes("restroom")
+    );
+  }
+
+  const nonFoodEvents = filteredEvents.filter(
+    (event) => !isFoodEvent(event) && !isRestroom(event)
+  );
 
   const [RESULTS_PAGE_SIZE, setResultsPageSize] = useState(20)
 
@@ -189,8 +205,9 @@ export default function PicnicDayPage() {
   return () => window.removeEventListener("resize", updateSize)
   }, [])
 
-  const totalResultsPages = Math.max(1, Math.ceil(filteredEvents.length / RESULTS_PAGE_SIZE))
-  const eventsForCurrentPage = filteredEvents.slice(
+  const totalResultsPages = Math.max(1, Math.ceil(nonFoodEvents.length / RESULTS_PAGE_SIZE))
+
+  const eventsForCurrentPage = nonFoodEvents.slice(
     resultsPage * RESULTS_PAGE_SIZE,
     (resultsPage + 1) * RESULTS_PAGE_SIZE
   )
@@ -202,13 +219,13 @@ export default function PicnicDayPage() {
   }, [totalResultsPages, resultsPage])
 
   const handleMapMarkerClick = useCallback((eventId: string) => {
-    const index = filteredEvents.findIndex((e) => e.id === eventId)
+    const index = nonFoodEvents.findIndex((e) => e.id === eventId)
     if (index >= 0) {
       const page = Math.floor(index / RESULTS_PAGE_SIZE)
       setResultsPage(page)
       setScrollToEventId(eventId)
     }
-  }, [filteredEvents])
+  }, [nonFoodEvents, RESULTS_PAGE_SIZE])
 
   const addToSchedule = useCallback((event: Event) => {
     setScheduledEvents(prev => {
@@ -340,8 +357,7 @@ export default function PicnicDayPage() {
                   <div className="flex-1 min-w-0 lg:min-h-0 lg:flex lg:flex-col -mt-2">
                     <EventList
                       events={eventsForCurrentPage}
-                      allFilteredCount={filteredEvents.length}
-                      pageSize={RESULTS_PAGE_SIZE}
+                      allFilteredCount={nonFoodEvents.length}
                       scheduledEvents={scheduledEvents}
                       addToSchedule={addToSchedule}
                       removeFromSchedule={removeFromSchedule}
@@ -364,7 +380,8 @@ export default function PicnicDayPage() {
               {/* Map + Schedule — second when stacked; right column on large */}
               <div data-onboarding="map-area" className="order-2 w-full min-w-0 flex flex-col gap-6 relative lg:flex-1 lg:gap-0 lg:min-w-[360px] min-h-[320px] lg:sticky lg:min-h-0">
                 <CampusMap
-                  events={filteredEvents}
+                  events={events}
+                  browseEvents={nonFoodEvents}
                   scheduledEvents={scheduledEvents}
                   hoveredEvent={hoveredEvent}
                   setHoveredEvent={setHoveredEventFromMap}
