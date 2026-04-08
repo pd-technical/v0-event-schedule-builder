@@ -531,67 +531,77 @@ export default function CampusMapInner({
       data-onboarding="campus-map"
       className="relative w-full min-h-[320px] h-[400px] lg:h-auto lg:flex-1 lg:min-h-0"
     >
-      <div className="absolute bottom-4 left-4 z-[2000] flex gap-2">
-
-      {/* Schedule Mode */}
-      <button
-        onClick={() => setShowScheduleOnly(prev => !prev)}
-        className="flex items-center gap-1.5 px-2.5 h-9 rounded-full text-xs font-semibold transition-all active:scale-90"
-        style={{
-          background: showScheduleOnly ? NAVY : "white",
-          color: showScheduleOnly ? "white" : NAVY,
-          border: `1.5px solid ${NAVY}`,
-          boxShadow: showScheduleOnly
-            ? "0 0 0 2px rgba(18,60,115,0.2)"
-            : "0 2px 6px rgba(0,0,0,0.15)",
-        }}
-      >
-        {/* Number bubble */}
-        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
-          style={{
-            background: showScheduleOnly ? "white" : NAVY,
-            color: showScheduleOnly ? NAVY : "white",
-          }}
+      <div className="absolute bottom-4 left-4 z-[2000]">
+        <div
+          className="rounded-2xl bg-white/95 backdrop-blur px-3.5 py-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] ring-1 ring-black/5 flex flex-col gap-2"
         >
-          {scheduledEvents.length || 0}
+          <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">
+            Show on map
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Schedule Mode */}
+            <button
+              onClick={() => setShowScheduleOnly((prev) => !prev)}
+              className="flex items-center gap-2 px-3 h-9 rounded-xl text-sm font-semibold transition-all active:scale-95"
+              style={{
+                background: showScheduleOnly ? NAVY : "white",
+                color: showScheduleOnly ? "white" : NAVY,
+                border: `1.5px solid ${NAVY}`,
+                boxShadow: showScheduleOnly
+                  ? "0 0 0 2px rgba(18,60,115,0.18)"
+                  : "0 2px 8px rgba(0,0,0,0.12)",
+              }}
+            >
+              <span
+                className="shrink-0"
+                style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: "999px",
+                  background: GOLD,
+                  boxShadow: "0 0 0 2px rgba(255,191,0,0.18)",
+                }}
+              />
+              <span className="tracking-tight">Scheduled</span>
+            </button>
+
+            {/* Food Layer */}
+            <button
+              onClick={() => setShowFoodOnly((prev) => !prev)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95"
+              style={{
+                background: showFoodOnly ? NAVY : "white",
+                color: showFoodOnly ? "white" : NAVY,
+                border: `1.5px solid ${NAVY}`,
+                boxShadow: showFoodOnly
+                  ? "0 0 0 2px rgba(18,60,115,0.18)"
+                  : "0 2px 8px rgba(0,0,0,0.12)",
+                opacity: showFoodOnly ? 1 : 0.9,
+              }}
+            >
+              <LuUtensils size={16} />
+            </button>
+
+            {/* Restroom Layer */}
+            <button
+              onClick={() => setShowRestroomOnly((prev) => !prev)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95"
+              style={{
+                background: showRestroomOnly ? NAVY : "white",
+                color: showRestroomOnly ? "white" : NAVY,
+                border: `1.5px solid ${NAVY}`,
+                boxShadow: showRestroomOnly
+                  ? "0 0 0 2px rgba(18,60,115,0.18)"
+                  : "0 2px 8px rgba(0,0,0,0.12)",
+                opacity: showRestroomOnly ? 1 : 0.9,
+              }}
+            >
+              <LuToilet size={16} />
+            </button>
+          </div>
         </div>
-
-        {/* Label */}
-        <span className="tracking-tight">Scheduled</span>
-      </button>
-
-      {/* Food Layer */}
-      <button
-        onClick={() => setShowFoodOnly(prev => !prev)}
-        className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
-        style={{
-          background: showFoodOnly ? GOLD : "white",
-          color: showFoodOnly ? "black" : GOLD_DARK,
-          border: `1.5px solid ${GOLD}`,
-          boxShadow: showFoodOnly
-            ? "0 0 0 2px rgba(255,191,0,0.15)"
-            : "0 2px 6px rgba(0,0,0,0.15)",
-        }}
-      >
-        <LuUtensils size={16} />
-      </button>
-
-      <button
-        onClick={() => setShowRestroomOnly(prev => !prev)}
-        className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
-        style={{
-          background: showRestroomOnly ? NAVY : "white",
-          color: showRestroomOnly ? "white" : NAVY,
-          border: `1.5px solid ${NAVY}`,
-          boxShadow: showRestroomOnly
-            ? "0 0 0 2px rgba(18,60,115,0.15)"
-            : "0 2px 6px rgba(0,0,0,0.15)",
-        }}
-      >
-        <LuToilet size={16} />
-      </button>
-
-    </div>
+      </div>
       <MapContainer
         className="h-full w-full"
         center={[38.5382, -121.7617]}
