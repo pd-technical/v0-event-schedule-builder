@@ -102,7 +102,7 @@ export function SchedulePanel({
               </p>
             </div>
           ) : (
-            <div className="p-2 max-h-[70vh] overflow-y-auto lg:max-h-[300px]">
+            <div className="p-2 max-h-[185px] overflow-y-auto lg:max-h-[300px]">
               {scheduledEvents.map((event, index) => {
                 const outOfOrder = isOutOfOrder(scheduledEvents, index)
                 const isDragging = draggedIndex === index
