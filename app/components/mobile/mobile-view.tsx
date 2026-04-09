@@ -5,7 +5,6 @@ import { SchedulePanel } from "@/app/components/schedule-panel"
 import { EventList } from "@/app/components/event-list"
 import { SearchSection } from "@/app/components/search-section"
 import { useEffect, useState } from "react"
-import { ChevronUp } from "lucide-react"
 
 export function MobileScheduleMap(props: any) {
   const {
@@ -58,7 +57,7 @@ export function MobileScheduleMap(props: any) {
   }, [searchQuery])
 
   return (
-    <div className="flex flex-col gap-4 px-4 py-3 pb-24">
+    <div className="flex flex-col gap-4 py-3 pb-24">
       <SchedulePanel
         scheduledEvents={scheduledEvents}
         removeFromSchedule={removeFromSchedule}
@@ -89,23 +88,23 @@ export function MobileScheduleMap(props: any) {
 
       {isListOpen && (
         <div
-          className="fixed inset-0 bg-black/10 z-40"
+           className="fixed inset-0 bg-black/25 z-40 transition-opacity"
           onClick={() => setIsListOpen(false)}
         />
       )}
 
       <div
         className={`
-          fixed left-0 right-0 bottom-0 z-50
+          fixed inset-x-0 bottom-0 z-50
           transition-transform duration-300 ease-in-out
           ${isListOpen ? "translate-y-0" : "translate-y-[calc(100%-140px)]"}
         `}
       >
         <div
-          className="px-4 pt-2 pb-2 cursor-pointer"
+          className="pt-2 pb-2 cursor-pointer"
           onClick={() => setIsListOpen(true)}
         >
-          <div className="bg-white rounded-t-2xl shadow-xl border-t">
+          <div className="bg-white rounded-t-3xl shadow-2xl border-t overflow-hidden">
             <div className="px-4 pt-2 pb-2 bg-white/95 backdrop-blur-sm">
 
               {/* HANDLE */}

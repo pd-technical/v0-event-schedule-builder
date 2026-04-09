@@ -266,6 +266,7 @@ export function SearchSection({
           <HelpCircle className="h-5 w-5" strokeWidth={2} />
         </button>
       </div>
+<<<<<<< HEAD
 
       {activeFeedTab === "recommended" && (
         <div className="mt-5 rounded-xl bg-[#FEF9E7] px-4 py-3.5 ring-1 ring-[#F3E5AB]/80">
@@ -318,6 +319,12 @@ export function SearchSection({
           FILTER BY
         </h3>
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+=======
+      {/* {/* Quick Search Tags 
+      <div className="flex flex-wrap gap-2 mt-3">
+        <div className="px-1 py-1 text-(--color-muted-foreground) text-xs italic ">Suggested Searches</div>
+        {["battle of the bands", "chemistry show", "chick handling", "cockroach racing", "doxie derby", "laser maze"].map((tag) => (
+>>>>>>> f10c7ce (fixed UI of the new search card)
           <button
             type="button"
             onClick={onSelectRecommended}
