@@ -139,7 +139,11 @@ export function MobileScheduleMap(props: any) {
             </div>
 
             {isListOpen && (
+<<<<<<< HEAD
               <div className="max-h-[55vh] overflow-y-auto px-4 pb-4">
+=======
+              <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
+>>>>>>> 35703f5 (made the card scroll up further)
                 <EventList
                   events={nonFoodEvents.slice(
                     resultsPage * RESULTS_PAGE_SIZE,
