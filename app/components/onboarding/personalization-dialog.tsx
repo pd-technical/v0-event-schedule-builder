@@ -19,7 +19,7 @@ export function PersonalizationDialog({
   onPersonalized,
   initialSelected,
   onDismiss,
-  saveLabel = "Continue",
+  saveLabel = "Personalize",
 }: PersonalizationDialogProps) {
   const [selected, setSelected] = useState<PersonalizationPillId[]>(initialSelected ?? [])
 
@@ -65,11 +65,10 @@ export function PersonalizationDialog({
             <Sparkles className="h-6 w-6 text-accent-foreground sm:h-7 sm:w-7" />
           </div>
           <Dialog.Title className="text-center text-xl font-bold text-foreground sm:text-2xl">
-            Select 3 categories
+            What do you want to see?
           </Dialog.Title>
           <Dialog.Description className="mt-2 text-center text-sm text-muted-foreground sm:text-base">
-            Pick three things you&apos;re into. We&apos;ll tailor event recommendations and add a few great picks to your schedule.
-          </Dialog.Description>
+            Select 3 interests to see recommended events first. You can always edit these or view all events by toggling the filters.          </Dialog.Description>
 
           <p className="mt-5 text-center text-sm font-medium text-foreground" aria-live="polite">
             {selected.length} / {MAX_PICKS} selected
