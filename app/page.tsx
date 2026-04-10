@@ -271,7 +271,7 @@ export default function PicnicDayPage() {
       setResultsPageSize(20)  // desktop
     }
 
-    setIsMobileBlocked(width < 768)
+    // setIsMobileBlocked(width < 768)
   }
   updateSize()
   window.addEventListener("resize", updateSize)

@@ -76,10 +76,10 @@ export function EventList({
 
   return (
     <div className="flex-1 lg:flex lg:min-h-0 lg:flex-col">
-      <div className="mb-3 border-b border-[#E5E7EB] pb-3">
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-          <h3 className="min-w-0 text-sm font-bold uppercase leading-none tracking-wide text-[#002D62]">
-            {hasSearch ? `${events.length} Events Found` : `All Events (${allFilteredCount})`}
+      <div className="mb-3 flex flex-wrap items-center gap-3 border-b border-border/60 pb-2">
+        <div className="min-w-0">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-primary">
+            {hasSearch ? `${events.length} Events Found` : `Displaying ${allFilteredCount} Events`}
           </h3>
 
           <div className="flex flex-wrap items-center justify-end gap-3 sm:ml-auto sm:gap-4">
