@@ -133,7 +133,13 @@ export default function RoutingMachine({
     // console.warn handler is the correct approach.
     routingControl.off("routingerror");
     routingControl.on("routingerror", (e: any) => {
-      console.warn("Route could not be calculated:", e?.error?.message ?? e);
+      const message = String(e?.error?.message ?? e ?? "");
+      // Leaflet Routing Machine can emit a transient error while map layers are being torn down.
+      // Ignore this known non-actionable case, but keep logging real routing failures.
+      if (message.includes("Cannot read properties of null") && message.includes("addLayer")) {
+        return;
+      }
+      console.warn("Route could not be calculated:", message);
     });
 
     return () => {
