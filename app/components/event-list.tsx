@@ -75,7 +75,7 @@ export function EventList({
       <div className="mb-3 flex flex-wrap items-center gap-3 border-b border-border/60 pb-2">
         <div className="min-w-0">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-primary">
-            {hasSearch ? `${events.length} Events Found` : `All Events (${allFilteredCount})`}
+            {hasSearch ? `${events.length} Events Found` : `Displaying ${allFilteredCount} Events`}
           </h3>
           {hasSearch && (
             <p className="truncate text-xs text-muted-foreground">

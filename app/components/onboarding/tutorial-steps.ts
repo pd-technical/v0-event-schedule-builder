@@ -50,7 +50,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     id: "export",
     target: "export-button",
     title: "Export Your Schedule",
-    description: "Download a PDF with your full schedule and campus map — perfect for offline use on Picnic Day!",
+    description: "Download a PDF or add to your calendar. Perfect for offline use on Picnic Day!",
     icon: "Download",
     tooltipPosition: "left",
     scrollIntoView: true,
