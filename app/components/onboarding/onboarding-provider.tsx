@@ -117,13 +117,12 @@ export function OnboardingProvider({
         <SpotlightOverlay
           step={step}
           onNext={handleNext}
-          onBack={handleBack}
           onSkip={finishSkipped}
           scheduledEventCount={scheduledEventCount}
         />
       )}
       {phase === "personalization" && (
-        <PersonalizationDialog onDecline={finishSkipped} onPersonalized={handlePersonalized} />
+        <PersonalizationDialog onPersonalized={handlePersonalized} />
       )}
     </OnboardingContext.Provider>
   )

@@ -14,17 +14,15 @@ const ICON_MAP: Record<string, React.ElementType> = {
 interface SpotlightOverlayProps {
   step: number
   onNext: () => void
-  onBack: () => void
   onSkip: () => void
   scheduledEventCount: number
 }
 
-export function SpotlightOverlay({ step, onNext, onBack, onSkip, scheduledEventCount }: SpotlightOverlayProps) {
+export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: SpotlightOverlayProps) {
   const [rect, setRect] = useState<DOMRect | null>(null)
   const [rectTarget, setRectTarget] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const current: TutorialStep = TUTORIAL_STEPS[step]
-  const isFirst = step === 0
   const isLast = step === TUTORIAL_STEPS.length - 1
   const hasScrolledRef = useRef(false)
 
@@ -103,12 +101,11 @@ export function SpotlightOverlay({ step, onNext, onBack, onSkip, scheduledEventC
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.key === "ArrowRight" || e.key === "Enter") && interactionMet) { e.preventDefault(); onNext() }
-      else if (e.key === "ArrowLeft" && !isFirst) { e.preventDefault(); onBack() }
       else if (e.key === "Escape") { e.preventDefault(); onSkip() }
     }
     window.addEventListener("keydown", handler)
     return () => window.removeEventListener("keydown", handler)
-  }, [onNext, onBack, onSkip, isFirst, interactionMet])
+  }, [onNext, onSkip, interactionMet])
 
   const ready = rect && rectTarget === current.target
 
@@ -229,14 +226,6 @@ export function SpotlightOverlay({ step, onNext, onBack, onSkip, scheduledEventC
               ))}
             </div>
             <div className="flex items-center gap-2">
-              {!isFirst && (
-                <button
-                  onClick={onBack}
-                  className={`flex items-center gap-1 rounded-lg text-sm font-medium text-[var(--primary)] transition-colors hover:bg-[var(--muted)] ${isMobile ? "h-8 px-2" : "h-9 px-3"}`}
-                >
-                  <ChevronLeft className="h-4 w-4" /> Back
-                </button>
-              )}
               <button
                   onClick={onNext}
                   disabled={!interactionMet}
@@ -248,7 +237,9 @@ export function SpotlightOverlay({ step, onNext, onBack, onSkip, scheduledEventC
                       : "bg-[var(--primary)]/40 cursor-not-allowed"
                   }`}
                 >
-                  {isLast ? "Finish" : (
+                  {isLast ? (
+                    <>Continue <ChevronRight className="h-4 w-4" /></>
+                  ) : (
                     <>Next <ChevronRight className="h-4 w-4" /></>
                   )}
                 </button>

@@ -20,7 +20,8 @@ interface EventListProps {
   onPageChange: (page: number) => void
   searchQuery: string
   onBrowseAll: () => void
-
+  sortOption: "relevance" | "alphabetical" | "time"
+  setSortOption: (option: "relevance" | "alphabetical" | "time") => void
 }
 
 export function EventList({
@@ -39,6 +40,8 @@ export function EventList({
   onPageChange,
   searchQuery,
   onBrowseAll,
+  sortOption,
+  setSortOption,
 }: EventListProps) {
   function isFoodTruck(event: Event) {
     return event.name.toLowerCase().includes("food truck")
@@ -73,44 +76,69 @@ export function EventList({
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden lg:min-h-0">
-      <div className="mb-3 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
-        <h3 className="min-w-0 text-xs font-semibold uppercase tracking-wide text-primary">
-            {searchQuery.trim().length === 0 ? (
-              <>All Events ({allFilteredCount})</>
-            ) : (
-              <>
-                {allFilteredCount} Events Found{" "}
-                <span className="normal-case font-normal text-muted-foreground">
-                  for &quot;
-                  <span className="break-all text-foreground">{searchQuery.trim()}</span>
-                  &quot;
-                </span>
-              </>
-            )}
-          </h3>
+      <div className="mb-3 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <h3 className="flex min-h-8 min-w-0 items-center text-xs font-semibold uppercase leading-none tracking-wide text-primary">
+          {searchQuery.trim().length === 0 ? (
+            <>All Events ({allFilteredCount})</>
+          ) : (
+            <>
+              {allFilteredCount} Events Found{" "}
+              <span className="normal-case font-normal text-muted-foreground">
+                for &quot;
+                <span className="break-all text-foreground">{searchQuery.trim()}</span>
+                &quot;
+              </span>
+            </>
+          )}
+        </h3>
 
-        {/* RIGHT — Pagination */}
-        <div className="flex shrink-0 items-center gap-2 text-xs sm:ml-auto sm:shrink-0">
+        <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-3 sm:ml-auto sm:w-auto sm:shrink-0">
+          <div
+            data-onboarding="sort-section"
+            className="flex h-8 shrink-0 items-center gap-2"
+          >
+            <span className="whitespace-nowrap text-xs font-medium leading-none text-muted-foreground">
+              Sort by:
+            </span>
+            <select
+              value={sortOption}
+              onChange={(e) =>
+                setSortOption(e.target.value as "relevance" | "alphabetical" | "time")
+              }
+              className="
+                h-8 max-w-[11rem] shrink-0
+                rounded-md border border-border
+                bg-transparent px-2.5
+                text-xs leading-tight text-muted-foreground
+                transition hover:border-primary
+                focus:outline-none focus:ring-1 focus:ring-primary
+              "
+              aria-label="Sort events"
+            >
+              <option value="relevance">Relevance</option>
+              <option value="time">Time</option>
+              <option value="alphabetical">Alphabetical</option>
+            </select>
+          </div>
 
-          {/* PAGINATION — fixed hit area so icons aren’t clipped by tight line boxes */}
           {totalPages > 1 && (
-            <div className="flex items-center gap-2">
+            <div className="flex h-8 items-center gap-1.5 text-xs">
               <button
                 type="button"
                 onClick={() => onPageChange(Math.max(0, page - 1))}
                 disabled={page === 0}
                 className="
-                  inline-flex h-9 w-9 shrink-0 items-center justify-center
-                  rounded-md border border-border bg-secondary/50 text-primary
+                  inline-flex h-6 w-6 shrink-0 items-center justify-center
+                  rounded border border-border bg-secondary/50 text-primary
                   transition hover:bg-accent hover:text-accent-foreground
                   disabled:cursor-not-allowed disabled:opacity-30
                 "
                 aria-label="Previous page"
               >
-                <ChevronLeft className="h-4 w-4" strokeWidth={2.25} />
+                <ChevronLeft className="h-3 w-3" strokeWidth={2.5} />
               </button>
 
-              <span className="text-nowrap text-sm font-medium leading-none text-primary">
+              <span className="min-w-[2.75rem] text-center text-xs font-medium tabular-nums leading-none text-primary">
                 {page + 1} / {totalPages}
               </span>
 
@@ -119,15 +147,15 @@ export function EventList({
                 onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
                 disabled={page >= totalPages - 1}
                 className="
-                  inline-flex h-9 w-9 shrink-0 items-center justify-center
-                  rounded-md border border-border bg-secondary/50 text-primary
+                  inline-flex h-6 w-6 shrink-0 items-center justify-center
+                  rounded border border-border bg-secondary/50 text-primary
                   transition hover:bg-accent hover:text-accent-foreground
                   disabled:cursor-not-allowed disabled:opacity-30
                   disabled:hover:bg-secondary/50 disabled:hover:text-primary
                 "
                 aria-label="Next page"
               >
-                <ChevronRight className="h-4 w-4" strokeWidth={2.25} />
+                <ChevronRight className="h-3 w-3" strokeWidth={2.5} />
               </button>
             </div>
           )}
