@@ -238,7 +238,7 @@ export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: 
                   }`}
                 >
                   {isLast ? (
-                    <>Continue <ChevronRight className="h-4 w-4" /></>
+                    <>Finish</>
                   ) : (
                     <>Next <ChevronRight className="h-4 w-4" /></>
                   )}
