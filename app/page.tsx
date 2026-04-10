@@ -9,11 +9,17 @@ import { SchedulePanel } from "@/app/components/schedule-panel"
 import { getEvents } from "@/app/lib/fetchEvents"
 import { rankedEventMatchesSearch } from "@/app/lib/searchUtils"
 import { exportSchedulePdf } from "@/app/lib/exportPdf"
+import {
+  readScheduleCache,
+  writeScheduleCache,
+  scheduleFromCachedIds,
+} from "@/app/lib/scheduleCache"
+import { exportScheduleIcs } from "@/app/lib/exportIcs"
 import { OnboardingProvider } from "@/app/components/onboarding/onboarding-provider"
 import { PersonalizationDialog } from "@/app/components/onboarding/personalization-dialog"
 import {
-  eventsForHardcodedPersonalizationPicks,
   PERSONALIZATION_PILLS,
+  topEventsForPersonalization,
   type PersonalizationPillId,
 } from "@/app/lib/personalizationInterests"
 
@@ -65,6 +71,9 @@ export default function PicnicDayPage() {
     useState<PersonalizationPillId[] | null>(null)
   const [activeFeedTab, setActiveFeedTab] = useState<"recommended" | "all">("all")
   const [isEditingRecommended, setIsEditingRecommended] = useState(false)
+  const [eventsReady, setEventsReady] = useState(false)
+  const [scheduleCacheReady, setScheduleCacheReady] = useState(false)
+  const [isMobileBlocked, setIsMobileBlocked] = useState(false)
 
   const categoryToTags: Record<string, string[]> = {
     family: ["kids", "toddlers", "fun", "activities", "games"],
@@ -76,6 +85,17 @@ export default function PicnicDayPage() {
     community: ["cultural", "culture", "personal", "services"],
   }
 
+  function timeToMinutes(timeStr: string): number {
+    const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+    if (!match) return Number.POSITIVE_INFINITY
+    let hours = Number(match[1])
+    const minutes = Number(match[2])
+    const period = match[3].toUpperCase()
+    if (period === "PM" && hours !== 12) hours += 12
+    if (period === "AM" && hours === 12) hours = 0
+    return hours * 60 + minutes
+  }
+
   useEffect(() => {
     async function loadEvents() {
       try {
@@ -83,6 +103,8 @@ export default function PicnicDayPage() {
         setEvents(data)
       } catch (error) {
         console.error("Failed to load events:", error)
+      } finally {
+        setEventsReady(true)
       }
     }
     loadEvents()
@@ -91,7 +113,7 @@ export default function PicnicDayPage() {
   useEffect(() => {
     if (!personalizationSeedPending || events.length === 0) return
     const ids = personalizationSeedPending
-    const picked = eventsForHardcodedPersonalizationPicks(events, ids)
+    const picked = topEventsForPersonalization(events, ids, 3)
     const sortedByTime = [...picked].sort((a, b) =>
       a.startTime.localeCompare(b.startTime)
     )
@@ -102,6 +124,28 @@ export default function PicnicDayPage() {
     setResultsPage(0)
   }, [personalizationSeedPending, events])
 
+  // Restore schedule from localStorage after events load (2-day expiry handled in scheduleCache).
+  useEffect(() => {
+    if (!eventsReady) return
+    if (events.length > 0) {
+      const cached = readScheduleCache()
+      if (cached?.orderedEventIds.length) {
+        const restored = scheduleFromCachedIds(cached.orderedEventIds, events)
+        if (restored.length > 0) {
+          setScheduledEvents(restored)
+          writeScheduleCache(restored.map((e) => e.id))
+        }
+      }
+    }
+    setScheduleCacheReady(true)
+  }, [eventsReady, events])
+
+  useEffect(() => {
+    if (!scheduleCacheReady) return
+    if (events.length === 0) return
+    writeScheduleCache(scheduledEvents.map((e) => e.id))
+  }, [scheduledEvents, scheduleCacheReady, events.length])
+
   const handlePersonalizationComplete = useCallback((interestIds: PersonalizationPillId[]) => {
     setPersonalInterests(interestIds)
     setPersonalizationSeedPending(interestIds)
@@ -110,7 +154,10 @@ export default function PicnicDayPage() {
   }, [])
 
   const recommendedSeedEvents = useMemo(
-    () => (personalInterests?.length ? eventsForHardcodedPersonalizationPicks(events, personalInterests).slice(0, 3) : []),
+    () =>
+      personalInterests?.length
+        ? topEventsForPersonalization(events, personalInterests, 3)
+        : [],
     [events, personalInterests]
   )
 
@@ -127,7 +174,6 @@ export default function PicnicDayPage() {
     if (activeFeedTab === "recommended") {
       return []
     }
-    // "All events" should respect original source ordering.
     return events
   }, [activeFeedTab, personalInterests, recommendedSeedEvents, events])
 
@@ -160,12 +206,12 @@ export default function PicnicDayPage() {
 
     if (sortOption === "time") {
       sorted.sort((a, b) => {
-        const startCompare = a.startTime.localeCompare(b.startTime)
+        const startCompare = timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
 
         if (startCompare !== 0) return startCompare
 
         // If start times are equal → earlier end time first
-        return a.endTime.localeCompare(b.endTime)
+        return timeToMinutes(a.endTime) - timeToMinutes(b.endTime)
       })
     }
 
@@ -176,14 +222,38 @@ export default function PicnicDayPage() {
     }
 
     else if (sortOption === "relevance") {
-      // Keep original ordering for All events when no search query is active.
-      if (submittedSearchQuery.trim()) {
-        // rankedEventMatchesSearch already returns relevance ordering
+      if (!submittedSearchQuery.trim()) {
+        sorted.sort((a, b) => a.name.localeCompare(b.name))
       }
     }
 
     return sorted
   }, [searchRanked, selectedCategories, sortOption, submittedSearchQuery])
+  
+  function isFoodEvent(event: Event) {
+    return event.tags?.some((tag) =>
+      tag.toLowerCase().includes("food")
+    );
+  }
+
+  function isRestroom(event: Event | ScheduledEvent) {
+    return event.tags?.some(
+      (tag) => tag.toLowerCase().includes("restroom")
+    );
+  }
+
+  /** Hide food/restroom-only rows from the main browse list so the map/list stay readable. */
+  const hideFoodAndRestroomFromBrowse =
+    !(activeFeedTab === "recommended" && personalInterests?.length)
+
+  const browseFilteredEvents = useMemo(() => {
+    if (!hideFoodAndRestroomFromBrowse) {
+      return filteredEvents
+    }
+    return filteredEvents.filter(
+      (event) => !isFoodEvent(event) && !isRestroom(event)
+    )
+  }, [filteredEvents, hideFoodAndRestroomFromBrowse])
 
   const [RESULTS_PAGE_SIZE, setResultsPageSize] = useState(20)
 
@@ -200,6 +270,8 @@ export default function PicnicDayPage() {
     else {
       setResultsPageSize(20)  // desktop
     }
+
+    setIsMobileBlocked(width < 768)
   }
   updateSize()
   window.addEventListener("resize", updateSize)
@@ -207,8 +279,9 @@ export default function PicnicDayPage() {
   return () => window.removeEventListener("resize", updateSize)
   }, [])
 
-  const totalResultsPages = Math.max(1, Math.ceil(filteredEvents.length / RESULTS_PAGE_SIZE))
-  const eventsForCurrentPage = filteredEvents.slice(
+  const totalResultsPages = Math.max(1, Math.ceil(browseFilteredEvents.length / RESULTS_PAGE_SIZE))
+
+  const eventsForCurrentPage = browseFilteredEvents.slice(
     resultsPage * RESULTS_PAGE_SIZE,
     (resultsPage + 1) * RESULTS_PAGE_SIZE
   )
@@ -220,13 +293,13 @@ export default function PicnicDayPage() {
   }, [totalResultsPages, resultsPage])
 
   const handleMapMarkerClick = useCallback((eventId: string) => {
-    const index = filteredEvents.findIndex((e) => e.id === eventId)
+    const index = browseFilteredEvents.findIndex((e) => e.id === eventId)
     if (index >= 0) {
       const page = Math.floor(index / RESULTS_PAGE_SIZE)
       setResultsPage(page)
       setScrollToEventId(eventId)
     }
-  }, [filteredEvents])
+  }, [browseFilteredEvents, RESULTS_PAGE_SIZE])
 
   const addToSchedule = useCallback((event: Event) => {
     setScheduledEvents(prev => {
@@ -303,6 +376,15 @@ export default function PicnicDayPage() {
     }
   }
 
+  const handleExportIcs = async () => {
+    setIsExportingPdf(true)
+    try {
+      await exportScheduleIcs(scheduledEvents)
+    } finally {
+      setIsExportingPdf(false)
+    }
+  }
+
   const handleBrowseAllEvents = () => {
     setActiveFeedTab("all")
     setSearchQuery("")
@@ -322,6 +404,18 @@ export default function PicnicDayPage() {
       onPersonalizationComplete={handlePersonalizationComplete}
       scheduledEventCount={scheduledEvents.length}
     >
+      {isMobileBlocked ? (
+        <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white via-slate-50 to-blue-50 px-6 py-10 text-center">
+          <div className="max-w-md w-full rounded-2xl bg-white/80 backdrop-blur shadow-xl ring-1 ring-slate-200 px-6 py-7 flex flex-col items-center gap-4">
+            <div className="text-4xl">⚙️</div>
+            <h1 className="text-xl font-semibold text-slate-800">Scheduler under construction</h1>
+            <p className="text-sm text-slate-600">
+              We&rsquo;re still polishing the mobile experience. Please switch to a bigger screen to see the scheduler in action. Thanks for your patience!
+            </p>
+          </div>
+        </main>
+      ) : (
+        <>
       <main className="h-screen flex flex-col bg-background px-4 sm:px-5 md:px-6 py-3 overflow-hidden">
             {/* Mobile/tablet: single column (search, list, then map, schedule). Large: row (search left, map right) */}
             <div className="flex flex-col gap-5 md:gap-6 lg:flex-row lg:gap-4 flex-1 min-h-0">
@@ -371,8 +465,7 @@ export default function PicnicDayPage() {
                 <div data-onboarding="event-list" className="mt-6 flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden lg:min-h-0">
                   <EventList
                     events={eventsForCurrentPage}
-                    allFilteredCount={filteredEvents.length}
-                    pageSize={RESULTS_PAGE_SIZE}
+                    allFilteredCount={browseFilteredEvents.length}
                     scheduledEvents={scheduledEvents}
                     addToSchedule={addToSchedule}
                     removeFromSchedule={removeFromSchedule}
@@ -396,7 +489,8 @@ export default function PicnicDayPage() {
               {/* Map + Schedule — second when stacked; right column on large */}
               <div data-onboarding="map-area" className="order-2 w-full min-w-0 flex flex-col gap-6 relative lg:flex-1 lg:gap-0 lg:min-w-[360px] min-h-[320px] lg:sticky lg:min-h-0">
                 <CampusMap
-                  events={filteredEvents}
+                  events={events}
+                  browseEvents={browseFilteredEvents}
                   scheduledEvents={scheduledEvents}
                   hoveredEvent={hoveredEvent}
                   setHoveredEvent={setHoveredEventFromMap}
@@ -411,7 +505,8 @@ export default function PicnicDayPage() {
                   scheduledEvents={scheduledEvents}
                   removeFromSchedule={removeFromSchedule}
                   reorderSchedule={reorderSchedule}
-                  onExport={handleExportPdf}
+                  onExportPdf={handleExportPdf}
+                  onExportIcs={handleExportIcs}
                   isExporting={isExportingPdf}
                 />
               </div>
@@ -427,6 +522,8 @@ export default function PicnicDayPage() {
             setIsEditingRecommended(false)
           }}
         />
+      )}
+        </>
       )}
     </OnboardingProvider>
   )

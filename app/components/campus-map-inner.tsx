@@ -5,17 +5,27 @@ import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Tooltip, useMap } from "react-leaflet";
 import type { Event, ScheduledEvent } from "@/app/page";
 import RoutingMachine from "./routing-machine";
+import { renderToStaticMarkup } from "react-dom/server";
+import { LuUtensils, LuToilet } from "react-icons/lu";
 
 const NAVY = "#123c73";
 const GOLD = "#ffbf00";
 const GOLD_DARK = "#d89f00";
 
 function isFoodTruck(event: Event | ScheduledEvent) {
-  return event.name.toLowerCase().includes("food truck");
+  return event.tags?.some(
+    (tag) => tag.toLowerCase().includes("food")
+  );
+}
+
+function isRestroom(event: Event | ScheduledEvent) {
+  return event.tags?.some(
+    (tag) => tag.toLowerCase().includes("restroom")
+  );
 }
 
 function createFoodTruckIcon(): L.DivIcon {
-  const size = 28;
+  const size = 20;
 
   const html = `
     <div style="
@@ -23,21 +33,50 @@ function createFoodTruckIcon(): L.DivIcon {
       height:${size}px;
       border-radius:50%;
       background:white;
-      border:2px solid ${GOLD};
+      border:1.8px solid ${GOLD};
       display:flex;
       align-items:center;
       justify-content:center;
       font-size:17px;
       line-height:1;
-      box-shadow:0 2px 6px rgba(0,0,0,0.25);
+      box-shadow:0 1px 3px rgba(0,0,0,0.15);
     ">
-      🍔
+      ${renderToStaticMarkup(<LuUtensils size={10} color={GOLD_DARK} />)}
     </div>
   `;
 
   return L.divIcon({
     html,
     className: "event-marker-foodtruck",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
+
+function createRestroomIcon(): L.DivIcon {
+  const size = 20;
+
+  const html = `
+    <div style="
+      width:${size}px;
+      height:${size}px;
+      border-radius:50%;
+      background:white;
+      border:1.8px solid ${NAVY};
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:17px;
+      line-height:1;
+      box-shadow:0 1px 3px rgba(0,0,0,0.15);
+    ">
+      ${renderToStaticMarkup(<LuToilet size={10} color={NAVY} />)}
+    </div>
+  `;
+
+  return L.divIcon({
+    html,
+    className: "event-marker-restroom",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
@@ -60,6 +99,7 @@ function getMarkerIcon({
     available: L.DivIcon
     hovered: L.DivIcon
     foodTruck: L.DivIcon
+    restroom: L.DivIcon
   }
 }) {
   if (isScheduled) {
@@ -68,6 +108,10 @@ function getMarkerIcon({
 
   if (isFoodTruck(event)) {
     return icons.foodTruck;
+  }
+
+  if (isRestroom(event)) {
+    return icons.restroom;
   }
 
   if (isHovered) {
@@ -164,13 +208,7 @@ function FitBoundsToSearchResults({
   return null;
 }
 
-/* =========================
-   Dot Offset Logic
-========================= */
-
-// Same-location threshold (~1–2m)
 const LOCATION_KEY_DECIMALS = 5;
-const OFFSET_RADIUS_DEG = 0.00012;
 
 function locationKey(lat: number, lng: number): string {
   return `${lat.toFixed(LOCATION_KEY_DECIMALS)},${lng.toFixed(
@@ -202,9 +240,14 @@ function useOffsetPositions(
         if (n === 1) {
           out.set(e.id, [e.lat, e.lng]);
         } else {
-          const angle = (2 * Math.PI * i) / n;
-          const lat = e.lat + OFFSET_RADIUS_DEG * Math.cos(angle);
-          const lng = e.lng + OFFSET_RADIUS_DEG * Math.sin(angle);
+          // radius grows with number of points
+          const radius = 0.0001 + i * 0.00005;
+
+          const angle = i * 0.8; // spiral instead of circle
+
+          const lat = e.lat + radius * Math.cos(angle);
+          const lng = e.lng + radius * Math.sin(angle);
+
           out.set(e.id, [lat, lng]);
         }
       }
@@ -246,7 +289,7 @@ function FlyToHoveredEvent({
 
 function createAvailableIcon(): L.DivIcon {
   const size = 20;
-  const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:white;border:2px solid ${NAVY};box-shadow:0 1px 3px rgba(0,0,0,0.2);"></div>`;
+  const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:white;border:1.5px solid rgba(18,60,115,0.6);box-shadow:0 1px 3px rgba(0,0,0,0.2);"></div>`;
   return L.divIcon({
     html,
     className: "event-marker-available",
@@ -262,9 +305,9 @@ function createHoveredIcon(): L.DivIcon {
       width:${size}px;
       height:${size}px;
       border-radius:50%;
-      background:${GOLD};
-      border:2px solid ${NAVY};
-      box-shadow:0 0 0 2px rgba(255,191,0,0.3);
+      background:${NAVY};
+      border:2px solid white;
+      box-shadow:0 0 0 2px rgba(18,60,115,0.25);
       transform:scale(1.15);
       transition:all 0.2s ease;
     "></div>
@@ -281,21 +324,34 @@ function createScheduledNumberedIcon(
   number: number,
   withRipple: boolean
 ): L.DivIcon {
-  const size = 20;
+  const size = 18;
 
   const html = `
-    <div class="scheduled-marker">
-      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="position:absolute;top:0;left:0;">
-        <text x="${size / 2}" y="${size / 2}" text-anchor="middle" dominant-baseline="central"
-              fill="white" font-size="10" font-weight="bold">${number}</text>
-      </svg>
+    <div style="
+      width:${size}px;
+      height:${size}px;
+      border-radius:50%;
+      background:${NAVY};
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 1px 3px rgba(0,0,0,0.2);
+      position:relative;
+    ">
+      <span style="
+        color:white;
+        font-size:8px;
+        font-weight:600;
+      ">
+        ${number}
+      </span>
       ${withRipple ? `<span class="scheduled-ripple"></span>` : ""}
     </div>
   `;
 
   return L.divIcon({
     html,
-    className: "event-marker-scheduled",
+    className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
@@ -307,6 +363,7 @@ function createScheduledNumberedIcon(
 
 interface Props {
   events: Event[];
+  browseEvents: Event[];
   scheduledEvents: ScheduledEvent[];
   hoveredEvent: string | null;
   setHoveredEvent: (id: string | null) => void;
@@ -320,6 +377,7 @@ interface Props {
 
 export default function CampusMapInner({
   events,
+  browseEvents,
   scheduledEvents,
   hoveredEvent,
   setHoveredEvent,
@@ -331,6 +389,8 @@ export default function CampusMapInner({
   isExporting,
 }: Props) {
   const [showScheduleOnly, setShowScheduleOnly] = useState(false)
+  const [showFoodOnly, setShowFoodOnly] = useState(false);
+  const [showRestroomOnly, setShowRestroomOnly] = useState(false);
   /* Leaflet icon fix */
   useEffect(() => {
     delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -360,36 +420,63 @@ export default function CampusMapInner({
       return scheduledEvents as (Event | ScheduledEvent)[];
     }
 
-    if (showScheduleOnly) {
-      return scheduledEvents as (Event | ScheduledEvent)[];
-    }
-
-    const eventsForCurrentPage = events.slice(
+    const eventsForCurrentPage = browseEvents.slice(
       resultsPage * pageSize,
       (resultsPage + 1) * pageSize
     );
 
+    const hovered = hoveredEvent
+      ? browseEvents.find((e) => e.id === hoveredEvent)
+      : undefined;
+
     const byId = new Map<string, Event | ScheduledEvent>();
 
-    scheduledEvents.forEach((e) => byId.set(e.id, e));
-    eventsForCurrentPage.forEach((e) => {
-      if (!byId.has(e.id)) byId.set(e.id, e);
-    });
+    // base set:
+    // - if schedule is on, show scheduled events
+    // - otherwise show scheduled + current page events + hovered
+    if (showScheduleOnly) {
+      scheduledEvents.forEach((e) => byId.set(e.id, e));
+    } else {
+      scheduledEvents.forEach((e) => byId.set(e.id, e));
+      eventsForCurrentPage.forEach((e) => {
+        if (!byId.has(e.id)) byId.set(e.id, e);
+      });
 
-    if (hoveredEvent) {
-      const hovered = events.find((e) => e.id === hoveredEvent);
-      if (hovered && !byId.has(hovered.id)) byId.set(hovered.id, hovered);
+      if (hovered && !byId.has(hovered.id)) {
+        byId.set(hovered.id, hovered);
+      }
+    }
+
+    // food toggle is additive:
+    // add food events on top of whatever is already visible
+    if (showFoodOnly) {
+      events.forEach((e) => {
+        if (isFoodTruck(e) && !byId.has(e.id)) {
+          byId.set(e.id, e);
+        }
+      });
+    }
+
+    if (showRestroomOnly) {
+      events.forEach((e) => {
+        if (isRestroom(e) && !byId.has(e.id)) {
+          byId.set(e.id, e);
+        }
+      });
     }
 
     return Array.from(byId.values());
   }, [
     events,
+    browseEvents,
     scheduledEvents,
     resultsPage,
     pageSize,
     hoveredEvent,
     isExporting,
     showScheduleOnly,
+    showFoodOnly,
+    showRestroomOnly,
   ]);
 
   /* Offset positions */
@@ -399,7 +486,8 @@ export default function CampusMapInner({
   const icons = useMemo(() => ({
     available: createAvailableIcon(),
     hovered: createHoveredIcon(),
-    foodTruck: createFoodTruckIcon()
+    foodTruck: createFoodTruckIcon(),
+    restroom: createRestroomIcon(),
   }), []);
 
   const markerRefs = useRef(new Map<string, L.Marker>());
@@ -443,35 +531,76 @@ export default function CampusMapInner({
       data-onboarding="campus-map"
       className="relative w-full min-h-[320px] h-[400px] lg:h-auto lg:flex-1 lg:min-h-0"
     >
-      <div className="absolute bottom-4 left-4 z-[2000] flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-lg border border-gray-200">
-        <span
-          className={`text-xs font-semibold ${
-            !showScheduleOnly ? "text-[#022851]" : "text-gray-500"
-          }`}
+      <div className="absolute bottom-4 left-4 z-[2000]">
+        <div
+          className="rounded-2xl bg-white/95 backdrop-blur px-3.5 py-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] ring-1 ring-black/5 flex flex-col gap-2"
         >
-          All
-        </span>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">
+            Show on map
+          </div>
 
-        <button
-          onClick={() => setShowScheduleOnly(!showScheduleOnly)}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-            showScheduleOnly ? "bg-[#022851]" : "bg-gray-300"
-          }`}
-        >
-          <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-              showScheduleOnly ? "translate-x-6" : "translate-x-1"
-            }`}
-          />
-        </button>
+          <div className="flex items-center gap-2">
+            {/* Schedule Mode */}
+            <button
+              onClick={() => setShowScheduleOnly((prev) => !prev)}
+              className="flex items-center gap-2 px-3 h-9 rounded-xl text-sm font-semibold transition-all active:scale-95"
+              style={{
+                background: showScheduleOnly ? NAVY : "white",
+                color: showScheduleOnly ? "white" : NAVY,
+                border: `1.5px solid ${NAVY}`,
+                boxShadow: showScheduleOnly
+                  ? "0 0 0 2px rgba(18,60,115,0.18)"
+                  : "0 2px 8px rgba(0,0,0,0.12)",
+              }}
+            >
+              <span
+                className="shrink-0"
+                style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: "999px",
+                  background: GOLD,
+                  boxShadow: "0 0 0 2px rgba(255,191,0,0.18)",
+                }}
+              />
+              <span className="tracking-tight">Scheduled</span>
+            </button>
 
-        <span
-          className={`text-xs font-semibold ${
-            showScheduleOnly ? "text-[#022851]" : "text-gray-500"
-          }`}
-        >
-          Schedule
-        </span>
+            {/* Food Layer */}
+            <button
+              onClick={() => setShowFoodOnly((prev) => !prev)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95"
+              style={{
+                background: showFoodOnly ? NAVY : "white",
+                color: showFoodOnly ? "white" : NAVY,
+                border: `1.5px solid ${NAVY}`,
+                boxShadow: showFoodOnly
+                  ? "0 0 0 2px rgba(18,60,115,0.18)"
+                  : "0 2px 8px rgba(0,0,0,0.12)",
+                opacity: showFoodOnly ? 1 : 0.9,
+              }}
+            >
+              <LuUtensils size={16} />
+            </button>
+
+            {/* Restroom Layer */}
+            <button
+              onClick={() => setShowRestroomOnly((prev) => !prev)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95"
+              style={{
+                background: showRestroomOnly ? NAVY : "white",
+                color: showRestroomOnly ? "white" : NAVY,
+                border: `1.5px solid ${NAVY}`,
+                boxShadow: showRestroomOnly
+                  ? "0 0 0 2px rgba(18,60,115,0.18)"
+                  : "0 2px 8px rgba(0,0,0,0.12)",
+                opacity: showRestroomOnly ? 1 : 0.9,
+              }}
+            >
+              <LuToilet size={16} />
+            </button>
+          </div>
+        </div>
       </div>
       <MapContainer
         className="h-full w-full"
@@ -495,6 +624,8 @@ export default function CampusMapInner({
           const isScheduled = scheduleIndex != null;
           const isHovered = hoveredEvent === event.id;
           const isNewlyAdded = recentlyAddedId === event.id;
+          const isFood = isFoodTruck(event);
+          const isRestroomEvent = isRestroom(event);
 
           const [lat, lng] =
             offsetPositions.get(event.id) ?? [event.lat, event.lng];
@@ -508,6 +639,17 @@ export default function CampusMapInner({
             icons
           });
 
+          // Layer order: scheduled (top) > regular search results > food/restrooms
+          let zIndex = 0;
+          if (isScheduled) {
+            zIndex = 200;
+          } else if (isFood || isRestroomEvent) {
+            zIndex = 40;
+          } else {
+            zIndex = 120;
+          }
+          if (isHovered) zIndex += 15;
+
           return (
             <Marker
               key={event.id}
@@ -517,7 +659,7 @@ export default function CampusMapInner({
               }}
               position={[lat, lng]}
               icon={icon}
-              zIndexOffset={isScheduled ? 100 : isHovered ? 50 : 0}
+              zIndexOffset={zIndex}
               eventHandlers={{
                 mouseover: () => setHoveredEvent(event.id),
                 mouseout: () => setHoveredEvent(null),
@@ -544,7 +686,10 @@ export default function CampusMapInner({
           isExporting={!!isExporting}
           routeBoundsRef={routeBoundsRef}
         />
-        <FitBoundsToSearchResults events={events} skip={!!isExporting} />
+        <FitBoundsToSearchResults
+          events={showFoodOnly ? eventsOnMap : browseEvents}
+          skip={!!isExporting || shouldPanToHovered}
+        />
         <FlyToHoveredEvent
           hoveredEvent={hoveredEvent}
           events={eventsOnMap}

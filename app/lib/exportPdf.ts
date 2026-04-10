@@ -28,20 +28,40 @@ export async function exportSchedulePdf(scheduledEvents: ScheduledEvent[]) {
   const pageWidth = pdf.internal.pageSize.getWidth()
   const margin = 16
   const contentWidth = pageWidth - margin * 2
-  let y = margin
+  let y = 0
 
-  // --- Header ---
-  pdf.setFillColor(2, 40, 81) // UC Davis navy #022851
-  pdf.rect(0, 0, pageWidth, 28, "F")
-  pdf.setTextColor(218, 170, 0) // UC Davis gold #daaa00
-  pdf.setFontSize(20)
+  // --- Header image + title ---
+  try {
+    const response = await fetch("/picnic-letterhead.png")
+    const blob = await response.blob()
+    const imgData: string = await new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.readAsDataURL(blob)
+    })
+
+    const img = new Image()
+    img.src = imgData
+    await new Promise((resolve, reject) => {
+      img.onload = () => resolve(null)
+      img.onerror = reject
+    })
+    const aspectRatio = img.height / img.width || 0.28
+    const imgWidth = pageWidth
+    const imgHeight = imgWidth * aspectRatio
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight)
+    y = imgHeight + 8
+  } catch (err) {
+    console.warn("Could not load letterhead image:", err)
+    y = margin
+  }
+
+  // Title below header image
+  pdf.setTextColor(2, 40, 81) // UC Davis navy #022851
+  pdf.setFontSize(14)
   pdf.setFont("helvetica", "bold")
-  pdf.text("UC Davis Picnic Day", margin, 14)
-  pdf.setFontSize(11)
-  pdf.setFont("helvetica", "normal")
-  pdf.setTextColor(255, 255, 255)
-  pdf.text("My Event Schedule", margin, 22)
-  y = 36
+  pdf.text("My Event Schedule", margin, y)
+  y += 12
 
   // --- Map capture ---
   const mapContainer = document.querySelector(".leaflet-container") as HTMLElement | null
