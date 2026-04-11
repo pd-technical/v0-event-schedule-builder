@@ -67,8 +67,6 @@ export default function PicnicDayPage() {
   const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [isExportingPdf, setIsExportingPdf] = useState(false)
   const [personalInterests, setPersonalInterests] = useState<PersonalizationPillId[] | null>(null)
-  const [personalizationSeedPending, setPersonalizationSeedPending] =
-    useState<PersonalizationPillId[] | null>(null)
   const [activeFeedTab, setActiveFeedTab] = useState<"recommended" | "all">("all")
   const [isEditingRecommended, setIsEditingRecommended] = useState(false)
   const [eventsReady, setEventsReady] = useState(false)
@@ -110,20 +108,6 @@ export default function PicnicDayPage() {
     loadEvents()
   }, [])
 
-  useEffect(() => {
-    if (!personalizationSeedPending || events.length === 0) return
-    const ids = personalizationSeedPending
-    const picked = topEventsForPersonalization(events, ids, 3)
-    const sortedByTime = [...picked].sort((a, b) =>
-      a.startTime.localeCompare(b.startTime)
-    )
-    setScheduledEvents(
-      sortedByTime.map((e, i) => ({ ...e, orderIndex: i }))
-    )
-    setPersonalizationSeedPending(null)
-    setResultsPage(0)
-  }, [personalizationSeedPending, events])
-
   // Restore schedule from localStorage after events load (2-day expiry handled in scheduleCache).
   useEffect(() => {
     if (!eventsReady) return
@@ -148,9 +132,11 @@ export default function PicnicDayPage() {
 
   const handlePersonalizationComplete = useCallback((interestIds: PersonalizationPillId[]) => {
     setPersonalInterests(interestIds)
-    setPersonalizationSeedPending(interestIds)
     setSelectedCategories([])
+    setSearchQuery("")
+    setSubmittedSearchQuery("")
     setActiveFeedTab("recommended")
+    setResultsPage(0)
   }, [])
 
   const recommendedSeedEvents = useMemo(
@@ -178,11 +164,12 @@ export default function PicnicDayPage() {
   }, [activeFeedTab, personalInterests, recommendedSeedEvents, events])
 
   const searchRanked = useMemo(() => {
-    if (submittedSearchQuery.trim()) {
-      return rankedEventMatchesSearch(events, submittedSearchQuery)
-    }
-    return baseEvents
-  }, [baseEvents, submittedSearchQuery, events])
+    const q = submittedSearchQuery.trim()
+    if (!q) return baseEvents
+    // Recommended feed should only search within that feed, not the full catalog.
+    const pool = activeFeedTab === "recommended" ? baseEvents : events
+    return rankedEventMatchesSearch(pool, submittedSearchQuery)
+  }, [baseEvents, submittedSearchQuery, events, activeFeedTab])
 
   const filteredEvents = useMemo(() => {
     let result = searchRanked
@@ -242,9 +229,13 @@ export default function PicnicDayPage() {
     );
   }
 
-  const nonFoodEvents = filteredEvents.filter(
-    (event) => !isFoodEvent(event) && !isRestroom(event)
-  );
+  // Hide food-tagged POIs from the browse list so the sidebar isn’t cluttered; keep them
+  // visible on Recommended so seeded schedule picks (e.g. dance + food tag) match the list.
+  const nonFoodEvents = filteredEvents.filter((event) => {
+    if (isRestroom(event)) return false
+    if (activeFeedTab === "recommended") return true
+    return !isFoodEvent(event)
+  })
 
   const [RESULTS_PAGE_SIZE, setResultsPageSize] = useState(20)
 
@@ -337,13 +328,19 @@ export default function PicnicDayPage() {
   }, [])
 
   const selectRecommended = useCallback(() => {
+    setSearchQuery("")
+    setSubmittedSearchQuery("")
     setSelectedCategories([])
     setActiveFeedTab("recommended")
     setResultsPage(0)
   }, [])
 
   const setFeedTab = useCallback((tab: "recommended" | "all") => {
-    if (tab === "recommended") setSelectedCategories([])
+    if (tab === "recommended") {
+      setSelectedCategories([])
+      setSearchQuery("")
+      setSubmittedSearchQuery("")
+    }
     setActiveFeedTab(tab)
     setResultsPage(0)
   }, [])
