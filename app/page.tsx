@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react"
 import { SearchSection } from "@/app/components/search-section"
-import { CategoryFilters } from "@/app/components/category-filters"
 import { EventList } from "@/app/components/event-list"
 import { CampusMap } from "@/app/components/campus-map"
 import { SchedulePanel } from "@/app/components/schedule-panel"
@@ -17,6 +16,12 @@ import {
 } from "@/app/lib/scheduleCache"
 import { exportScheduleIcs } from "@/app/lib/exportIcs"
 import { OnboardingProvider } from "@/app/components/onboarding/onboarding-provider"
+import { PersonalizationDialog } from "@/app/components/onboarding/personalization-dialog"
+import {
+  PERSONALIZATION_PILLS,
+  topEventsForPersonalization,
+  type PersonalizationPillId,
+} from "@/app/lib/personalizationInterests"
 
 export interface Event {
   id: string
@@ -61,7 +66,11 @@ export default function PicnicDayPage() {
   const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null)
   const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [isExportingPdf, setIsExportingPdf] = useState(false)
-  const [activeTab, setActiveTab] = useState<"browse" | "popular" | "nearby">("browse")
+  const [personalInterests, setPersonalInterests] = useState<PersonalizationPillId[] | null>(null)
+  const [personalizationSeedPending, setPersonalizationSeedPending] =
+    useState<PersonalizationPillId[] | null>(null)
+  const [activeFeedTab, setActiveFeedTab] = useState<"recommended" | "all">("all")
+  const [isEditingRecommended, setIsEditingRecommended] = useState(false)
   const [eventsReady, setEventsReady] = useState(false)
   const [scheduleCacheReady, setScheduleCacheReady] = useState(false)
   const [isMobileBlocked, setIsMobileBlocked] = useState(false)
@@ -101,8 +110,21 @@ export default function PicnicDayPage() {
     loadEvents()
   }, [])
 
+  useEffect(() => {
+    if (!personalizationSeedPending || events.length === 0) return
+    const ids = personalizationSeedPending
+    const picked = topEventsForPersonalization(events, ids, 3)
+    const sortedByTime = [...picked].sort((a, b) =>
+      a.startTime.localeCompare(b.startTime)
+    )
+    setScheduledEvents(
+      sortedByTime.map((e, i) => ({ ...e, orderIndex: i }))
+    )
+    setPersonalizationSeedPending(null)
+    setResultsPage(0)
+  }, [personalizationSeedPending, events])
+
   // Restore schedule from localStorage after events load (2-day expiry handled in scheduleCache).
-  // Refreshing the saved timestamp on restore keeps the cache alive while someone uses Picnic Day.
   useEffect(() => {
     if (!eventsReady) return
     if (events.length > 0) {
@@ -124,10 +146,43 @@ export default function PicnicDayPage() {
     writeScheduleCache(scheduledEvents.map((e) => e.id))
   }, [scheduledEvents, scheduleCacheReady, events.length])
 
+  const handlePersonalizationComplete = useCallback((interestIds: PersonalizationPillId[]) => {
+    setPersonalInterests(interestIds)
+    setPersonalizationSeedPending(interestIds)
+    setSelectedCategories([])
+    setActiveFeedTab("recommended")
+  }, [])
+
+  const recommendedSeedEvents = useMemo(
+    () =>
+      personalInterests?.length
+        ? topEventsForPersonalization(events, personalInterests, 3)
+        : [],
+    [events, personalInterests]
+  )
+
+  const selectedInterestLabels = useMemo(() => {
+    if (!personalInterests?.length) return []
+    const map = new Map(PERSONALIZATION_PILLS.map((pill) => [pill.id, pill.label]))
+    return personalInterests.map((id) => map.get(id) ?? id).slice(0, 3)
+  }, [personalInterests])
+
+  const baseEvents = useMemo(() => {
+    if (activeFeedTab === "recommended" && personalInterests?.length) {
+      return recommendedSeedEvents
+    }
+    if (activeFeedTab === "recommended") {
+      return []
+    }
+    return events
+  }, [activeFeedTab, personalInterests, recommendedSeedEvents, events])
+
   const searchRanked = useMemo(() => {
-    if (!submittedSearchQuery.trim()) return events
-    return rankedEventMatchesSearch(events, submittedSearchQuery)
-  }, [events, submittedSearchQuery])
+    if (submittedSearchQuery.trim()) {
+      return rankedEventMatchesSearch(events, submittedSearchQuery)
+    }
+    return baseEvents
+  }, [baseEvents, submittedSearchQuery, events])
 
   const filteredEvents = useMemo(() => {
     let result = searchRanked
@@ -168,9 +223,7 @@ export default function PicnicDayPage() {
 
     else if (sortOption === "relevance") {
       if (!submittedSearchQuery.trim()) {
-        sorted.sort((a, b) =>
-          a.name.localeCompare(b.name)
-        )
+        sorted.sort((a, b) => a.name.localeCompare(b.name))
       }
     }
 
@@ -274,13 +327,32 @@ export default function PicnicDayPage() {
     })
   }, [])
 
-  const toggleCategory = (category: string) => {
-    setSelectedCategories(prev =>
+  const toggleCategory = useCallback((category: string) => {
+    setActiveFeedTab("all")
+    setSelectedCategories((prev) =>
       prev.includes(category)
-        ? prev.filter(c => c !== category)
+        ? prev.filter((c) => c !== category)
         : [...prev, category]
     )
-  }
+  }, [])
+
+  const selectRecommended = useCallback(() => {
+    setSelectedCategories([])
+    setActiveFeedTab("recommended")
+    setResultsPage(0)
+  }, [])
+
+  const setFeedTab = useCallback((tab: "recommended" | "all") => {
+    if (tab === "recommended") setSelectedCategories([])
+    setActiveFeedTab(tab)
+    setResultsPage(0)
+  }, [])
+
+  const handleShowAllFromBanner = useCallback(() => {
+    setActiveFeedTab("all")
+    setSelectedCategories([])
+    setResultsPage(0)
+  }, [])
 
   const clearSearchHistory = () => {
     setSearchHistory([])
@@ -305,6 +377,7 @@ export default function PicnicDayPage() {
   }
 
   const handleBrowseAllEvents = () => {
+    setActiveFeedTab("all")
     setSearchQuery("")
     setSubmittedSearchQuery("")
     setSelectedCategories([])
@@ -319,6 +392,7 @@ export default function PicnicDayPage() {
         setSelectedCategories([])
       }}
       onClearSchedule={() => setScheduledEvents([])}
+      onPersonalizationComplete={handlePersonalizationComplete}
       scheduledEventCount={scheduledEvents.length}
     >
       {isMobileBlocked ? (
@@ -332,6 +406,7 @@ export default function PicnicDayPage() {
           </div>
         </main>
       ) : (
+        <>
       <main className="h-screen flex flex-col bg-background px-4 sm:px-5 md:px-6 py-3 overflow-hidden">
             {/* Mobile/tablet: single column (search, list, then map, schedule). Large: row (search left, map right) */}
             <div className="flex flex-col gap-5 md:gap-6 lg:flex-row lg:gap-4 flex-1 min-h-0">
@@ -343,6 +418,15 @@ export default function PicnicDayPage() {
                     searchHistory={searchHistory}
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
+                    activeFeedTab={activeFeedTab}
+                    setActiveFeedTab={setFeedTab}
+                    selectedInterestLabels={selectedInterestLabels}
+                    onEditRecommended={() => setIsEditingRecommended(true)}
+                    onShowAll={handleShowAllFromBanner}
+                    selectedCategories={selectedCategories}
+                    toggleCategory={toggleCategory}
+                    onSelectRecommended={selectRecommended}
+                    recommendedActive={activeFeedTab === "recommended"}
                     onSearchSubmit={(value) => {
                       const finalQuery = (value ?? searchQuery).trim()
                       if (!finalQuery) {
@@ -352,6 +436,7 @@ export default function PicnicDayPage() {
                         return
                       }
 
+                      setActiveFeedTab("all")
                       setSearchQuery(finalQuery)
                       setSubmittedSearchQuery(finalQuery)
                       setResultsPage(0)
@@ -368,31 +453,25 @@ export default function PicnicDayPage() {
                   />
                 </div>
 
-                <div data-onboarding="event-list" className="flex flex-col gap-6 mt-6 min-w-0 xl:flex-row lg:flex-1 lg:min-h-0">
-                  <CategoryFilters
-                    selectedCategories={selectedCategories}
-                    toggleCategory={toggleCategory}
+                <div data-onboarding="event-list" className="mt-6 flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden lg:min-h-0">
+                  <EventList
+                    events={eventsForCurrentPage}
+                    allFilteredCount={nonFoodEvents.length}
+                    scheduledEvents={scheduledEvents}
+                    addToSchedule={addToSchedule}
+                    removeFromSchedule={removeFromSchedule}
+                    hoveredEvent={hoveredEvent}
+                    setHoveredEvent={setHoveredEventFromList}
+                    scrollToEventId={scrollToEventId}
+                    onScrollToEventDone={() => setScrollToEventId(null)}
+                    page={resultsPage}
+                    totalPages={totalResultsPages}
+                    onPageChange={setResultsPage}
+                    searchQuery={submittedSearchQuery}
+                    onBrowseAll={handleBrowseAllEvents}
                     sortOption={sortOption}
                     setSortOption={setSortOption}
                   />
-                  <div className="flex-1 min-w-0 lg:min-h-0 lg:flex lg:flex-col -mt-2">
-                    <EventList
-                      events={eventsForCurrentPage}
-                      allFilteredCount={nonFoodEvents.length}
-                      scheduledEvents={scheduledEvents}
-                      addToSchedule={addToSchedule}
-                      removeFromSchedule={removeFromSchedule}
-                      hoveredEvent={hoveredEvent}
-                      setHoveredEvent={setHoveredEventFromList}
-                      scrollToEventId={scrollToEventId}
-                      onScrollToEventDone={() => setScrollToEventId(null)}
-                      page={resultsPage}
-                      totalPages={totalResultsPages}
-                      onPageChange={setResultsPage}
-                      searchQuery={submittedSearchQuery}
-                      onBrowseAll={handleBrowseAllEvents}
-                    />
-                  </div>
                 </div>
               </div>
 
@@ -424,6 +503,18 @@ export default function PicnicDayPage() {
               </div>
             </div>
         </main>
+      {isEditingRecommended && (
+        <PersonalizationDialog
+          initialSelected={personalInterests ?? []}
+          saveLabel="Save interests"
+          onDismiss={() => setIsEditingRecommended(false)}
+          onPersonalized={(ids) => {
+            handlePersonalizationComplete(ids)
+            setIsEditingRecommended(false)
+          }}
+        />
+      )}
+        </>
       )}
     </OnboardingProvider>
   )

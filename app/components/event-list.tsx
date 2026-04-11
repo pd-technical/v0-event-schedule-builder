@@ -19,6 +19,8 @@ interface EventListProps {
   onPageChange: (page: number) => void
   searchQuery: string
   onBrowseAll: () => void
+  sortOption: "relevance" | "alphabetical" | "time"
+  setSortOption: (option: "relevance" | "alphabetical" | "time") => void
 }
 
 export function EventList({
@@ -36,6 +38,8 @@ export function EventList({
   onPageChange,
   searchQuery,
   onBrowseAll,
+  sortOption,
+  setSortOption,
 }: EventListProps) {
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null)
   const listScrollRef = useRef<HTMLDivElement>(null)
@@ -72,50 +76,78 @@ export function EventList({
 
   return (
     <div className="flex-1 lg:flex lg:min-h-0 lg:flex-col">
-      <div className="mb-3 flex flex-wrap items-center gap-3 border-b border-border/60 pb-2">
-        <div className="min-w-0">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-primary">
-            {hasSearch ? `${events.length} Events Found` : `Displaying ${allFilteredCount} Events`}
+      <div className="mb-3 border-b border-[#E5E7EB] pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <h3 className="min-w-0 text-sm font-bold uppercase leading-none tracking-wide text-[#002D62]">
+            {hasSearch ? `${events.length} Events Found` : `All Events (${allFilteredCount})`}
           </h3>
-          {hasSearch && (
-            <p className="truncate text-xs text-muted-foreground">
-              for <span className="text-foreground">"{trimmedQuery}"</span>
-            </p>
-          )}
+
+          <div className="flex flex-wrap items-center justify-end gap-3 sm:ml-auto sm:gap-4">
+            <div data-onboarding="sort-section" className="flex items-center gap-2">
+              <span className="whitespace-nowrap text-sm font-semibold text-[#002D62]">
+                Sort by:
+              </span>
+              <select
+                value={sortOption}
+                onChange={(e) =>
+                  setSortOption(e.target.value as "relevance" | "alphabetical" | "time")
+                }
+                suppressHydrationWarning
+                className="
+                  h-9 min-w-[9.5rem] cursor-pointer rounded-lg border border-[#D1D5DB]
+                  bg-white pl-2 pr-10 text-sm font-medium leading-9 text-[#002D62]
+                  shadow-sm transition
+                  hover:border-[#94A3B8]
+                  focus:border-[#002D62] focus:outline-none focus:ring-2 focus:ring-[#002D62]/20
+                "
+                aria-label="Sort events"
+              >
+                <option value="relevance">Relevance</option>
+                <option value="time">Time</option>
+                <option value="alphabetical">Alphabetical</option>
+              </select>
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2 text-xs text-[#002D62]">
+                <button
+                  type="button"
+                  aria-label="Previous page"
+                  onClick={() => onPageChange(Math.max(0, page - 1))}
+                  disabled={page === 0}
+                  className="rounded-lg border border-[#D1D5DB] bg-white px-2.5 py-1.5 transition hover:bg-[#F1F5F9] disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                <span className="whitespace-nowrap text-sm font-semibold tabular-nums">
+                  {page + 1} / {totalPages}
+                </span>
+
+                <button
+                  type="button"
+                  aria-label="Next page"
+                  onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="rounded-lg border border-[#D1D5DB] bg-white px-2.5 py-1.5 transition hover:bg-[#F1F5F9] disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {totalPages > 1 && (
-          <div className="ml-auto flex items-center gap-2 text-xs">
-            <button
-              type="button"
-              aria-label="Previous page"
-              onClick={() => onPageChange(Math.max(0, page - 1))}
-              disabled={page === 0}
-              className="rounded-md border border-border bg-secondary/50 px-3 py-1.5 text-primary transition hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-30"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-
-            <span className="whitespace-nowrap text-sm font-medium text-primary">
-              {page + 1} / {totalPages}
-            </span>
-
-            <button
-              type="button"
-              aria-label="Next page"
-              onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
-              disabled={page >= totalPages - 1}
-              className="rounded-md border border-border bg-secondary/50 px-3 py-1.5 text-primary transition hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-30"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
+        {hasSearch && (
+          <p className="mt-1.5 truncate text-xs text-[#64748B]">
+            for <span className="text-[#002D62]">&quot;{trimmedQuery}&quot;</span>
+          </p>
         )}
       </div>
 
       <div
         ref={listScrollRef}
-        className="space-y-2 lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-2"
+        className="space-y-2 lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:mr-0"
       >
         {events.map((event) => {
           const scheduled = scheduledIds.has(event.id)

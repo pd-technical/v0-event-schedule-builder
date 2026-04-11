@@ -17,7 +17,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     id: "search",
     target: "search-section",
     title: "Search for Events",
-    description: "Click one of the yellow pills below, or type something like 'music' to search for Picnic Day events.",
+    description: "Type something like 'music' or 'science' in the search bar to find Picnic Day events.",
     icon: "Search",
     tooltipPosition: "bottom",
     scrollIntoView: false,
