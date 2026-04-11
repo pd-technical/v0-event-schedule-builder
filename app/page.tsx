@@ -229,13 +229,9 @@ export default function PicnicDayPage() {
     );
   }
 
-  // Hide food-tagged POIs from the browse list so the sidebar isn’t cluttered; keep them
-  // visible on Recommended so seeded schedule picks (e.g. dance + food tag) match the list.
-  const nonFoodEvents = filteredEvents.filter((event) => {
-    if (isRestroom(event)) return false
-    if (activeFeedTab === "recommended") return true
-    return !isFoodEvent(event)
-  })
+  const nonFoodEvents = filteredEvents.filter(
+    (event) => !isFoodEvent(event) && !isRestroom(event)
+  );
 
   const [RESULTS_PAGE_SIZE, setResultsPageSize] = useState(20)
 
