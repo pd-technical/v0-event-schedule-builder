@@ -110,7 +110,7 @@ export default function PicnicDayPage() {
 
   function timeToMinutes(timeStr: string): number {
     const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
-    if (!match) return Number.POSITIVE_INFINITY
+    if (!match) return 0
     let hours = Number(match[1])
     const minutes = Number(match[2])
     const period = match[3].toUpperCase()
@@ -134,7 +134,7 @@ export default function PicnicDayPage() {
   }
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768)
+    const check = () => setIsMobile(window.innerWidth < 1024)
     check()
     window.addEventListener("resize", check)
     return () => window.removeEventListener("resize", check)
