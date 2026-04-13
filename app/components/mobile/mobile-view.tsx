@@ -5,7 +5,6 @@ import { CampusMap } from "@/app/components/campus-map"
 import { SchedulePanel } from "@/app/components/schedule-panel"
 import { EventList } from "@/app/components/event-list"
 import { SearchSection } from "@/app/components/search-section"
-import { useOnboarding } from "@/app/components/onboarding/onboarding-provider"
 
 export function MobileScheduleMap(props: any) {
   const {
@@ -62,25 +61,18 @@ export function MobileScheduleMap(props: any) {
     (resultsPage + 1) * RESULTS_PAGE_SIZE
   )
 
-  useEffect(() => {
-    setIsListOpen(true)
-  }, [])
-
   return (
     <div className="flex flex-col gap-4 bg-background py-3 pb-24">
-      <div data-onboarding="schedule-panel">
-        <SchedulePanel
-          scheduledEvents={scheduledEvents}
-          removeFromSchedule={removeFromSchedule}
-          reorderSchedule={reorderSchedule}
-          onExportPdf={handleExportPdf}
-          onExportIcs={handleExportIcs}
-          isExporting={isExportingPdf}
-        />
-      </div>
+      <SchedulePanel
+        scheduledEvents={scheduledEvents}
+        removeFromSchedule={removeFromSchedule}
+        reorderSchedule={reorderSchedule}
+        onExportPdf={handleExportPdf}
+        onExportIcs={handleExportIcs}
+        isExporting={isExportingPdf}
+      />
 
       <div
-        data-onboarding="map"
         className="relative z-0 h-[55vh] overflow-hidden rounded-2xl border border-gray-200"
         onClick={() => setIsListOpen(false)}
       >
@@ -129,25 +121,14 @@ export function MobileScheduleMap(props: any) {
                 onClick={() => setIsListOpen((prev: boolean) => !prev)}
                 className="mb-2 flex w-full flex-col items-center"
               >
-                <svg
-                  className={`transition-transform duration-300 ${isListOpen ? "rotate-180" : ""
-                    } text-gray-400`}
-                  width="28"
-                  height="16"
-                  viewBox="0 0 28 16"
-                  fill="none"
-                >
-                  <path
-                    d="M2 12 L14 4 L26 12"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <div className="h-1.5 w-10 rounded-full bg-gray-300" />
               </button>
 
-              <div data-onboarding="search-section" className="relative z-[60]">
+              <div className="mb-2 text-center text-sm font-medium">
+                Browse Events ({nonFoodEvents.length})
+              </div>
+
+              <div className="relative z-[60]">
                 <SearchSection
                   events={events}
                   searchHistory={searchHistory}
@@ -172,11 +153,7 @@ export function MobileScheduleMap(props: any) {
 
             {isListOpen && (
               <div
-                data-onboarding="event-list"
-                className={`
-    min-h-0 flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))]
-    ${isListOpen ? "block" : "hidden"}
-  `}
+                className="min-h-0 flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
                 onClick={(e) => e.stopPropagation()}
               >
                 <EventList
@@ -188,7 +165,7 @@ export function MobileScheduleMap(props: any) {
                   hoveredEvent={hoveredEvent}
                   setHoveredEvent={setHoveredEventFromList}
                   scrollToEventId={scrollToEventId}
-                  onScrollToEventDone={() => { }}
+                  onScrollToEventDone={() => {}}
                   page={resultsPage}
                   totalPages={totalResultsPages}
                   onPageChange={setResultsPage}

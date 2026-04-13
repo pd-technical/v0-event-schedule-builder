@@ -94,7 +94,7 @@ export default function PicnicDayPage() {
 
   function timeToMinutes(timeStr: string): number {
     const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
-    if (!match) return 0
+    if (!match) return Number.POSITIVE_INFINITY
     let hours = Number(match[1])
     const minutes = Number(match[2])
     const period = match[3].toUpperCase()
@@ -118,7 +118,7 @@ export default function PicnicDayPage() {
   }
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 1024)
+    const check = () => setIsMobile(window.innerWidth < 768)
     check()
     window.addEventListener("resize", check)
     return () => window.removeEventListener("resize", check)
@@ -250,15 +250,9 @@ export default function PicnicDayPage() {
 
     if (sortOption === "earliest") {
       sorted.sort((a, b) => {
-        const aStart = timeToMinutes(a.startTime)
-        const bStart = timeToMinutes(b.startTime)
-
-        if (aStart !== bStart) return aStart - bStart
-
-        const aEnd = timeToMinutes(a.endTime)
-        const bEnd = timeToMinutes(b.endTime)
-
-        return aEnd - bEnd
+        const start = timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+        if (start !== 0) return start
+        return timeToMinutes(a.endTime) - timeToMinutes(b.endTime)
       })
     } else if (sortOption === "az") {
       sorted.sort((a, b) => a.name.localeCompare(b.name))
