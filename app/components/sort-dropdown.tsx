@@ -113,7 +113,7 @@ export function SortDropdown({
           className="w-full rounded-[16px] border border-[#E5E7EB] bg-white px-4 py-3 text-left text-sm font-semibold text-[#163A70] shadow-sm transition hover:bg-[#F8FAFC]"
         >
           <div className="flex items-center justify-between">
-            <span>Sort: {getSortLabel()}</span>
+            <span>{getSortLabel()}</span>
             <span className="text-xs text-[#5B6B84]">{isOpen ? "▲" : "▼"}</span>
           </div>
         </button>

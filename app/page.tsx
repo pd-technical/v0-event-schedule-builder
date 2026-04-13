@@ -248,7 +248,7 @@ export default function PicnicDayPage() {
 
     const sorted = [...result]
 
-    if (sortOption === "soonest") {
+    if (sortOption === "earliest") {
       sorted.sort((a, b) => {
         const start = timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
         if (start !== 0) return start
