@@ -1,26 +1,22 @@
 "use client"
 
 import { useState, useCallback, useEffect, useMemo } from "react"
-
-// components
 import { SearchSection } from "@/app/components/search-section"
 import { EventList } from "@/app/components/event-list"
 import { CampusMap } from "@/app/components/campus-map"
 import { SchedulePanel } from "@/app/components/schedule-panel"
-import { OnboardingProvider } from "@/app/components/onboarding/onboarding-provider"
-import { PersonalizationDialog } from "@/app/components/onboarding/personalization-dialog"
-import { MobileScheduleMap } from "./components/mobile/mobile-view"
 
-// utils
 import { getEvents } from "@/app/lib/fetchEvents"
 import { rankedEventMatchesSearch } from "@/app/lib/searchUtils"
 import { exportSchedulePdf } from "@/app/lib/exportPdf"
-import { exportScheduleIcs } from "@/app/lib/exportIcs"
 import {
   readScheduleCache,
   writeScheduleCache,
   scheduleFromCachedIds,
 } from "@/app/lib/scheduleCache"
+import { exportScheduleIcs } from "@/app/lib/exportIcs"
+import { OnboardingProvider } from "@/app/components/onboarding/onboarding-provider"
+import { PersonalizationDialog } from "@/app/components/onboarding/personalization-dialog"
 import {
   PERSONALIZATION_PILLS,
   topEventsForPersonalization,
@@ -48,40 +44,36 @@ export interface ScheduledEvent extends Event {
 }
 
 export default function PicnicDayPage() {
-
-  // data
-  const [events, setEvents] = useState<Event[]>([])
-  const [eventsReady, setEventsReady] = useState(false)
-
-  // search + filters
   const [searchQuery, setSearchQuery] = useState("")
   const [submittedSearchQuery, setSubmittedSearchQuery] = useState("")
-  const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [sortOption, setSortOption] =
-    useState<"relevance" | "alphabetical" | "time">("relevance")
-
-  // schedule
   const [scheduledEvents, setScheduledEvents] = useState<ScheduledEvent[]>([])
-  const [scheduleCacheReady, setScheduleCacheReady] = useState(false)
-  const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null)
-
-  // ui state
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null)
   const [shouldPanToHovered, setShouldPanToHovered] = useState(false)
+  const [sortOption, setSortOption] = useState<"relevance" | "alphabetical" | "time">("relevance")
+
+  const setHoveredEventFromList = useCallback((id: string | null) => {
+    setHoveredEvent(id)
+    setShouldPanToHovered(!!id)
+  }, [])
+  const setHoveredEventFromMap = useCallback((id: string | null) => {
+    setHoveredEvent(id)
+    setShouldPanToHovered(false)
+  }, [])
   const [scrollToEventId, setScrollToEventId] = useState<string | null>(null)
+  const [events, setEvents] = useState<Event[]>([])
   const [resultsPage, setResultsPage] = useState(0)
+  const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null)
+  const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [isExportingPdf, setIsExportingPdf] = useState(false)
   const [personalInterests, setPersonalInterests] = useState<PersonalizationPillId[] | null>(null)
   const [personalizationSeedPending, setPersonalizationSeedPending] =
     useState<PersonalizationPillId[] | null>(null)
-  const [activeFeedTab, setActiveFeedTab] =
-    useState<"recommended" | "all">("all")
+  const [activeFeedTab, setActiveFeedTab] = useState<"recommended" | "all">("all")
   const [isEditingRecommended, setIsEditingRecommended] = useState(false)
-
-  // layout
-  const [isMobile, setIsMobile] = useState(false)
-  const [RESULTS_PAGE_SIZE, setResultsPageSize] = useState(20)
+  const [eventsReady, setEventsReady] = useState(false)
+  const [scheduleCacheReady, setScheduleCacheReady] = useState(false)
+  const [isMobileBlocked, setIsMobileBlocked] = useState(false)
 
   const categoryToTags: Record<string, string[]> = {
     family: ["kids", "toddlers", "fun", "activities", "games"],
@@ -93,48 +85,24 @@ export default function PicnicDayPage() {
     community: ["cultural", "culture", "personal", "services"],
   }
 
-  // helpers
   function timeToMinutes(timeStr: string): number {
     const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
     if (!match) return Number.POSITIVE_INFINITY
     let hours = Number(match[1])
     const minutes = Number(match[2])
     const period = match[3].toUpperCase()
-
     if (period === "PM" && hours !== 12) hours += 12
     if (period === "AM" && hours === 12) hours = 0
-
     return hours * 60 + minutes
   }
-
-  function isFoodEvent(event: Event) {
-    return event.tags?.some(tag =>
-      tag.toLowerCase().includes("food")
-    )
-  }
-
-  function isRestroom(event: Event | ScheduledEvent) {
-    return event.tags?.some(tag =>
-      tag.toLowerCase().includes("restroom")
-    )
-  }
-
-  // effects
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768)
-    check()
-    window.addEventListener("resize", check)
-    return () => window.removeEventListener("resize", check)
-  }, [])
 
   useEffect(() => {
     async function loadEvents() {
       try {
         const data = await getEvents()
         setEvents(data)
-      } catch (err) {
-        console.error("Failed to load events:", err)
+      } catch (error) {
+        console.error("Failed to load events:", error)
       } finally {
         setEventsReady(true)
       }
@@ -158,23 +126,24 @@ export default function PicnicDayPage() {
 
   // Restore schedule from localStorage after events load (2-day expiry handled in scheduleCache).
   useEffect(() => {
-    if (!eventsReady || events.length === 0) return
-
-    const cached = readScheduleCache()
-    if (cached?.orderedEventIds.length) {
-      const restored = scheduleFromCachedIds(cached.orderedEventIds, events)
-      if (restored.length > 0) {
-        setScheduledEvents(restored)
-        writeScheduleCache(restored.map(e => e.id))
+    if (!eventsReady) return
+    if (events.length > 0) {
+      const cached = readScheduleCache()
+      if (cached?.orderedEventIds.length) {
+        const restored = scheduleFromCachedIds(cached.orderedEventIds, events)
+        if (restored.length > 0) {
+          setScheduledEvents(restored)
+          writeScheduleCache(restored.map((e) => e.id))
+        }
       }
     }
-
     setScheduleCacheReady(true)
   }, [eventsReady, events])
 
   useEffect(() => {
-    if (!scheduleCacheReady || events.length === 0) return
-    writeScheduleCache(scheduledEvents.map(e => e.id))
+    if (!scheduleCacheReady) return
+    if (events.length === 0) return
+    writeScheduleCache(scheduledEvents.map((e) => e.id))
   }, [scheduledEvents, scheduleCacheReady, events.length])
 
   const handlePersonalizationComplete = useCallback((interestIds: PersonalizationPillId[]) => {
@@ -208,28 +177,6 @@ export default function PicnicDayPage() {
     return events
   }, [activeFeedTab, personalInterests, recommendedSeedEvents, events])
 
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setSubmittedSearchQuery("")
-      setResultsPage(0)
-    }
-  }, [searchQuery])
-
-  useEffect(() => {
-    const updateSize = () => {
-      const width = window.innerWidth
-      if (width < 640) setResultsPageSize(5)
-      else if (width < 1024) setResultsPageSize(10)
-      else setResultsPageSize(20)
-    }
-
-    updateSize()
-    window.addEventListener("resize", updateSize)
-    return () => window.removeEventListener("resize", updateSize)
-  }, [])
-
-  // derived data
-
   const searchRanked = useMemo(() => {
     if (submittedSearchQuery.trim()) {
       return rankedEventMatchesSearch(events, submittedSearchQuery)
@@ -241,12 +188,13 @@ export default function PicnicDayPage() {
     let result = searchRanked
 
     if (selectedCategories.length > 0) {
-      result = result.filter(event =>
-        selectedCategories.some(category => {
+      result = result.filter((event) =>
+        selectedCategories.some((category) => {
           const validTags = categoryToTags[category] || []
-          return validTags.some(tag =>
+
+          return validTags.some((tag) =>
             event.tags?.some(
-              eventTag =>
+              (eventTag) =>
                 eventTag.toLowerCase() === tag.toLowerCase()
             )
           )
@@ -258,13 +206,22 @@ export default function PicnicDayPage() {
 
     if (sortOption === "time") {
       sorted.sort((a, b) => {
-        const start = timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
-        if (start !== 0) return start
+        const startCompare = timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+
+        if (startCompare !== 0) return startCompare
+
+        // If start times are equal → earlier end time first
         return timeToMinutes(a.endTime) - timeToMinutes(b.endTime)
       })
-    } else if (sortOption === "alphabetical") {
-      sorted.sort((a, b) => a.name.localeCompare(b.name))
-    } else if (sortOption === "relevance") {
+    }
+
+    else if (sortOption === "alphabetical") {
+      sorted.sort((a, b) =>
+        a.name.localeCompare(b.name)
+      )
+    }
+
+    else if (sortOption === "relevance") {
       if (!submittedSearchQuery.trim()) {
         sorted.sort((a, b) => a.name.localeCompare(b.name))
       }
@@ -272,10 +229,46 @@ export default function PicnicDayPage() {
 
     return sorted
   }, [searchRanked, selectedCategories, sortOption, submittedSearchQuery])
+  
+  function isFoodEvent(event: Event) {
+    return event.tags?.some((tag) =>
+      tag.toLowerCase().includes("food")
+    );
+  }
+
+  function isRestroom(event: Event | ScheduledEvent) {
+    return event.tags?.some(
+      (tag) => tag.toLowerCase().includes("restroom")
+    );
+  }
 
   const nonFoodEvents = filteredEvents.filter(
     (event) => !isFoodEvent(event) && !isRestroom(event)
   );
+
+  const [RESULTS_PAGE_SIZE, setResultsPageSize] = useState(20)
+
+  useEffect(() => {
+  const updateSize = () => {
+    const width = window.innerWidth
+
+    if (width < 640) {
+      setResultsPageSize(5)   // phones
+    } 
+    else if (width < 1024) {
+      setResultsPageSize(10)  // tablets / iPad
+    } 
+    else {
+      setResultsPageSize(20)  // desktop
+    }
+
+    // setIsMobileBlocked(width < 768)
+  }
+  updateSize()
+  window.addEventListener("resize", updateSize)
+
+  return () => window.removeEventListener("resize", updateSize)
+  }, [])
 
   const totalResultsPages = Math.max(1, Math.ceil(nonFoodEvents.length / RESULTS_PAGE_SIZE))
 
@@ -284,20 +277,14 @@ export default function PicnicDayPage() {
     (resultsPage + 1) * RESULTS_PAGE_SIZE
   )
 
-  // handlers
-
-  const setHoveredEventFromList = useCallback((id: string | null) => {
-    setHoveredEvent(id)
-    setShouldPanToHovered(!!id)
-  }, [])
-
-  const setHoveredEventFromMap = useCallback((id: string | null) => {
-    setHoveredEvent(id)
-    setShouldPanToHovered(false)
-  }, [])
+  useEffect(() => {
+    if (resultsPage >= totalResultsPages && totalResultsPages > 0) {
+      setResultsPage(Math.max(0, totalResultsPages - 1))
+    }
+  }, [totalResultsPages, resultsPage])
 
   const handleMapMarkerClick = useCallback((eventId: string) => {
-    const index = nonFoodEvents.findIndex(e => e.id === eventId)
+    const index = nonFoodEvents.findIndex((e) => e.id === eventId)
     if (index >= 0) {
       const page = Math.floor(index / RESULTS_PAGE_SIZE)
       setResultsPage(page)
@@ -308,26 +295,34 @@ export default function PicnicDayPage() {
   const addToSchedule = useCallback((event: Event) => {
     setScheduledEvents(prev => {
       if (prev.find(e => e.id === event.id)) return prev
-
       const updated = [...prev, { ...event, orderIndex: prev.length }]
       updated.sort((a, b) => a.startTime.localeCompare(b.startTime))
-
       return updated.map((e, i) => ({ ...e, orderIndex: i }))
     })
 
     setRecentlyAddedId(event.id)
-    setTimeout(() => setRecentlyAddedId(null), 700)
+
+    setTimeout(() => {
+      setRecentlyAddedId(null)
+    }, 700)
   }, [])
+
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setSubmittedSearchQuery("")
+      setResultsPage(0)
+    }
+  }, [searchQuery])
 
   const removeFromSchedule = useCallback((eventId: string) => {
     setScheduledEvents(prev => prev.filter(e => e.id !== eventId))
   }, [])
 
-  const reorderSchedule = useCallback((from: number, to: number) => {
+  const reorderSchedule = useCallback((fromIndex: number, toIndex: number) => {
     setScheduledEvents(prev => {
       const result = [...prev]
-      const [removed] = result.splice(from, 1)
-      result.splice(to, 0, removed)
+      const [removed] = result.splice(fromIndex, 1)
+      result.splice(toIndex, 0, removed)
       return result.map((e, i) => ({ ...e, orderIndex: i }))
     })
   }, [])
@@ -388,7 +383,6 @@ export default function PicnicDayPage() {
     setSelectedCategories([])
     setResultsPage(0)
   }
-  // render
 
   return (
     <OnboardingProvider
@@ -401,82 +395,23 @@ export default function PicnicDayPage() {
       onPersonalizationComplete={handlePersonalizationComplete}
       scheduledEventCount={scheduledEvents.length}
     >
-      {isMobile ? (
-        <MobileScheduleMap
-          events={events}
-          nonFoodEvents={nonFoodEvents}
-          scheduledEvents={scheduledEvents}
-          hoveredEvent={hoveredEvent}
-          setHoveredEventFromMap={setHoveredEventFromMap}
-          shouldPanToHovered={shouldPanToHovered}
-          handleMapMarkerClick={handleMapMarkerClick}
-          resultsPage={resultsPage}
-          RESULTS_PAGE_SIZE={RESULTS_PAGE_SIZE}
-          recentlyAddedId={recentlyAddedId}
-          isExportingPdf={isExportingPdf}
-          removeFromSchedule={removeFromSchedule}
-          reorderSchedule={reorderSchedule}
-          handleExportPdf={handleExportPdf}
-          handleExportIcs={handleExportIcs}
-
-          addToSchedule={addToSchedule}
-          scrollToEventId={scrollToEventId}
-          setHoveredEventFromList={setHoveredEventFromList}
-          totalResultsPages={totalResultsPages}
-          setResultsPage={setResultsPage}
-          submittedSearchQuery={submittedSearchQuery}
-          handleBrowseAllEvents={handleBrowseAllEvents}
-
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          searchHistory={searchHistory}
-          clearSearchHistory={clearSearchHistory}
-
-          onSearchSubmit={(value?: string) => {
-            const finalQuery = (value ?? searchQuery).trim()
-
-            if (!finalQuery) {
-              setSearchQuery("")
-              setSubmittedSearchQuery("")
-              setResultsPage(0)
-              return
-            }
-
-            setSearchQuery(finalQuery)
-            setSubmittedSearchQuery(finalQuery)
-            setResultsPage(0)
-
-            setSearchHistory((prev) => {
-              const updated = [
-                finalQuery,
-                ...prev.filter((q) => q !== finalQuery),
-              ]
-              return updated.slice(0, 5)
-            })
-          }}
-          selectedCategories={selectedCategories}
-          toggleCategory={toggleCategory}
-
-          activeFeedTab={activeFeedTab}
-          setActiveFeedTab={setFeedTab}
-
-          selectedInterestLabels={selectedInterestLabels}
-          onEditRecommended={() => setIsEditingRecommended(true)}
-          onShowAll={handleShowAllFromBanner}
-          onSelectRecommended={selectRecommended}
-          recommendedActive={activeFeedTab === "recommended"}
-
-          sortOption={sortOption}
-          setSortOption={setSortOption}
-        />
+      {isMobileBlocked ? (
+        <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white via-slate-50 to-blue-50 px-6 py-10 text-center">
+          <div className="max-w-md w-full rounded-2xl bg-white/80 backdrop-blur shadow-xl ring-1 ring-slate-200 px-6 py-7 flex flex-col items-center gap-4">
+            <div className="text-4xl">⚙️</div>
+            <h1 className="text-xl font-semibold text-slate-800">Scheduler under construction</h1>
+            <p className="text-sm text-slate-600">
+              We&rsquo;re still polishing the mobile experience. Please switch to a bigger screen to see the scheduler in action. Thanks for your patience!
+            </p>
+          </div>
+        </main>
       ) : (
         <>
-          <main className="h-screen flex flex-col bg-background px-4 sm:px-5 md:px-6 py-3 overflow-hidden">
+      <main className="h-screen flex flex-col bg-background px-4 sm:px-5 md:px-6 py-3 overflow-hidden">
+            {/* Mobile/tablet: single column (search, list, then map, schedule). Large: row (search left, map right) */}
             <div className="flex flex-col gap-5 md:gap-6 lg:flex-row lg:gap-4 flex-1 min-h-0">
-
-              {/* LEFT SIDE */}
+              {/* Search, Filters, Events — first when stacked; left column on large */}
               <div className="order-1 flex flex-col min-w-0 lg:flex-1 lg:max-w-[520px] xl:max-w-[600px] lg:sticky lg:min-h-0">
-
                 <div data-onboarding="search-section">
                   <SearchSection
                     events={events}
@@ -540,8 +475,10 @@ export default function PicnicDayPage() {
                 </div>
               </div>
 
-              {/* RIGHT SIDE */}
-              <div className="order-2 w-full min-w-0 flex flex-col gap-6 relative lg:flex-1 lg:gap-0 lg:min-w-[360px] min-h-[320px] lg:sticky lg:min-h-0">
+
+
+              {/* Map + Schedule — second when stacked; right column on large */}
+              <div data-onboarding="map-area" className="order-2 w-full min-w-0 flex flex-col gap-6 relative lg:flex-1 lg:gap-0 lg:min-w-[360px] min-h-[320px] lg:sticky lg:min-h-0">
                 <CampusMap
                   events={events}
                   browseEvents={nonFoodEvents}
@@ -555,7 +492,6 @@ export default function PicnicDayPage() {
                   recentlyAddedId={recentlyAddedId}
                   isExporting={isExportingPdf}
                 />
-
                 <SchedulePanel
                   scheduledEvents={scheduledEvents}
                   removeFromSchedule={removeFromSchedule}
@@ -565,20 +501,19 @@ export default function PicnicDayPage() {
                   isExporting={isExportingPdf}
                 />
               </div>
-
             </div>
-          </main>
-          {isEditingRecommended && (
-            <PersonalizationDialog
-              initialSelected={personalInterests ?? []}
-              saveLabel="Save interests"
-              onDismiss={() => setIsEditingRecommended(false)}
-              onPersonalized={(ids) => {
-                handlePersonalizationComplete(ids)
-                setIsEditingRecommended(false)
-              }}
-            />
-          )}
+        </main>
+      {isEditingRecommended && (
+        <PersonalizationDialog
+          initialSelected={personalInterests ?? []}
+          saveLabel="Save interests"
+          onDismiss={() => setIsEditingRecommended(false)}
+          onPersonalized={(ids) => {
+            handlePersonalizationComplete(ids)
+            setIsEditingRecommended(false)
+          }}
+        />
+      )}
         </>
       )}
     </OnboardingProvider>
