@@ -131,13 +131,21 @@ export function SearchSection({
               aria-controls="search-suggestions"
               aria-autocomplete="list"
               className="
-                h-12 min-w-0 flex-1
-                rounded-l-xl border border-[#B8D4E8] bg-[#E6F0F9]
-                px-4 text-sm text-[#002D62]
-                placeholder:text-[#64748B]
+                flex-1
+                min-w-0
+                px-4
+                py-3
+                bg-secondary
+                border border-primary/20
+                rounded-l-lg
+                text-foreground
+                placeholder:text-muted-foreground
+                focus:outline-none
+                focus:ring-2
+                focus:ring-primary/25
+                focus:border-primary
                 transition-all
-                focus:border-[#002D62] focus:outline-none focus:ring-2 focus:ring-[#002D62]/20
-              "
+            "
             />
 
             <button
@@ -153,7 +161,7 @@ export function SearchSection({
             <div
               id="search-suggestions"
               role="listbox"
-              className="absolute z-30 mt-2 max-h-72 w-full overflow-y-auto rounded-lg border border-border bg-card shadow-[0_10px_25px_rgba(2,40,81,0.08)]"
+              className="absolute z-[70] mt-2 w-full bg-card border border-border rounded-lg shadow-[0_10px_25px_rgba(2,40,81,0.08)] max-h-72 overflow-y-auto"
             >
               {showNoResults ? (
                 <div className="px-4 py-3 text-sm text-muted-foreground">
