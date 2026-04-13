@@ -3,6 +3,8 @@
 import { useState, useCallback, useEffect, useMemo } from "react"
 
 // components
+
+// components
 import { SearchSection } from "@/app/components/search-section"
 import { EventList } from "@/app/components/event-list"
 import { CampusMap } from "@/app/components/campus-map"
@@ -228,7 +230,6 @@ export default function PicnicDayPage() {
     return () => window.removeEventListener("resize", updateSize)
   }, [])
 
-  // derived data
 
   const searchRanked = useMemo(() => {
     if (submittedSearchQuery.trim()) {
@@ -323,6 +324,10 @@ export default function PicnicDayPage() {
     setScheduledEvents(prev => prev.filter(e => e.id !== eventId))
   }, [])
 
+  const clearSearchHistory = () => {
+    setSearchHistory([])
+  }
+
   const reorderSchedule = useCallback((from: number, to: number) => {
     setScheduledEvents(prev => {
       const result = [...prev]
@@ -358,10 +363,6 @@ export default function PicnicDayPage() {
     setSelectedCategories([])
     setResultsPage(0)
   }, [])
-
-  const clearSearchHistory = () => {
-    setSearchHistory([])
-  }
 
   const handleExportPdf = async () => {
     setIsExportingPdf(true)
@@ -502,21 +503,21 @@ export default function PicnicDayPage() {
                       }
 
                       setActiveFeedTab("all")
-                      setSearchQuery(finalQuery)
-                      setSubmittedSearchQuery(finalQuery)
-                      setResultsPage(0)
+                    setSearchQuery(finalQuery)
+                    setSubmittedSearchQuery(finalQuery)
+                    setResultsPage(0)
 
-                      setSearchHistory(prev => {
-                        const updated = [
-                          finalQuery,
-                          ...prev.filter(q => q !== finalQuery)
-                        ]
-                        return updated.slice(0, 5)
-                      })
-                    }}
-                    clearSearchHistory={clearSearchHistory}
-                  />
-                </div>
+                    setSearchHistory(prev => {
+                      const updated = [
+                        finalQuery,
+                        ...prev.filter(q => q !== finalQuery)
+                      ]
+                      return updated.slice(0, 5)
+                    })
+                  }}
+                  clearSearchHistory={clearSearchHistory}
+                />
+              </div>
 
                 <div data-onboarding="event-list" className="mt-6 flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden lg:min-h-0">
                   <EventList

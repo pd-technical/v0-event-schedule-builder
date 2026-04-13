@@ -49,6 +49,7 @@ export function MobileScheduleMap(props: any) {
   } = props
 
   const [isListOpen, setIsListOpen] = useState(false)
+
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
       setIsListOpen(true)
@@ -66,7 +67,6 @@ export function MobileScheduleMap(props: any) {
         isExporting={isExportingPdf}
       />
 
-      {/* Map */}
       <div
         className="relative z-0 h-[55vh] rounded-2xl overflow-hidden border"
         onClick={() => setIsListOpen(false)}
@@ -86,30 +86,25 @@ export function MobileScheduleMap(props: any) {
         />
       </div>
 
-      {/* Overlay */}
       {isListOpen && (
         <div
-          className="fixed inset-0 bg-black/10 z-40"
+          className="fixed inset-0 bg-black/40 z-40"
           onClick={() => setIsListOpen(false)}
         />
       )}
 
-
       <div
         className={`
-          fixed left-0 right-0 bottom-0 z-50
-          transition-transform duration-300 ease-in-out
-          ${isListOpen ? "translate-y-0" : "translate-y-[calc(100%-140px)]"}
-        `}
+    fixed left-0 right-0 bottom-0 z-50
+    transition-transform duration-300 ease-in-out
+    ${isListOpen ? "translate-y-0" : "translate-y-[calc(100%-140px)]"}
+  `}
       >
         <div
-          className="px-4 pt-2 pb-2 cursor-pointer"
           onClick={() => setIsListOpen(true)}
         >
-          <div className="bg-white rounded-t-2xl shadow-xl border-t">
-            <div className="px-4 pt-2 pb-2 bg-white/95 backdrop-blur-sm">
-
-              {/* HANDLE */}
+          <div className="bg-white rounded-t-2xl shadow-xl border-t overflow-hidden">
+            <div className="pt-2 pb-2 bg-white">
               <button
                 onClick={() => setIsListOpen(prev => !prev)}
                 className="w-full flex flex-col items-center mb-2"
@@ -121,7 +116,6 @@ export function MobileScheduleMap(props: any) {
                 Browse Events ({nonFoodEvents.length})
               </div>
 
-              {/* SEARCH (always visible!) */}
               <SearchSection
                 events={events}
                 searchHistory={searchHistory}
@@ -141,9 +135,8 @@ export function MobileScheduleMap(props: any) {
               />
             </div>
 
-            {/* EXPANDABLE CONTENT */}
             {isListOpen && (
-              <div className="max-h-[60vh] overflow-y-auto px-4 pb-4">
+              <div className="max-h-[55vh] overflow-y-auto px-4 pb-4">
                 <EventList
                   events={nonFoodEvents.slice(
                     resultsPage * RESULTS_PAGE_SIZE,
@@ -167,7 +160,6 @@ export function MobileScheduleMap(props: any) {
                 />
               </div>
             )}
-
           </div>
         </div>
       </div>
