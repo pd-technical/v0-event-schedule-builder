@@ -72,10 +72,10 @@ export function SearchBarSection({
   }, [trimmedQuery, events, searchHistory])
 
   const showDropdown =
-    isFocused && (mode === "events" ? true : items.length > 0)
+    !mobile && isFocused && (mode === "events" ? true : items.length > 0)
 
   const showNoResults =
-    isFocused && mode === "events" && trimmedQuery && items.length === 0
+    !mobile && isFocused && mode === "events" && trimmedQuery && items.length === 0
 
   return (
     <div className="flex items-stretch gap-2 sm:gap-3">

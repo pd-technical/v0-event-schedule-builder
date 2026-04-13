@@ -1,8 +1,17 @@
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
-import { Plus, Check, MapPin, Clock, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  Plus,
+  Check,
+  MapPin,
+  Clock,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
 import type { Event, ScheduledEvent } from "@/app/page"
+import { SortDropdown, type SortOption } from "@/app/components/sort-dropdown"
 
 interface EventListProps {
   events: Event[]
@@ -19,8 +28,8 @@ interface EventListProps {
   onPageChange: (page: number) => void
   searchQuery: string
   onBrowseAll: () => void
-  sortOption: "relevance" | "alphabetical" | "time"
-  setSortOption: (option: "relevance" | "alphabetical" | "time") => void
+  sortOption: SortOption
+  setSortOption: (option: SortOption) => void
 }
 
 export function EventList({
@@ -49,6 +58,9 @@ export function EventList({
     [scheduledEvents]
   )
 
+  const trimmedQuery = searchQuery.trim()
+  const hasSearch = trimmedQuery.length > 0
+
   useEffect(() => {
     if (!scrollToEventId || !listScrollRef.current) return
 
@@ -71,83 +83,64 @@ export function EventList({
     })
   }, [page])
 
-  const trimmedQuery = searchQuery.trim()
-  const hasSearch = trimmedQuery.length > 0
-
   return (
-    <div className="flex-1 lg:flex lg:min-h-0 lg:flex-col">
-      <div className="mb-3 border-b border-[#E5E7EB] pb-3">
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-          <h3 className="min-w-0 text-sm font-bold uppercase leading-none tracking-wide text-[#002D62]">
-            {hasSearch ? `${events.length} Events Found` : `All Events (${allFilteredCount})`}
+    <div className="mt-6 flex min-h-0 flex-1 flex-col">
+      <div className="flex items-center justify-between gap-5">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-bold uppercase leading-none tracking-wide text-[#002D62]">
+            {hasSearch
+              ? `${events.length} Events Found`
+              : `All Events (${allFilteredCount})`}
           </h3>
 
-          <div className="flex flex-wrap items-center justify-end gap-3 sm:ml-auto sm:gap-4">
-            <div data-onboarding="sort-section" className="flex items-center gap-2">
-              <span className="whitespace-nowrap text-sm font-semibold text-[#002D62]">
-                Sort by:
-              </span>
-              <select
-                value={sortOption}
-                onChange={(e) =>
-                  setSortOption(e.target.value as "relevance" | "alphabetical" | "time")
-                }
-                suppressHydrationWarning
-                className="
-                  h-9 min-w-[9.5rem] cursor-pointer rounded-lg border border-[#D1D5DB]
-                  bg-white pl-2 pr-10 text-sm font-medium leading-9 text-[#002D62]
-                  shadow-sm transition
-                  hover:border-[#94A3B8]
-                  focus:border-[#002D62] focus:outline-none focus:ring-2 focus:ring-[#002D62]/20
-                "
-                aria-label="Sort events"
-              >
-                <option value="relevance">Relevance</option>
-                <option value="time">Time</option>
-                <option value="alphabetical">Alphabetical</option>
-              </select>
-            </div>
-
-            {totalPages > 1 && (
-              <div className="flex items-center gap-2 text-xs text-[#002D62]">
-                <button
-                  type="button"
-                  aria-label="Previous page"
-                  onClick={() => onPageChange(Math.max(0, page - 1))}
-                  disabled={page === 0}
-                  className="rounded-lg border border-[#D1D5DB] bg-white px-2.5 py-1.5 transition hover:bg-[#F1F5F9] disabled:cursor-not-allowed disabled:opacity-35"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-
-                <span className="whitespace-nowrap text-sm font-semibold tabular-nums">
-                  {page + 1} / {totalPages}
-                </span>
-
-                <button
-                  type="button"
-                  aria-label="Next page"
-                  onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
-                  disabled={page >= totalPages - 1}
-                  className="rounded-lg border border-[#D1D5DB] bg-white px-2.5 py-1.5 transition hover:bg-[#F1F5F9] disabled:cursor-not-allowed disabled:opacity-35"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            )}
-          </div>
+          {hasSearch && (
+            <p className="mt-1.5 truncate text-xs text-[#64748B]">
+              for <span className="text-[#002D62]">&quot;{trimmedQuery}&quot;</span>
+            </p>
+          )}
         </div>
 
-        {hasSearch && (
-          <p className="mt-1.5 truncate text-xs text-[#64748B]">
-            for <span className="text-[#002D62]">&quot;{trimmedQuery}&quot;</span>
-          </p>
-        )}
+        <div className="flex shrink-0 items-center gap-3">
+          <SortDropdown
+            selectedSort={sortOption}
+            setSelectedSort={setSortOption}
+          />
+
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onPageChange(Math.max(0, page - 1))}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#D7E2EE] bg-white text-[#163A70] shadow-sm transition hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={page === 0}
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              <span className="min-w-[58px] text-center text-sm font-semibold text-[#163A70]">
+                {page + 1} / {totalPages}
+              </span>
+
+              <button
+                type="button"
+                onClick={() =>
+                  onPageChange(Math.min(totalPages - 1, page + 1))
+                }
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#D7E2EE] bg-white text-[#163A70] shadow-sm transition hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={page === totalPages - 1}
+                aria-label="Next page"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div
         ref={listScrollRef}
-        className="space-y-2 lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:mr-0"
+        className="mt-4 min-h-0 flex-1 space-y-2 overflow-y-auto"
       >
         {events.map((event) => {
           const scheduled = scheduledIds.has(event.id)
@@ -172,20 +165,21 @@ export function EventList({
                 <div className="absolute bottom-0 left-0 top-0 w-1 rounded-l-lg bg-accent" />
               )}
 
-              <div className="flex items-start gap-3 p-3 min-w-0">
+              <div className="flex min-w-0 items-start gap-3 p-3">
                 <button
                   type="button"
                   onClick={() => setExpandedEvent(isExpanded ? null : event.id)}
-                  className="flex min-w-0 flex-1 items-start gap-3 text-left"
                   aria-expanded={isExpanded}
+                  className="flex min-w-0 flex-1 items-start gap-3 text-left"
                 >
                   <ChevronDown
                     className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
                       isExpanded ? "rotate-180" : ""
                     }`}
                   />
+
                   <div className="min-w-0 flex-1">
-                    <h4 className="font-medium text-foreground break-words">
+                    <h4 className="break-words font-medium text-foreground">
                       {event.name}
                     </h4>
 
