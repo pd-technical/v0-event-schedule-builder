@@ -7,6 +7,7 @@ import {
   filterPillIdle,
   filterPillRecommendedOn,
 } from "@/app/lib/eventFilters"
+import { SortDropdown, type SortOption } from "@/app/components/sort-dropdown"
 
 interface FilterSectionProps {
   activeFeedTab: "recommended" | "all"
@@ -18,6 +19,8 @@ interface FilterSectionProps {
   toggleCategory: (category: string) => void
   onSelectRecommended: () => void
   recommendedActive: boolean
+  selectedSort?: SortOption
+  setSelectedSort?: (sort: SortOption) => void
   mobile?: boolean
 }
 
@@ -25,7 +28,7 @@ const DESKTOP_FILTER_BY_PILL_TEXT =
   "px-3 py-1.5 text-xs font-semibold leading-tight transition-colors"
 
 const MOBILE_FILTER_BY_PILL_TEXT =
-  "whitespace-nowrap px-4 py-2 text-sm font-semibold leading-tight rounded-full transition-colors"
+  "whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold leading-tight transition-colors"
 
 export function FilterSection({
   activeFeedTab,
@@ -37,6 +40,8 @@ export function FilterSection({
   toggleCategory,
   onSelectRecommended,
   recommendedActive,
+  selectedSort = "popular",
+  setSelectedSort,
   mobile = false,
 }: FilterSectionProps) {
   const allEventsActive = activeFeedTab === "all"
@@ -92,7 +97,7 @@ export function FilterSection({
         data-onboarding="category-filters"
         className={
           mobile
-            ? "mt-5"
+            ? "mt-5 overflow-visible"
             : "mt-6 flex flex-wrap items-start gap-x-3 gap-y-2"
         }
       >
@@ -106,8 +111,9 @@ export function FilterSection({
               <button
                 type="button"
                 onClick={onSelectRecommended}
-                className={`${pillText} ${recommendedActive ? filterPillRecommendedOn : filterPillIdle
-                  }`}
+                className={`${pillText} ${
+                  recommendedActive ? filterPillRecommendedOn : filterPillIdle
+                }`}
               >
                 Recommended
               </button>
@@ -115,31 +121,42 @@ export function FilterSection({
               <button
                 type="button"
                 onClick={() => setActiveFeedTab("all")}
-                className={`${pillText} ${allEventsActive ? filterPillCategoryOn : filterPillIdle
-                  }`}
+                className={`${pillText} ${
+                  allEventsActive ? filterPillCategoryOn : filterPillIdle
+                }`}
               >
                 All
               </button>
 
               {EVENT_FILTER_CATEGORY_PILLS.map((category) => {
                 const isSelected = selectedCategories.includes(category.id)
+
                 return (
                   <button
                     key={category.id}
                     type="button"
                     onClick={() => toggleCategory(category.id)}
-                    className={`${pillText} ${isSelected ? filterPillCategoryOn : filterPillIdle
-                      }`}
+                    className={`${pillText} ${
+                      isSelected ? filterPillCategoryOn : filterPillIdle
+                    }`}
                   >
                     {category.label}
                   </button>
                 )
               })}
             </div>
+
+            {setSelectedSort && (
+              <SortDropdown
+                mobile
+                selectedSort={selectedSort}
+                setSelectedSort={setSelectedSort}
+              />
+            )}
           </>
         ) : (
           <>
-            <h3 className="shrink-0 pt-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.14em] text-[#64748B]">
+            <h3 className="shrink-0 pt-2 text-[10px] font-semibold uppercase leading-none tracking-[0.14em] text-[#64748B]">
               FILTER BY
             </h3>
 
@@ -147,8 +164,9 @@ export function FilterSection({
               <button
                 type="button"
                 onClick={onSelectRecommended}
-                className={`${pillText} ${recommendedActive ? filterPillRecommendedOn : filterPillIdle
-                  }`}
+                className={`${pillText} ${
+                  recommendedActive ? filterPillRecommendedOn : filterPillIdle
+                }`}
               >
                 Recommended
               </button>
@@ -156,21 +174,24 @@ export function FilterSection({
               <button
                 type="button"
                 onClick={() => setActiveFeedTab("all")}
-                className={`${pillText} ${allEventsActive ? filterPillCategoryOn : filterPillIdle
-                  }`}
+                className={`${pillText} ${
+                  allEventsActive ? filterPillCategoryOn : filterPillIdle
+                }`}
               >
                 All Events
               </button>
 
               {EVENT_FILTER_CATEGORY_PILLS.map((category) => {
                 const isSelected = selectedCategories.includes(category.id)
+
                 return (
                   <button
                     key={category.id}
                     type="button"
                     onClick={() => toggleCategory(category.id)}
-                    className={`${pillText} ${isSelected ? filterPillCategoryOn : filterPillIdle
-                      }`}
+                    className={`${pillText} ${
+                      isSelected ? filterPillCategoryOn : filterPillIdle
+                    }`}
                   >
                     {category.label}
                   </button>
@@ -184,7 +205,7 @@ export function FilterSection({
       {selectedCategories.length > 0 && (
         <div className="mt-4 flex items-center justify-between border-t border-[#E5E7EB] pt-3 text-xs text-[#64748B]">
           <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-[#C9A227]" />
+            <span className="h-2 w-2 rounded-full bg-accent" />
             {selectedCategories.length} filter
             {selectedCategories.length !== 1 ? "s" : ""} active
           </span>
