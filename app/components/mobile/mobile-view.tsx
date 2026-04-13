@@ -57,7 +57,7 @@ export function MobileScheduleMap(props: any) {
   }, [searchQuery])
 
   return (
-    <div className="flex flex-col gap-4 py-3 pb-24">
+    <div className="bg-background flex flex-col gap-4 py-3 pb-24">
       <SchedulePanel
         scheduledEvents={scheduledEvents}
         removeFromSchedule={removeFromSchedule}
@@ -88,7 +88,7 @@ export function MobileScheduleMap(props: any) {
 
       {isListOpen && (
         <div
-           className="fixed inset-0 bg-black/25 z-40 transition-opacity"
+          className="fixed inset-0 bg-black/25 z-40"
           onClick={() => setIsListOpen(false)}
         />
       )}
@@ -97,16 +97,18 @@ export function MobileScheduleMap(props: any) {
         className={`
           fixed inset-x-0 bottom-0 z-50
           transition-transform duration-300 ease-in-out
-          ${isListOpen ? "translate-y-[140px]" : "translate-y-[calc(100%-140px)]"}
+          ${isListOpen ? "translate-y-0" : "translate-y-[calc(100%-140px)]"}
         `}
       >
         <div
-          className="pt-2 pb-2 cursor-pointer"
+          className="cursor-pointer"
           onClick={() => setIsListOpen(true)}
         >
-          <div className="bg-white rounded-t-3xl shadow-2xl overflow-hidden">
-            <div className="px-4 pt-2 pb-2 bg-white/95 backdrop-blur-sm">
-
+          <div
+            className={`bg-white rounded-t-3xl shadow-2xl overflow-hidden flex flex-col ${isListOpen ? "h-[85dvh]" : "h-[140px]"
+              }`}
+          >
+            <div className="px-4 pt-2 pb-2 bg-white/95 backdrop-blur-sm shrink-0">
               {/* HANDLE */}
               <button
                 onClick={() => setIsListOpen(prev => !prev)}
@@ -139,7 +141,7 @@ export function MobileScheduleMap(props: any) {
             </div>
 
             {isListOpen && (
-              <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
+              <div className="bg-flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))] min-h-0">
                 <EventList
                   events={nonFoodEvents.slice(
                     resultsPage * RESULTS_PAGE_SIZE,
