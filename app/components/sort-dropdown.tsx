@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 
-export type SortOption = "popular" | "soonest" | "az"
+export type SortOption = "popular" | "earliest" | "az"
 
 interface SortDropdownProps {
   selectedSort: SortOption
@@ -19,7 +19,7 @@ export function SortDropdown({
   const containerRef = useRef<HTMLDivElement>(null)
 
   const getSortLabel = () => {
-    if (selectedSort === "soonest") return "Soonest"
+    if (selectedSort === "earliest") return "Earliest"
     if (selectedSort === "az") return "A–Z"
     return "Most Popular"
   }
@@ -68,15 +68,15 @@ export function SortDropdown({
 
       <button
         type="button"
-        onClick={() => handleSortSelect("soonest")}
+        onClick={() => handleSortSelect("earliest")}
         className={`flex w-full items-center justify-between px-4 py-3.5 text-left text-sm transition ${
-          selectedSort === "soonest"
+          selectedSort === "earliest"
             ? "bg-[#E8F1FB] font-semibold text-[#123E7C]"
             : "text-[#163A70] hover:bg-[#F1F6FC]"
         }`}
       >
-        <span>Soonest</span>
-        {selectedSort === "soonest" && (
+        <span>Earliest</span>
+        {selectedSort === "earliest" && (
           <span className="text-xs font-semibold text-[#123E7C]">
             Selected
           </span>
@@ -166,15 +166,15 @@ export function SortDropdown({
 
         <button
           type="button"
-          onClick={() => handleSortSelect("soonest")}
+          onClick={() => handleSortSelect("earliest")}
           className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition ${
-            selectedSort === "soonest"
+            selectedSort === "earliest"
               ? "bg-[#EDF4FB] font-semibold text-[#123E7C]"
               : "text-[#163A70] hover:bg-[#F6FAFD]"
           }`}
         >
-          <span>Soonest</span>
-          {selectedSort === "soonest" && (
+          <span>Earliest</span>
+          {selectedSort === "earliest" && (
             <span className="text-xs font-semibold text-[#123E7C]">
               Selected
             </span>
