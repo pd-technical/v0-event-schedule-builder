@@ -131,15 +131,6 @@ export function SearchSection({
               aria-controls="search-suggestions"
               aria-autocomplete="list"
               className="
-<<<<<<< HEAD
-                h-12 min-w-0 flex-1
-                rounded-l-xl border border-[#B8D4E8] bg-[#E6F0F9]
-                px-4 text-sm text-[#002D62]
-                placeholder:text-[#64748B]
-                transition-all
-                focus:border-[#002D62] focus:outline-none focus:ring-2 focus:ring-[#002D62]/20
-              "
-=======
                 flex-1
                 min-w-0
                 px-4
@@ -155,7 +146,6 @@ export function SearchSection({
                 focus:border-primary
                 transition-all
             "
->>>>>>> f10c7ce (fixed UI of the new search card)
             />
 
             <button
@@ -171,11 +161,7 @@ export function SearchSection({
             <div
               id="search-suggestions"
               role="listbox"
-<<<<<<< HEAD
-              className="absolute z-30 mt-2 max-h-72 w-full overflow-y-auto rounded-lg border border-border bg-card shadow-[0_10px_25px_rgba(2,40,81,0.08)]"
-=======
               className="absolute z-[70] mt-2 w-full bg-card border border-border rounded-lg shadow-[0_10px_25px_rgba(2,40,81,0.08)] max-h-72 overflow-y-auto"
->>>>>>> f10c7ce (fixed UI of the new search card)
             >
               {showNoResults ? (
                 <div className="px-4 py-3 text-sm text-muted-foreground">
@@ -280,7 +266,6 @@ export function SearchSection({
           <HelpCircle className="h-5 w-5" strokeWidth={2} />
         </button>
       </div>
-<<<<<<< HEAD
 
       {activeFeedTab === "recommended" && (
         <div className="mt-5 rounded-xl bg-[#FEF9E7] px-4 py-3.5 ring-1 ring-[#F3E5AB]/80">
@@ -333,12 +318,6 @@ export function SearchSection({
           FILTER BY
         </h3>
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-=======
-      {/* {/* Quick Search Tags 
-      <div className="flex flex-wrap gap-2 mt-3">
-        <div className="px-1 py-1 text-(--color-muted-foreground) text-xs italic ">Suggested Searches</div>
-        {["battle of the bands", "chemistry show", "chick handling", "cockroach racing", "doxie derby", "laser maze"].map((tag) => (
->>>>>>> f10c7ce (fixed UI of the new search card)
           <button
             type="button"
             onClick={onSelectRecommended}
