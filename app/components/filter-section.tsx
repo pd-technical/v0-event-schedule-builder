@@ -56,7 +56,7 @@ export function FilterSection({
           className={
             mobile
               ? "mt-4 rounded-[20px] border border-[#F0B429] bg-[#FFF7D8] px-4 py-3.5"
-              : "mt-5 rounded-xl bg-[#FEF9E7] px-4 py-3.5 ring-1 ring-[#F3E5AB]/80"
+              : "mt-5 rounded-xl border border-[#F0B429] bg-[#FFF7D8] px-4 py-3.5"
           }
         >
           <div className="flex items-start gap-3">
@@ -103,7 +103,7 @@ export function FilterSection({
       >
         {mobile ? (
           <>
-            <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#5B6B84]">
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#123E7C]">
               FILTER BY
             </h3>
 
@@ -111,9 +111,10 @@ export function FilterSection({
               <button
                 type="button"
                 onClick={onSelectRecommended}
-                className={`${pillText} ${
-                  recommendedActive ? filterPillRecommendedOn : filterPillIdle
-                }`}
+                className={`${pillText} ${recommendedActive
+                    ? "bg-[#123E7C] text-white shadow-sm"
+                    : "bg-[#A9C0DE] text-white"
+                  }`}
               >
                 Recommended
               </button>
@@ -121,9 +122,10 @@ export function FilterSection({
               <button
                 type="button"
                 onClick={() => setActiveFeedTab("all")}
-                className={`${pillText} ${
-                  allEventsActive ? filterPillCategoryOn : filterPillIdle
-                }`}
+                className={`${pillText} ${allEventsActive
+                  ? "bg-[#123E7C] text-white shadow-sm"
+                  : "bg-[#A9C0DE] text-white"
+                  }`}
               >
                 All
               </button>
@@ -136,9 +138,8 @@ export function FilterSection({
                     key={category.id}
                     type="button"
                     onClick={() => toggleCategory(category.id)}
-                    className={`${pillText} ${
-                      isSelected ? filterPillCategoryOn : filterPillIdle
-                    }`}
+                    className={`${pillText} ${isSelected ? filterPillCategoryOn : filterPillIdle
+                      }`}
                   >
                     {category.label}
                   </button>
@@ -156,30 +157,34 @@ export function FilterSection({
           </>
         ) : (
           <>
-            <h3 className="shrink-0 pt-2 text-[10px] font-semibold uppercase leading-none tracking-[0.14em] text-[#64748B]">
+            <h3 className="shrink-0 pt-2 text-xs font-semibold uppercase leading-none tracking-[0.08em] text-[#123E7C]">
               FILTER BY
             </h3>
 
             <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-              <button
-                type="button"
-                onClick={onSelectRecommended}
-                className={`${pillText} ${
-                  recommendedActive ? filterPillRecommendedOn : filterPillIdle
-                }`}
-              >
-                Recommended
-              </button>
+              <div className="inline-flex items-center rounded-full border border-[#C8D8EA] bg-[#DCE8F5] p-[2px]">
+                <button
+                  type="button"
+                  onClick={onSelectRecommended}
+                  className={`${DESKTOP_FILTER_BY_PILL_TEXT} rounded-full ${recommendedActive
+                    ? "bg-[#123E7C] text-white"
+                    : "bg-transparent text-[#5B6B84] hover:text-[#123E7C]"
+                    }`}
+                >
+                  Recommended
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setActiveFeedTab("all")}
-                className={`${pillText} ${
-                  allEventsActive ? filterPillCategoryOn : filterPillIdle
-                }`}
-              >
-                All Events
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveFeedTab("all")}
+                  className={`${DESKTOP_FILTER_BY_PILL_TEXT} rounded-full ${allEventsActive
+                    ? "bg-[#123E7C] text-white"
+                    : "bg-transparent text-[#5B6B84] hover:text-[#123E7C]"
+                    }`}
+                >
+                  All
+                </button>
+              </div>
 
               {EVENT_FILTER_CATEGORY_PILLS.map((category) => {
                 const isSelected = selectedCategories.includes(category.id)
@@ -189,9 +194,8 @@ export function FilterSection({
                     key={category.id}
                     type="button"
                     onClick={() => toggleCategory(category.id)}
-                    className={`${pillText} ${
-                      isSelected ? filterPillCategoryOn : filterPillIdle
-                    }`}
+                    className={`${pillText} ${isSelected ? filterPillCategoryOn : filterPillIdle
+                      }`}
                   >
                     {category.label}
                   </button>

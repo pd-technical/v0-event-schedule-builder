@@ -71,11 +71,10 @@ export function SearchBarSection({
     }
   }, [trimmedQuery, events, searchHistory])
 
-  const showDropdown =
-    !mobile && isFocused && (mode === "events" ? true : items.length > 0)
+  const showDropdown = isFocused && (mode === "events" ? true : items.length > 0)
 
   const showNoResults =
-    !mobile && isFocused && mode === "events" && trimmedQuery && items.length === 0
+    isFocused && mode === "events" && trimmedQuery && items.length === 0
 
   return (
     <div className="flex items-stretch gap-2 sm:gap-3">
@@ -85,8 +84,16 @@ export function SearchBarSection({
             e.preventDefault()
             onSearchSubmit(searchQuery)
           }}
-          className="flex w-full min-w-0"
+          className="relative flex w-full min-w-0"
         >
+          {/* ICON */}
+          <Search
+            className={`absolute left-3 top-1/2 -translate-y-1/2 ${mobile ? "h-5 w-5 text-[#163A70]/60" : "h-5 w-5 text-muted-foreground"
+              }`}
+            strokeWidth={2.25}
+          />
+
+          {/* INPUT */}
           <input
             type="text"
             value={searchQuery}
@@ -103,48 +110,33 @@ export function SearchBarSection({
             className={
               mobile
                 ? `
-                  flex-1 min-w-0 h-14 px-4
-                  bg-[#DDEAF7]
-                  border border-[#B7CCE3]
-                  rounded-l-[18px]
-                  text-[15px] text-[#163A70]
-                  placeholder:text-[#163A70]/65
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-primary/20
-                  focus:border-[#8FB2D8]
-                  transition-all
-                `
+          flex-1 min-w-0 h-14 pl-10 pr-4
+          bg-[#DDEAF7]
+          border border-[#B7CCE3]
+          rounded-[18px]
+          text-[15px] text-[#163A70]
+          placeholder:text-[#163A70]/65
+          focus:outline-none
+          focus:ring-2
+          focus:ring-primary/20
+          focus:border-[#8FB2D8]
+          transition-all
+        `
                 : `
-                  flex-1
-                  min-w-0
-                  px-4
-                  py-3
-                  bg-secondary
-                  border border-primary/20
-                  rounded-l-lg
-                  text-foreground
-                  placeholder:text-muted-foreground
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-primary/25
-                  focus:border-primary
-                  transition-all
-                `
+          flex-1 min-w-0 pl-10 pr-4 py-3
+          bg-secondary
+          border border-primary/20
+          rounded-lg
+          text-foreground
+          placeholder:text-muted-foreground
+          focus:outline-none
+          focus:ring-2
+          focus:ring-primary/25
+          focus:border-primary
+          transition-all
+        `
             }
           />
-
-          <button
-            type="submit"
-            className={
-              mobile
-                ? "flex h-14 w-14 shrink-0 items-center justify-center rounded-r-[18px] bg-[#123E7C] text-white transition-colors hover:bg-[#0f3568]"
-                : "flex h-12 w-14 shrink-0 items-center justify-center rounded-r-xl bg-[#002D62] text-white transition-colors hover:bg-[#00244d] sm:w-16"
-            }
-            aria-label="Search"
-          >
-            <Search className="h-5 w-5" strokeWidth={2.25} />
-          </button>
         </form>
 
         {(showDropdown || showNoResults) && (
@@ -241,19 +233,17 @@ export function SearchBarSection({
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={onHelpClick}
-        className={
-          mobile
-            ? "flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] bg-[#123E7C] text-white transition-colors hover:bg-[#0f3568]"
-            : "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#002D62] text-white transition-colors hover:bg-[#00244d]"
-        }
-        aria-label="Help"
-        title="Replay tutorial"
-      >
-        <HelpCircle className="h-5 w-5" strokeWidth={2} />
-      </button>
+      {!mobile && (
+        <button
+          type="button"
+          onClick={onHelpClick}
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#002D62] text-white transition-colors hover:bg-[#00244d]"
+          aria-label="Help"
+          title="Replay tutorial"
+        >
+          <HelpCircle className="h-5 w-5" strokeWidth={2} />
+        </button>
+      )}
     </div>
   )
 }
