@@ -57,7 +57,7 @@ export function MobileScheduleMap(props: any) {
   }, [searchQuery])
 
   return (
-    <div className="flex flex-col gap-4 px-4 py-3 pb-24">
+    <div className="flex flex-col gap-4 py-3 pb-24">
       <SchedulePanel
         scheduledEvents={scheduledEvents}
         removeFromSchedule={removeFromSchedule}
@@ -88,13 +88,18 @@ export function MobileScheduleMap(props: any) {
 
       {isListOpen && (
         <div
+<<<<<<< HEAD
           className="fixed inset-0 bg-black/40 z-40"
+=======
+           className="fixed inset-0 bg-black/25 z-40 transition-opacity"
+>>>>>>> f10c7ce (fixed UI of the new search card)
           onClick={() => setIsListOpen(false)}
         />
       )}
 
       <div
         className={`
+<<<<<<< HEAD
     fixed left-0 right-0 bottom-0 z-50
     transition-transform duration-300 ease-in-out
     ${isListOpen ? "translate-y-0" : "translate-y-[calc(100%-140px)]"}
@@ -105,6 +110,21 @@ export function MobileScheduleMap(props: any) {
         >
           <div className="bg-white rounded-t-2xl shadow-xl border-t overflow-hidden">
             <div className="pt-2 pb-2 bg-white">
+=======
+          fixed inset-x-0 bottom-0 z-50
+          transition-transform duration-300 ease-in-out
+          ${isListOpen ? "translate-y-0" : "translate-y-[calc(100%-140px)]"}
+        `}
+      >
+        <div
+          className="pt-2 pb-2 cursor-pointer"
+          onClick={() => setIsListOpen(true)}
+        >
+          <div className="bg-white rounded-t-3xl shadow-2xl border-t overflow-hidden">
+            <div className="px-4 pt-2 pb-2 bg-white/95 backdrop-blur-sm">
+
+              {/* HANDLE */}
+>>>>>>> f10c7ce (fixed UI of the new search card)
               <button
                 onClick={() => setIsListOpen(prev => !prev)}
                 className="w-full flex flex-col items-center mb-2"
