@@ -68,7 +68,7 @@ export function MobileScheduleMap(props: any) {
       />
 
       <div
-        className="relative z-0 h-[55vh] rounded-2xl overflow-hidden border"
+        className="relative z-0 h-[55vh] rounded-2xl overflow-hidden border border-gray-200"
         onClick={() => setIsListOpen(false)}
       >
         <CampusMap
@@ -97,14 +97,14 @@ export function MobileScheduleMap(props: any) {
         className={`
           fixed inset-x-0 bottom-0 z-50
           transition-transform duration-300 ease-in-out
-          ${isListOpen ? "translate-y-0" : "translate-y-[calc(100%-140px)]"}
+          ${isListOpen ? "translate-y-[140px]" : "translate-y-[calc(100%-140px)]"}
         `}
       >
         <div
           className="pt-2 pb-2 cursor-pointer"
           onClick={() => setIsListOpen(true)}
         >
-          <div className="bg-white rounded-t-3xl shadow-2xl border-t overflow-hidden">
+          <div className="bg-white rounded-t-3xl shadow-2xl overflow-hidden">
             <div className="px-4 pt-2 pb-2 bg-white/95 backdrop-blur-sm">
 
               {/* HANDLE */}
@@ -139,7 +139,7 @@ export function MobileScheduleMap(props: any) {
             </div>
 
             {isListOpen && (
-              <div className="max-h-[55vh] overflow-y-auto px-4 pb-4">
+              <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
                 <EventList
                   events={nonFoodEvents.slice(
                     resultsPage * RESULTS_PAGE_SIZE,
