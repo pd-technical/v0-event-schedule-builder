@@ -14,6 +14,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import type { ScheduledEvent } from "@/app/page";
+import { useOnboarding } from "@/app/components/onboarding/onboarding-provider";
 
 interface SchedulePanelProps {
   scheduledEvents: ScheduledEvent[];
@@ -52,6 +53,10 @@ export function SchedulePanel({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
 
+  const { tutorialStep } = useOnboarding();
+  const isTutorialActive = tutorialStep !== null;
+  const effectiveCollapsed = isTutorialActive ? false : isCollapsed;
+
   const moveItem = (fromIndex: number, direction: "up" | "down") => {
     const toIndex = direction === "up" ? fromIndex - 1 : fromIndex + 1;
     if (toIndex >= 0 && toIndex < scheduledEvents.length) {
@@ -62,13 +67,16 @@ export function SchedulePanel({
   return (
     <div
       data-onboarding="schedule-panel"
-      className={`w-full bg-card border border-border rounded-lg shadow-lg transition-all lg:absolute lg:left-auto lg:right-4 lg:top-4 lg:bottom-auto lg:w-72 lg:z-[1000] ${isCollapsed ? "h-auto" : "h-[300px] lg:max-h-[440px]"
+      className={`w-full bg-card border border-border rounded-lg shadow-lg transition-all lg:absolute lg:left-auto lg:right-4 lg:top-4 lg:bottom-auto lg:w-72 lg:z-[1000] ${effectiveCollapsed ? "h-auto" : "h-[300px] lg:max-h-[440px]"
         }`}
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between p-3 border-b border-border cursor-pointer"
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        className={`flex items-center justify-between p-3 border-b border-border ${isTutorialActive ? "" : "cursor-pointer"}`}
+        onClick={() => {
+          if (isTutorialActive) return;
+          setIsCollapsed(!isCollapsed);
+        }}
       >
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-primary" />
@@ -79,13 +87,13 @@ export function SchedulePanel({
         </div>
         <ChevronUp
           className={`w-4 h-4 text-muted-foreground transition-transform ${
-            isCollapsed ? "rotate-180" : ""
+            effectiveCollapsed ? "rotate-180" : ""
           }`}
         />
       </div>
 
       {/* Content */}
-      {!isCollapsed && (
+      {!effectiveCollapsed && (
         <>
           {scheduledEvents.length === 0 ? (
             <div className="p-6 text-center">
