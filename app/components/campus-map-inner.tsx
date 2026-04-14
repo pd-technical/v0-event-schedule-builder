@@ -201,6 +201,104 @@ function FitBoundsOnExport({
   return null;
 }
 
+/* During export, nudge scheduled markers apart in pixel space so numbered
+   circles that sit close together don't render on top of each other in the
+   captured map image. Runs only while `isExporting` is true and resets on
+   export end. */
+function SpreadScheduledMarkersOnExport({
+  isExporting,
+  scheduledEvents,
+  offsetPositions,
+  markerRefs,
+  recentlyAddedId,
+}: {
+  isExporting: boolean;
+  scheduledEvents: ScheduledEvent[];
+  offsetPositions: Map<string, [number, number]>;
+  markerRefs: React.MutableRefObject<Map<string, L.Marker>>;
+  recentlyAddedId: string | null;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!isExporting || scheduledEvents.length === 0) return;
+
+    const MIN_SEPARATION = 22;
+    const ITERATIONS = 12;
+
+    const apply = () => {
+      type Entry = { id: string; x: number; y: number; ox: number; oy: number };
+      const entries: Entry[] = scheduledEvents.map((e) => {
+        const [lat, lng] = offsetPositions.get(e.id) ?? [e.lat, e.lng];
+        const p = map.latLngToLayerPoint([lat, lng]);
+        return { id: e.id, x: p.x, y: p.y, ox: 0, oy: 0 };
+      });
+
+      for (let iter = 0; iter < ITERATIONS; iter++) {
+        let moved = false;
+        for (let a = 0; a < entries.length; a++) {
+          for (let b = a + 1; b < entries.length; b++) {
+            const A = entries[a];
+            const B = entries[b];
+            const dx = (B.x + B.ox) - (A.x + A.ox);
+            const dy = (B.y + B.oy) - (A.y + A.oy);
+            const dist = Math.hypot(dx, dy);
+            if (dist >= MIN_SEPARATION) continue;
+            if (dist === 0) {
+              const angle = (a + 1) * 0.8;
+              const push = MIN_SEPARATION / 2;
+              A.ox -= Math.cos(angle) * push;
+              A.oy -= Math.sin(angle) * push;
+              B.ox += Math.cos(angle) * push;
+              B.oy += Math.sin(angle) * push;
+              moved = true;
+              continue;
+            }
+            const overlap = (MIN_SEPARATION - dist) / 2;
+            const nx = dx / dist;
+            const ny = dy / dist;
+            A.ox -= nx * overlap;
+            A.oy -= ny * overlap;
+            B.ox += nx * overlap;
+            B.oy += ny * overlap;
+            moved = true;
+          }
+        }
+        if (!moved) break;
+      }
+
+      entries.forEach((e, i) => {
+        const marker = markerRefs.current.get(e.id);
+        if (!marker) return;
+        const newIcon = createScheduledNumberedIcon(
+          i + 1,
+          recentlyAddedId === e.id,
+          [e.ox, e.oy]
+        );
+        marker.setIcon(newIcon);
+      });
+    };
+
+    const t = window.setTimeout(apply, 50);
+    const onMoveEnd = () => apply();
+    map.on("moveend", onMoveEnd);
+
+    return () => {
+      window.clearTimeout(t);
+      map.off("moveend", onMoveEnd);
+      scheduledEvents.forEach((e, i) => {
+        const marker = markerRefs.current.get(e.id);
+        if (!marker) return;
+        marker.setIcon(
+          createScheduledNumberedIcon(i + 1, recentlyAddedId === e.id)
+        );
+      });
+    };
+  }, [isExporting, scheduledEvents, offsetPositions, map, markerRefs, recentlyAddedId]);
+
+  return null;
+}
+
 /* Fit map to show all search result markers when the events list changes */
 function FitBoundsToSearchResults({
   events,
@@ -348,7 +446,8 @@ function createHoveredIcon(): L.DivIcon {
 
 function createScheduledNumberedIcon(
   number: number,
-  withRipple: boolean
+  withRipple: boolean,
+  anchorOffset: [number, number] = [0, 0]
 ): L.DivIcon {
   const size = 18;
 
@@ -379,7 +478,9 @@ function createScheduledNumberedIcon(
     html,
     className: "",
     iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+    // Subtracting the offset from the anchor moves the rendered icon by
+    // (+dx, +dy) in screen-space while keeping its lat/lng logical position.
+    iconAnchor: [size / 2 - anchorOffset[0], size / 2 - anchorOffset[1]],
   });
 }
 
@@ -696,6 +797,13 @@ export default function CampusMapInner({
           points={routePoints}
           isExporting={!!isExporting}
           routeBoundsRef={routeBoundsRef}
+        />
+        <SpreadScheduledMarkersOnExport
+          isExporting={!!isExporting}
+          scheduledEvents={scheduledEvents}
+          offsetPositions={offsetPositions}
+          markerRefs={markerRefs}
+          recentlyAddedId={recentlyAddedId}
         />
         <FitBoundsToSearchResults
           events={showFoodOnly ? eventsOnMap : browseEvents}
