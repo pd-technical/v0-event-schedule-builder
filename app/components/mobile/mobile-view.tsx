@@ -175,7 +175,6 @@ export function MobileScheduleMap({ data, ui, actions, schedule }: any) {
                   recommendedActive={recommendedActive}
                   selectedSort={sortOption}
                   setSelectedSort={setSortOption}
-                  showMobileSort
                   onEditRecommended={restart}
                 />
               </div>
