@@ -1,7 +1,7 @@
 "use client"
 
 import * as Dialog from "@radix-ui/react-dialog"
-import { Sparkles, X } from "lucide-react"
+import { Heart, X } from "lucide-react"
 import { useState, useCallback } from "react"
 import { PERSONALIZATION_PILLS, type PersonalizationPillId } from "@/app/lib/personalizationInterests"
 
@@ -62,7 +62,7 @@ export function PersonalizationDialog({
             </button>
           )}
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent sm:mb-4 sm:h-14 sm:w-14">
-            <Sparkles className="h-6 w-6 text-accent-foreground sm:h-7 sm:w-7" />
+            <Heart className="h-6 w-6 text-accent-foreground sm:h-7 sm:w-7" />
           </div>
           <Dialog.Title className="text-center text-xl font-bold text-foreground sm:text-2xl">
             What do you want to see?

@@ -7,6 +7,7 @@ import {
   filterPillIdle,
   filterPillRecommendedOn,
 } from "@/app/lib/eventFilters"
+import { SortDropdown, type SortOption } from "@/app/components/sort-dropdown"
 
 interface FilterSectionProps {
   activeFeedTab: "recommended" | "all"
@@ -18,6 +19,8 @@ interface FilterSectionProps {
   toggleCategory: (category: string) => void
   onSelectRecommended: () => void
   recommendedActive: boolean
+  selectedSort?: SortOption
+  setSelectedSort?: (sort: SortOption) => void
   mobile?: boolean
 }
 
@@ -25,7 +28,7 @@ const DESKTOP_FILTER_BY_PILL_TEXT =
   "px-3 py-1.5 text-xs font-semibold leading-tight transition-colors"
 
 const MOBILE_FILTER_BY_PILL_TEXT =
-  "whitespace-nowrap px-4 py-2 text-sm font-semibold leading-tight rounded-full transition-colors"
+  "whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold leading-tight transition-colors"
 
 export function FilterSection({
   activeFeedTab,
@@ -37,6 +40,8 @@ export function FilterSection({
   toggleCategory,
   onSelectRecommended,
   recommendedActive,
+  selectedSort = "popular",
+  setSelectedSort,
   mobile = false,
 }: FilterSectionProps) {
   const allEventsActive = activeFeedTab === "all"
@@ -51,7 +56,7 @@ export function FilterSection({
           className={
             mobile
               ? "mt-4 rounded-[20px] border border-[#F0B429] bg-[#FFF7D8] px-4 py-3.5"
-              : "mt-5 rounded-xl bg-[#FEF9E7] px-4 py-3.5 ring-1 ring-[#F3E5AB]/80"
+              : "mt-5 rounded-xl border border-[#F0B429] bg-[#FFF7D8] px-4 py-3.5"
           }
         >
           <div className="flex items-start gap-3">
@@ -74,7 +79,10 @@ export function FilterSection({
                 {onEditRecommended && (
                   <button
                     type="button"
-                    onClick={onEditRecommended}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEditRecommended?.()
+                    }}
                     className="ml-auto inline-flex shrink-0 self-start rounded-md p-1.5 text-[#9A4B12] hover:bg-black/[0.04]"
                     aria-label="Edit recommended interests"
                     title="Edit recommended interests"
@@ -92,13 +100,13 @@ export function FilterSection({
         data-onboarding="category-filters"
         className={
           mobile
-            ? "mt-5"
+            ? "mt-5 overflow-visible"
             : "mt-6 flex flex-wrap items-start gap-x-3 gap-y-2"
         }
       >
         {mobile ? (
           <>
-            <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#5B6B84]">
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#123E7C]">
               FILTER BY
             </h3>
 
@@ -106,7 +114,9 @@ export function FilterSection({
               <button
                 type="button"
                 onClick={onSelectRecommended}
-                className={`${pillText} ${recommendedActive ? filterPillRecommendedOn : filterPillIdle
+                className={`${pillText} ${recommendedActive
+                    ? "bg-[#123E7C] text-white shadow-sm"
+                    : "bg-[#A9C0DE] text-white"
                   }`}
               >
                 Recommended
@@ -115,7 +125,9 @@ export function FilterSection({
               <button
                 type="button"
                 onClick={() => setActiveFeedTab("all")}
-                className={`${pillText} ${allEventsActive ? filterPillCategoryOn : filterPillIdle
+                className={`${pillText} ${allEventsActive
+                  ? "bg-[#123E7C] text-white shadow-sm"
+                  : "bg-[#A9C0DE] text-white"
                   }`}
               >
                 All
@@ -123,6 +135,7 @@ export function FilterSection({
 
               {EVENT_FILTER_CATEGORY_PILLS.map((category) => {
                 const isSelected = selectedCategories.includes(category.id)
+
                 return (
                   <button
                     key={category.id}
@@ -136,34 +149,49 @@ export function FilterSection({
                 )
               })}
             </div>
+
+            {setSelectedSort && (
+              <SortDropdown
+                mobile
+                selectedSort={selectedSort}
+                setSelectedSort={setSelectedSort}
+              />
+            )}
           </>
         ) : (
           <>
-            <h3 className="shrink-0 pt-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.14em] text-[#64748B]">
+            <h3 className="shrink-0 pt-2 text-xs font-semibold uppercase leading-none tracking-[0.08em] text-[#123E7C]">
               FILTER BY
             </h3>
 
             <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-              <button
-                type="button"
-                onClick={onSelectRecommended}
-                className={`${pillText} ${recommendedActive ? filterPillRecommendedOn : filterPillIdle
-                  }`}
-              >
-                Recommended
-              </button>
+              <div className="inline-flex items-center rounded-full border border-[#C8D8EA] bg-[#DCE8F5] p-[2px]">
+                <button
+                  type="button"
+                  onClick={onSelectRecommended}
+                  className={`${DESKTOP_FILTER_BY_PILL_TEXT} rounded-full ${recommendedActive
+                    ? "bg-[#123E7C] text-white"
+                    : "bg-transparent text-[#5B6B84] hover:text-[#123E7C]"
+                    }`}
+                >
+                  Recommended
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setActiveFeedTab("all")}
-                className={`${pillText} ${allEventsActive ? filterPillCategoryOn : filterPillIdle
-                  }`}
-              >
-                All Events
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveFeedTab("all")}
+                  className={`${DESKTOP_FILTER_BY_PILL_TEXT} rounded-full ${allEventsActive
+                    ? "bg-[#123E7C] text-white"
+                    : "bg-transparent text-[#5B6B84] hover:text-[#123E7C]"
+                    }`}
+                >
+                  All
+                </button>
+              </div>
 
               {EVENT_FILTER_CATEGORY_PILLS.map((category) => {
                 const isSelected = selectedCategories.includes(category.id)
+
                 return (
                   <button
                     key={category.id}
@@ -184,7 +212,7 @@ export function FilterSection({
       {selectedCategories.length > 0 && (
         <div className="mt-4 flex items-center justify-between border-t border-[#E5E7EB] pt-3 text-xs text-[#64748B]">
           <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-[#C9A227]" />
+            <span className="h-2 w-2 rounded-full bg-accent" />
             {selectedCategories.length} filter
             {selectedCategories.length !== 1 ? "s" : ""} active
           </span>

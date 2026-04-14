@@ -4,6 +4,7 @@ import type { Event } from "@/app/page"
 import { useOnboarding } from "@/app/components/onboarding/onboarding-provider"
 import { SearchBarSection } from "@/app/components/search-bar-section"
 import { FilterSection } from "@/app/components/filter-section"
+import type { SortOption } from "@/app/components/sort-dropdown"
 
 interface SearchSectionProps {
   events: Event[]
@@ -21,6 +22,8 @@ interface SearchSectionProps {
   toggleCategory: (category: string) => void
   onSelectRecommended: () => void
   recommendedActive: boolean
+  selectedSort: SortOption
+  setSelectedSort: (sort: SortOption) => void
 }
 
 export function SearchSection({
@@ -39,18 +42,21 @@ export function SearchSection({
   toggleCategory,
   onSelectRecommended,
   recommendedActive,
+  selectedSort,
+  setSelectedSort,
 }: SearchSectionProps) {
-  const { restart } = useOnboarding()
+  const { restart, openPersonalizationEditor } = useOnboarding()
 
   const handleHelpClick = () => {
     setActiveFeedTab("all")
     restart()
   }
 
+
   return (
     <>
-      {/* MOBILE */}
-      <div className="sm:hidden rounded-[24px] border border-[#E5E7EB] bg-white p-4 shadow-sm">
+      {/* MOBILE / TABLET */}
+<div className="relative z-30 overflow-visible rounded-[24px] border border-[#E5E7EB] bg-white p-4 shadow-sm md:hidden">
         <SearchBarSection
           events={events}
           searchHistory={searchHistory}
@@ -66,18 +72,20 @@ export function SearchSection({
           activeFeedTab={activeFeedTab}
           setActiveFeedTab={setActiveFeedTab}
           selectedInterestLabels={selectedInterestLabels}
-          onEditRecommended={onEditRecommended}
+          onEditRecommended={openPersonalizationEditor}
           onShowAll={onShowAll}
           selectedCategories={selectedCategories}
           toggleCategory={toggleCategory}
           onSelectRecommended={onSelectRecommended}
           recommendedActive={recommendedActive}
+          selectedSort={selectedSort}
+          setSelectedSort={setSelectedSort}
           mobile
         />
       </div>
 
       {/* DESKTOP */}
-      <div className="hidden sm:block rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm sm:p-5">
+      <div className="hidden rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm md:block md:p-5">
         <SearchBarSection
           events={events}
           searchHistory={searchHistory}
@@ -98,6 +106,8 @@ export function SearchSection({
           toggleCategory={toggleCategory}
           onSelectRecommended={onSelectRecommended}
           recommendedActive={recommendedActive}
+          selectedSort={selectedSort}
+          setSelectedSort={setSelectedSort}
         />
       </div>
     </>
