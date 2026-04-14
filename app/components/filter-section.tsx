@@ -109,11 +109,11 @@ export function FilterSection({
               FILTER BY
             </h3>
 
-            <div className="flex gap-2.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <button
                 type="button"
                 onClick={onSelectRecommended}
-                className={`${pillText} ${recommendedActive
+                className={`shrink-0 ${pillText} ${recommendedActive
                     ? "bg-[#123E7C] text-white shadow-sm"
                     : "bg-[#A9C0DE] text-white"
                   }`}
@@ -124,9 +124,9 @@ export function FilterSection({
               <button
                 type="button"
                 onClick={() => setActiveFeedTab("all")}
-                className={`${pillText} ${allEventsActive
-                  ? "bg-[#123E7C] text-white shadow-sm"
-                  : "bg-[#A9C0DE] text-white"
+                className={`shrink-0 ${pillText} ${allEventsActive
+                    ? "bg-[#123E7C] text-white shadow-sm"
+                    : "bg-[#A9C0DE] text-white"
                   }`}
               >
                 All
@@ -140,7 +140,7 @@ export function FilterSection({
                     key={category.id}
                     type="button"
                     onClick={() => toggleCategory(category.id)}
-                    className={`${pillText} ${isSelected ? filterPillCategoryOn : filterPillIdle
+                    className={`shrink-0 ${pillText} ${isSelected ? filterPillCategoryOn : filterPillIdle
                       }`}
                   >
                     {category.label}

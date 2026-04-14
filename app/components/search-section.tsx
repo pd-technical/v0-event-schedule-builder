@@ -13,13 +13,17 @@ interface SearchSectionProps {
   setSearchQuery: (query: string) => void
   onSearchSubmit: (value?: string) => void
   clearSearchHistory: () => void
+
   activeFeedTab: "recommended" | "all"
   setActiveFeedTab: (tab: "recommended" | "all") => void
+
   selectedInterestLabels: string[]
   onEditRecommended?: () => void
   onShowAll?: () => void
+
   selectedCategories: string[]
   toggleCategory: (category: string) => void
+
   onSelectRecommended: () => void
   recommendedActive: boolean
   selectedSort: SortOption
