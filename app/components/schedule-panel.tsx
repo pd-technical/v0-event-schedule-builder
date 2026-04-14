@@ -72,7 +72,7 @@ export function SchedulePanel({
   return (
     <div
       data-onboarding="schedule-panel"
-      className={`w-full bg-card border border-border rounded-lg shadow-lg transition-all lg:absolute lg:left-auto lg:right-4 lg:top-4 lg:bottom-auto lg:w-72 lg:z-[1000] ${isCollapsed ? "h-auto" : "lg:max-h-[440px]"
+      className={`w-full bg-card border border-border rounded-lg shadow-lg transition-all lg:absolute lg:left-auto lg:right-4 lg:top-4 lg:bottom-auto lg:w-72 lg:z-[1000] ${isCollapsed ? "h-auto" : "h-[300px] lg:max-h-[440px]"
         }`}
     >
       {/* Header */}
@@ -102,7 +102,7 @@ export function SchedulePanel({
               </p>
             </div>
           ) : (
-            <div className="p-2 max-h-[70vh] overflow-y-auto lg:max-h-[300px]">
+            <div className="p-2 h-[200px] overflow-y-auto lg:max-h-[300px]">
               {scheduledEvents.map((event, index) => {
                 const outOfOrder = isOutOfOrder(scheduledEvents, index)
                 const isDragging = draggedIndex === index
@@ -115,8 +115,8 @@ export function SchedulePanel({
                     onDragOver={(e) => handleDragOver(e, index)}
                     onDragEnd={handleDragEnd}
                     className={`relative flex items-start gap-2 p-2 rounded-lg mb-1 transition-all ${isDragging
-                        ? "opacity-50 bg-muted"
-                        : "bg-secondary/50 hover:bg-secondary"
+                      ? "opacity-50 bg-muted"
+                      : "bg-secondary/50 hover:bg-secondary"
                       }`}
                   >
                     {/* Drag Handle */}
@@ -130,50 +130,48 @@ export function SchedulePanel({
                     </div>
 
                     {/* Event Info */}
-                      <div
-                        className="flex-1 min-w-0 cursor-pointer"
-                        onClick={() =>
-                          setExpandedId(expandedId === event.id ? null : event.id)
-                        }
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <p
-                            className={`text-sm font-medium text-foreground ${
-                              expandedId === event.id ? "" : "line-clamp-2"
+                    <div
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() =>
+                        setExpandedId(expandedId === event.id ? null : event.id)
+                      }
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p
+                          className={`text-sm font-medium text-foreground ${expandedId === event.id ? "" : "line-clamp-2"
                             }`}
-                          >
-                            {event.name}
-                          </p>
-                          <ChevronDown
-                            className={`w-5 h-5 mt-0.5 text-muted-foreground transition-transform flex-shrink-0 ${
-                              expandedId === event.id ? "rotate-180" : ""
-                            }`}
-                          />
-                        </div>
-
-
-                        <p className="text-[10px] text-muted-foreground">
-                          {(event.startTime)} · {event.location}
-                          {event.location_details && (
-                            <> — {event.location_details}</>
-                          )}
+                        >
+                          {event.name}
                         </p>
-
-                        {expandedId === event.id && event.description && (
-                          <p className="mt-1 text-xs text-muted-foreground leading-snug">
-                            {event.description}
-                          </p>
-                        )}
-
-                        {outOfOrder && (
-                          <div className="flex items-center gap-1 mt-1 text-destructive">
-                            <AlertTriangle className="w-3 h-3" />
-                            <span className="text-[10px] font-medium">
-                              Time conflict with previous event
-                            </span>
-                          </div>
-                        )}
+                        <ChevronDown
+                          className={`w-5 h-5 mt-0.5 text-muted-foreground transition-transform flex-shrink-0 ${expandedId === event.id ? "rotate-180" : ""
+                            }`}
+                        />
                       </div>
+
+
+                      <p className="text-[10px] text-muted-foreground">
+                        {(event.startTime)} · {event.location}
+                        {event.location_details && (
+                          <> — {event.location_details}</>
+                        )}
+                      </p>
+
+                      {expandedId === event.id && event.description && (
+                        <p className="mt-1 text-xs text-muted-foreground leading-snug">
+                          {event.description}
+                        </p>
+                      )}
+
+                      {outOfOrder && (
+                        <div className="flex items-center gap-1 mt-1 text-destructive">
+                          <AlertTriangle className="w-3 h-3" />
+                          <span className="text-[10px] font-medium">
+                            Time conflict with previous event
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
 
                     {/* Actions 
@@ -202,7 +200,7 @@ export function SchedulePanel({
                       <X className="w-3 h-3" />
                     </button>
                   </div>
-                  
+
                 )
               })}
             </div>
