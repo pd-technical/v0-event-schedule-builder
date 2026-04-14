@@ -52,19 +52,13 @@ export function FilterSection({
   return (
     <>
       {activeFeedTab === "recommended" && (
-        <div
-          className={
-            mobile
-              ? "mt-4 rounded-[20px] border border-[#F0B429] bg-[#FFF7D8] px-4 py-3.5"
-              : "mt-5 rounded-xl bg-[#FEF9E7] px-4 py-3.5 ring-1 ring-[#F3E5AB]/80"
-          }
-        >
- <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="mt-5 rounded-xl bg-[#FEF9E7] px-4 py-3.5 ring-1 ring-[#F3E5AB]/80">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0 flex-1 space-y-1">
               <p className="text-sm font-bold text-[#002D62]">
                 Showing events for your interests:
               </p>
- <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {selectedInterestLabels.length > 0 ? (
                   <span className="text-sm italic text-[#002D62]">
                     {selectedInterestLabels.join(", ")}
@@ -74,7 +68,6 @@ export function FilterSection({
                     Complete personalization to load your recommended picks.
                   </span>
                 )}
-
                 {onEditRecommended && (
                   <button
                     type="button"
