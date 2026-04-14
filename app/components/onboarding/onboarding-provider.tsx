@@ -12,10 +12,16 @@ type Phase = "checking" | "welcome" | "tutorial" | "personalization" | "done"
 
 interface OnboardingContextValue {
   restart: () => void
+  openPersonalizationEditor: () => void
+  closePersonalizationEditor: () => void
+  tutorialStep: number | null
 }
 
 const OnboardingContext = createContext<OnboardingContextValue>({
   restart: () => {},
+  openPersonalizationEditor: () => {},
+  closePersonalizationEditor: () => {},
+  tutorialStep: null,
 })
 
 export function useOnboarding() {
@@ -26,7 +32,6 @@ interface OnboardingProviderProps {
   children: ReactNode
   onResetSearch?: () => void
   onClearSchedule?: () => void
-  /** Called when the user finishes personalization with 3 picks (schedule is not cleared). */
   onPersonalizationComplete?: (interestIds: PersonalizationPillId[]) => void
   scheduledEventCount?: number
 }
@@ -40,6 +45,7 @@ export function OnboardingProvider({
 }: OnboardingProviderProps) {
   const [phase, setPhase] = useState<Phase>("checking")
   const [step, setStep] = useState(0)
+  const [isPersonalizationEditorOpen, setIsPersonalizationEditorOpen] = useState(false)
 
   const onResetSearchRef = useRef(onResetSearch)
   useEffect(() => {
@@ -65,18 +71,18 @@ export function OnboardingProvider({
     }
   }, [])
 
-  /** Skip tutorial, decline personalization, or close dialog — reset search and clear schedule. */
   const finishSkipped = useCallback(() => {
     markOnboardingSeen()
     setPhase("done")
+    setIsPersonalizationEditorOpen(false)
     onResetSearchRef.current?.()
     onClearScheduleRef.current?.()
   }, [])
 
-  /** User completed personalization: keep schedule, only reset search/filters. */
   const finishPersonalized = useCallback(() => {
     markOnboardingSeen()
     setPhase("done")
+    setIsPersonalizationEditorOpen(false)
     onResetSearchRef.current?.()
   }, [])
 
@@ -87,6 +93,7 @@ export function OnboardingProvider({
 
   const handleNext = useCallback(() => {
     if (step >= TUTORIAL_STEPS.length - 1) {
+      onClearScheduleRef.current?.()
       setPhase("personalization")
     } else {
       setStep(step + 1)
@@ -100,6 +107,15 @@ export function OnboardingProvider({
   const restart = useCallback(() => {
     setStep(0)
     setPhase("welcome")
+    setIsPersonalizationEditorOpen(false)
+  }, [])
+
+  const openPersonalizationEditor = useCallback(() => {
+    setIsPersonalizationEditorOpen(true)
+  }, [])
+
+  const closePersonalizationEditor = useCallback(() => {
+    setIsPersonalizationEditorOpen(false)
   }, [])
 
   const handlePersonalized = useCallback((interestIds: PersonalizationPillId[]) => {
@@ -108,11 +124,20 @@ export function OnboardingProvider({
   }, [finishPersonalized])
 
   return (
-    <OnboardingContext.Provider value={{ restart }}>
+    <OnboardingContext.Provider
+      value={{
+        restart,
+        openPersonalizationEditor,
+        closePersonalizationEditor,
+        tutorialStep: phase === "tutorial" ? step : null,
+      }}
+    >
       {children}
+
       {phase === "welcome" && (
         <WelcomeDialog onStart={handleStart} onSkip={finishSkipped} />
       )}
+
       {phase === "tutorial" && (
         <SpotlightOverlay
           step={step}
@@ -121,8 +146,20 @@ export function OnboardingProvider({
           scheduledEventCount={scheduledEventCount}
         />
       )}
+
       {phase === "personalization" && (
-        <PersonalizationDialog onPersonalized={handlePersonalized} />
+        <PersonalizationDialog
+          onPersonalized={handlePersonalized}
+          onDismiss={finishSkipped}
+        />
+      )}
+
+      {isPersonalizationEditorOpen && phase !== "personalization" && (
+        <PersonalizationDialog
+          onPersonalized={handlePersonalized}
+          onDismiss={closePersonalizationEditor}
+          saveLabel="Save interests"
+        />
       )}
     </OnboardingContext.Provider>
   )

@@ -62,9 +62,8 @@ export function SchedulePanel({
   return (
     <div
       data-onboarding="schedule-panel"
-      className={`w-full bg-card border border-border rounded-lg shadow-lg transition-all lg:absolute lg:left-auto lg:right-4 lg:top-4 lg:bottom-auto lg:w-72 lg:z-[1000] ${
-        isCollapsed ? "h-auto" : "lg:max-h-[440px]"
-      }`}
+      className={`w-full bg-card border border-border rounded-lg shadow-lg transition-all lg:absolute lg:left-auto lg:right-4 lg:top-4 lg:bottom-auto lg:w-72 lg:z-[1000] ${isCollapsed ? "h-auto" : "h-[300px] lg:max-h-[440px]"
+        }`}
     >
       {/* Header */}
       <div
@@ -98,7 +97,7 @@ export function SchedulePanel({
               </p>
             </div>
           ) : (
-            <div className="p-2 max-h-[70vh] overflow-y-auto lg:max-h-[300px]">
+            <div className="p-2 h-[200px] overflow-y-auto lg:max-h-[300px]">
               {scheduledEvents.map((event, index) => {
                 const outOfOrder = isOutOfOrder(scheduledEvents, index);
 
@@ -163,7 +162,7 @@ export function SchedulePanel({
                       </div>
 
                       <p className="text-[10px] text-muted-foreground">
-                        {event.startTime} · {event.location}
+                        {(event.startTime)} · {event.location}
                         {event.location_details && (
                           <> — {event.location_details}</>
                         )}
@@ -199,9 +198,8 @@ export function SchedulePanel({
 
           {/* Footer */}
           {scheduledEvents.length > 0 && (
-            <div className="p-3 border-t border-border relative">
+            <div data-onboarding="export-button" className="p-3 border-t border-border relative">
               <button
-                data-onboarding="export-button"
                 onClick={() => setShowExportMenu((v) => !v)}
                 disabled={isExporting}
                 className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
@@ -218,7 +216,7 @@ export function SchedulePanel({
               </button>
 
               {showExportMenu && (
-                <div className="absolute left-3 right-3 mt-2 rounded-lg border border-border bg-card shadow-lg overflow-hidden z-10">
+                <div data-onboarding-include className="absolute left-3 right-3 mt-2 rounded-lg border border-border bg-card shadow-lg overflow-hidden z-10">
                   <button
                     onClick={() => {
                       setShowExportMenu(false);

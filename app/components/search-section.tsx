@@ -1,7 +1,7 @@
 "use client"
 
 import { Search, Clock, X, HelpCircle, Pencil, MapPin } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import type { Event } from "@/app/page"
 import { useOnboarding } from "@/app/components/onboarding/onboarding-provider"
 import {
@@ -97,7 +97,15 @@ export function SearchSection({
     }
   }, [trimmedQuery, events, searchHistory])
 
+  const inputRef = useRef<HTMLInputElement>(null)
   const [isFocused, setIsFocused] = useState(false)
+
+  /** Blur the input and close suggestions (Enter, pick, or close control). */
+  function exitSearchField() {
+    inputRef.current?.blur()
+    setIsFocused(false)
+  }
+
   const showDropdown =
     isFocused && (mode === "events" ? true : items.length > 0)
 
@@ -114,10 +122,12 @@ export function SearchSection({
             onSubmit={(e) => {
               e.preventDefault()
               onSearchSubmit(searchQuery)
+              exitSearchField()
             }}
             className="flex w-full min-w-0"
           >
             <input
+              ref={inputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -181,7 +191,7 @@ export function SearchSection({
                       )}
                       <button
                         type="button"
-                        onClick={() => setIsFocused(false)}
+                        onClick={() => exitSearchField()}
                         className="text-muted-foreground transition-colors hover:text-foreground"
                         aria-label="Close suggestions"
                       >
@@ -200,7 +210,7 @@ export function SearchSection({
                           e.preventDefault()
                           setSearchQuery(item.label)
                           onSearchSubmit(item.label)
-                          setIsFocused(false)
+                          exitSearchField()
                         }}
                         className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-primary/5"
                       >
@@ -217,7 +227,7 @@ export function SearchSection({
                           const name = item.event.name
                           setSearchQuery(name)
                           onSearchSubmit(name)
-                          setIsFocused(false)
+                          exitSearchField()
                         }}
                         className="flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors hover:bg-primary/5"
                       >

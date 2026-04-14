@@ -149,6 +149,32 @@ function FitBoundsOnExport({
 }) {
   const map = useMap();
 
+  // Freeze all interactions while exporting so a stray touch can't pan the map
+  // during html2canvas capture.
+  useEffect(() => {
+    if (!isExporting) return;
+    map.dragging.disable();
+    map.touchZoom.disable();
+    map.scrollWheelZoom.disable();
+    map.doubleClickZoom.disable();
+    map.boxZoom.disable();
+    map.keyboard.disable();
+    if ((map as unknown as { tap?: { disable(): void; enable(): void } }).tap) {
+      (map as unknown as { tap: { disable(): void; enable(): void } }).tap.disable();
+    }
+    return () => {
+      map.dragging.enable();
+      map.touchZoom.enable();
+      map.scrollWheelZoom.enable();
+      map.doubleClickZoom.enable();
+      map.boxZoom.enable();
+      map.keyboard.enable();
+      if ((map as unknown as { tap?: { disable(): void; enable(): void } }).tap) {
+        (map as unknown as { tap: { disable(): void; enable(): void } }).tap.enable();
+      }
+    };
+  }, [isExporting, map]);
+
   useEffect(() => {
     if (!isExporting || points.length === 0) return;
 
@@ -258,30 +284,30 @@ function useOffsetPositions(
 }
 
 function FlyToHoveredEvent({
-    hoveredEvent,
-    events,
-    shouldPan,
-  }: {
-    hoveredEvent: string | null
-    events: (Event | ScheduledEvent)[]
-    shouldPan: boolean
-  }) {
-    const map = useMap()
+  hoveredEvent,
+  events,
+  shouldPan,
+}: {
+  hoveredEvent: string | null
+  events: (Event | ScheduledEvent)[]
+  shouldPan: boolean
+}) {
+  const map = useMap()
 
-    useEffect(() => {
-      if (!shouldPan || !hoveredEvent) return
+  useEffect(() => {
+    if (!shouldPan || !hoveredEvent) return
 
-      const event = events.find((e) => e.id === hoveredEvent)
-      if (!event) return
+    const event = events.find((e) => e.id === hoveredEvent)
+    if (!event) return
 
-      map.panTo([event.lat, event.lng], {
-        animate: true,
-        duration: 2.0,
-      })
-    }, [hoveredEvent, events, map, shouldPan])
+    map.panTo([event.lat, event.lng], {
+      animate: true,
+      duration: 2.0,
+    })
+  }, [hoveredEvent, events, map, shouldPan])
 
-    return null
-  }
+  return null
+}
 
 /* =========================
    Icon Logic
@@ -529,77 +555,62 @@ export default function CampusMapInner({
   return (
     <div
       data-onboarding="campus-map"
-      className="relative w-full min-h-[320px] h-[400px] lg:h-auto lg:flex-1 lg:min-h-0"
+      className="relative w-full h-full lg:h-auto lg:flex-1 lg:min-h-0"
     >
-      <div className="absolute bottom-4 left-4 z-[2000]">
-        <div
-          className="rounded-2xl bg-white/95 backdrop-blur px-3.5 py-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] ring-1 ring-black/5 flex flex-col gap-2"
-        >
-          <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">
-            Show on map
-          </div>
+      <div className="
+        absolute z-[2000]
+        top-3 right-3
+        lg:top-auto lg:right-auto lg:bottom-3 lg:left-3
+    ">
+        <div className="flex items-center gap-2 bg-white/95 backdrop-blur px-2 py-1.5 rounded-xl shadow-[0_8px_20px_rgba(0,0,0,0.15)] border border-black/5">
 
-          <div className="flex items-center gap-2">
-            {/* Schedule Mode */}
-            <button
-              onClick={() => setShowScheduleOnly((prev) => !prev)}
-              className="flex items-center gap-2 px-3 h-9 rounded-xl text-sm font-semibold transition-all active:scale-95"
+          {/* Scheduled */}
+          <button
+            onClick={() => setShowScheduleOnly((prev) => !prev)}
+            className="flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-xs font-medium transition-all"
+            style={{
+              background: showScheduleOnly ? NAVY : "white",
+              color: showScheduleOnly ? "white" : NAVY,
+              border: `1px solid ${NAVY}`,
+            }}
+          >
+            <span
               style={{
-                background: showScheduleOnly ? NAVY : "white",
-                color: showScheduleOnly ? "white" : NAVY,
-                border: `1.5px solid ${NAVY}`,
-                boxShadow: showScheduleOnly
-                  ? "0 0 0 2px rgba(18,60,115,0.18)"
-                  : "0 2px 8px rgba(0,0,0,0.12)",
+                width: 8,
+                height: 8,
+                borderRadius: "999px",
+                background: GOLD,
               }}
-            >
-              <span
-                className="shrink-0"
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: "999px",
-                  background: GOLD,
-                  boxShadow: "0 0 0 2px rgba(255,191,0,0.18)",
-                }}
-              />
-              <span className="tracking-tight">Scheduled</span>
-            </button>
+            />
+            <span>Scheduled</span>
+          </button>
 
-            {/* Food Layer */}
-            <button
-              onClick={() => setShowFoodOnly((prev) => !prev)}
-              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95"
-              style={{
-                background: showFoodOnly ? NAVY : "white",
-                color: showFoodOnly ? "white" : NAVY,
-                border: `1.5px solid ${NAVY}`,
-                boxShadow: showFoodOnly
-                  ? "0 0 0 2px rgba(18,60,115,0.18)"
-                  : "0 2px 8px rgba(0,0,0,0.12)",
-                opacity: showFoodOnly ? 1 : 0.9,
-              }}
-            >
-              <LuUtensils size={16} />
-            </button>
+          {/* Food */}
+          <button
+            onClick={() => setShowFoodOnly((prev) => !prev)}
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{
+              background: showFoodOnly ? NAVY : "white",
+              color: showFoodOnly ? "white" : NAVY,
+              border: `1px solid ${NAVY}`,
+            }}
+          >
+            <LuUtensils size={14} />
+          </button>
 
-            {/* Restroom Layer */}
-            <button
-              onClick={() => setShowRestroomOnly((prev) => !prev)}
-              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95"
-              style={{
-                background: showRestroomOnly ? NAVY : "white",
-                color: showRestroomOnly ? "white" : NAVY,
-                border: `1.5px solid ${NAVY}`,
-                boxShadow: showRestroomOnly
-                  ? "0 0 0 2px rgba(18,60,115,0.18)"
-                  : "0 2px 8px rgba(0,0,0,0.12)",
-                opacity: showRestroomOnly ? 1 : 0.9,
-              }}
-            >
-              <LuToilet size={16} />
-            </button>
-          </div>
+          {/* Restroom */}
+          <button
+            onClick={() => setShowRestroomOnly((prev) => !prev)}
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{
+              background: showRestroomOnly ? NAVY : "white",
+              color: showRestroomOnly ? "white" : NAVY,
+              border: `1px solid ${NAVY}`,
+            }}
+          >
+            <LuToilet size={14} />
+          </button>
+
         </div>
       </div>
       <MapContainer

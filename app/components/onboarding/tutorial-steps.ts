@@ -32,13 +32,13 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     icon: "List",
     tooltipPosition: "right",
     scrollIntoView: false,
-    mobilePosition: "bottom",
+    mobilePosition: "top",
     requireInteraction: true,
     requiredScheduleCount: 2,
   },
   {
     id: "map-area",
-    target: "map-area",
+    target: "campus-map",
     title: "Campus Map & Schedule",
     description: "See where your events are on the campus map. Your schedule panel shows all added events with auto-generated walking routes between them.",
     icon: "Map",
@@ -54,6 +54,6 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     icon: "Download",
     tooltipPosition: "left",
     scrollIntoView: true,
-    mobilePosition: "top",
+    mobilePosition: "bottom",
   },
 ]
