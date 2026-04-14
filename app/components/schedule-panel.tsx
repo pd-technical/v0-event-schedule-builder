@@ -1,34 +1,43 @@
-"use client"
+"use client";
 
-import React from "react"
-
-import { useState, useRef } from "react"
-import { X, GripVertical, AlertTriangle, Calendar, Download, ChevronUp, ChevronDown, Loader2, FileText, CalendarClock } from "lucide-react"
-import type { ScheduledEvent } from "@/app/page"
+import { useState } from "react";
+import {
+  X,
+  AlertTriangle,
+  Calendar,
+  Download,
+  ChevronUp,
+  ChevronDown,
+  Loader2,
+  FileText,
+  CalendarClock,
+  MoreHorizontal,
+} from "lucide-react";
+import type { ScheduledEvent } from "@/app/page";
 
 interface SchedulePanelProps {
-  scheduledEvents: ScheduledEvent[]
-  removeFromSchedule: (eventId: string) => void
-  reorderSchedule: (fromIndex: number, toIndex: number) => void
-  onExportPdf: () => void
-  onExportIcs: () => void
-  isExporting: boolean
+  scheduledEvents: ScheduledEvent[];
+  removeFromSchedule: (eventId: string) => void;
+  reorderSchedule: (fromIndex: number, toIndex: number) => void;
+  onExportPdf: () => void;
+  onExportIcs: () => void;
+  isExporting: boolean;
 }
 
 function parseTime(timeStr: string): number {
-  const [time, period] = timeStr.split(" ")
-  const [hours, minutes] = time.split(":").map(Number)
-  let h = hours
-  if (period === "PM" && hours !== 12) h += 12
-  if (period === "AM" && hours === 12) h = 0
-  return h * 60 + minutes
+  const [time, period] = timeStr.split(" ");
+  const [hours, minutes] = time.split(":").map(Number);
+  let h = hours;
+  if (period === "PM" && hours !== 12) h += 12;
+  if (period === "AM" && hours === 12) h = 0;
+  return h * 60 + minutes;
 }
 
 function isOutOfOrder(events: ScheduledEvent[], index: number): boolean {
-  if (index === 0) return false
-  const currentTime = parseTime(events[index].startTime)
-  const prevTime = parseTime(events[index - 1].startTime)
-  return currentTime < prevTime
+  if (index === 0) return false;
+  const currentTime = parseTime(events[index].startTime);
+  const prevTime = parseTime(events[index - 1].startTime);
+  return currentTime < prevTime;
 }
 
 export function SchedulePanel({
@@ -39,35 +48,16 @@ export function SchedulePanel({
   onExportIcs,
   isExporting,
 }: SchedulePanelProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
-  const dragOverIndex = useRef<number | null>(null)
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [showExportMenu, setShowExportMenu] = useState(false)
-
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index)
-  }
-
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault()
-    dragOverIndex.current = index
-  }
-
-  const handleDragEnd = () => {
-    if (draggedIndex !== null && dragOverIndex.current !== null && draggedIndex !== dragOverIndex.current) {
-      reorderSchedule(draggedIndex, dragOverIndex.current)
-    }
-    setDraggedIndex(null)
-    dragOverIndex.current = null
-  }
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   const moveItem = (fromIndex: number, direction: "up" | "down") => {
-    const toIndex = direction === "up" ? fromIndex - 1 : fromIndex + 1
+    const toIndex = direction === "up" ? fromIndex - 1 : fromIndex + 1;
     if (toIndex >= 0 && toIndex < scheduledEvents.length) {
-      reorderSchedule(fromIndex, toIndex)
+      reorderSchedule(fromIndex, toIndex);
     }
-  }
+  };
 
   return (
     <div
@@ -87,8 +77,11 @@ export function SchedulePanel({
             {scheduledEvents.length}
           </span>
         </div>
-        <ChevronUp className={`w-4 h-4 text-muted-foreground transition-transform ${isCollapsed ? "rotate-180" : ""
-          }`} />
+        <ChevronUp
+          className={`w-4 h-4 text-muted-foreground transition-transform ${
+            isCollapsed ? "rotate-180" : ""
+          }`}
+        />
       </div>
 
       {/* Content */}
@@ -96,7 +89,9 @@ export function SchedulePanel({
         <>
           {scheduledEvents.length === 0 ? (
             <div className="p-6 text-center">
-              <p className="text-sm text-muted-foreground">No events added yet</p>
+              <p className="text-sm text-muted-foreground">
+                No events added yet
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Click + on events to add them
               </p>
@@ -104,24 +99,37 @@ export function SchedulePanel({
           ) : (
             <div className="p-2 h-[200px] overflow-y-auto lg:max-h-[300px]">
               {scheduledEvents.map((event, index) => {
-                const outOfOrder = isOutOfOrder(scheduledEvents, index)
-                const isDragging = draggedIndex === index
+                const outOfOrder = isOutOfOrder(scheduledEvents, index);
 
                 return (
                   <div
                     key={event.id}
-                    draggable
-                    onDragStart={() => handleDragStart(index)}
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDragEnd={handleDragEnd}
-                    className={`relative flex items-start gap-2 p-2 rounded-lg mb-1 transition-all ${isDragging
-                      ? "opacity-50 bg-muted"
-                      : "bg-secondary/50 hover:bg-secondary"
-                      }`}
+                    className="relative flex items-start gap-2 p-2 rounded-lg mb-1 transition-colors bg-secondary/50 hover:bg-secondary"
                   >
-                    {/* Drag Handle */}
-                    <div className="flex flex-col items-center gap-0.5 pt-1 cursor-grab active:cursor-grabbing">
-                      <GripVertical className="w-3 h-3 text-muted-foreground" />
+                    {/* Reorder buttons → bare chevrons */}
+                    <div
+                      className="flex shrink-0 flex-col items-center justify-center gap-0 pt-0.5"
+                      role="group"
+                      aria-label="Reorder in schedule"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => moveItem(index, "up")}
+                        disabled={index === 0}
+                        aria-label={`Move "${event.name}" up`}
+                        className="text-muted-foreground/50 hover:text-primary transition-colors disabled:opacity-20 disabled:pointer-events-none"
+                      >
+                        <ChevronUp className="h-4 w-4" strokeWidth={2.25} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveItem(index, "down")}
+                        disabled={index === scheduledEvents.length - 1}
+                        aria-label={`Move "${event.name}" down`}
+                        className="text-muted-foreground/50 hover:text-primary transition-colors disabled:opacity-20 disabled:pointer-events-none"
+                      >
+                        <ChevronDown className="h-4 w-4" strokeWidth={2.25} />
+                      </button>
                     </div>
 
                     {/* Index Number */}
@@ -138,17 +146,20 @@ export function SchedulePanel({
                     >
                       <div className="flex items-start justify-between gap-2">
                         <p
-                          className={`text-sm font-medium text-foreground ${expandedId === event.id ? "" : "line-clamp-2"
-                            }`}
+                          className={`text-sm font-medium text-foreground ${
+                            expandedId === event.id ? "" : "line-clamp-2"
+                          }`}
                         >
                           {event.name}
                         </p>
-                        <ChevronDown
-                          className={`w-5 h-5 mt-0.5 text-muted-foreground transition-transform flex-shrink-0 ${expandedId === event.id ? "rotate-180" : ""
-                            }`}
+                        <MoreHorizontal
+                          className={`w-4 h-4 mt-0.5 flex-shrink-0 transition-colors ${
+                            expandedId === event.id
+                              ? "text-primary"
+                              : "text-muted-foreground/50"
+                          }`}
                         />
                       </div>
-
 
                       <p className="text-[10px] text-muted-foreground">
                         {(event.startTime)} · {event.location}
@@ -173,26 +184,6 @@ export function SchedulePanel({
                       )}
                     </div>
 
-
-                    {/* Actions 
-                    <div className="flex flex-col gap-0.5">
-                      <button
-                        onClick={() => moveItem(index, "up")}
-                        disabled={index === 0}
-                        className="p-1 hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <ChevronUp className="w-3 h-3 text-muted-foreground" />
-                      </button>
-                      <button
-                        onClick={() => moveItem(index, "down")}
-                        disabled={index === scheduledEvents.length - 1}
-                        className="p-1 hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <ChevronDown className="w-3 h-3 text-muted-foreground" />
-                      </button>
-                    </div>
-                    */}
-
                     <button
                       onClick={() => removeFromSchedule(event.id)}
                       className="flex-shrink-0 p-1 hover:bg-muted rounded text-muted-foreground hover:text-destructive transition-colors"
@@ -200,8 +191,7 @@ export function SchedulePanel({
                       <X className="w-3 h-3" />
                     </button>
                   </div>
-
-                )
+                );
               })}
             </div>
           )}
@@ -214,15 +204,24 @@ export function SchedulePanel({
                 disabled={isExporting}
                 className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
               >
-                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
                 {isExporting ? "Exporting..." : "Export Schedule"}
-                <ChevronDown className={`w-4 h-4 transition-transform ${showExportMenu ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${showExportMenu ? "rotate-180" : ""}`}
+                />
               </button>
 
               {showExportMenu && (
                 <div data-onboarding-include className="absolute left-3 right-3 mt-2 rounded-lg border border-border bg-card shadow-lg overflow-hidden z-10">
                   <button
-                    onClick={() => { setShowExportMenu(false); onExportPdf(); }}
+                    onClick={() => {
+                      setShowExportMenu(false);
+                      onExportPdf();
+                    }}
                     disabled={isExporting}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors disabled:opacity-60"
                   >
@@ -230,7 +229,10 @@ export function SchedulePanel({
                     Export as PDF
                   </button>
                   <button
-                    onClick={() => { setShowExportMenu(false); onExportIcs(); }}
+                    onClick={() => {
+                      setShowExportMenu(false);
+                      onExportIcs();
+                    }}
                     disabled={isExporting}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors disabled:opacity-60"
                   >
@@ -244,5 +246,5 @@ export function SchedulePanel({
         </>
       )}
     </div>
-  )
+  );
 }
