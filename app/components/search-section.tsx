@@ -10,6 +10,7 @@ import {
 } from "@/app/lib/eventFilters"
 import { rankedEventMatchesSearch } from "@/app/lib/searchUtils"
 import { SortDropdown, type SortOption } from "@/app/components/sort-dropdown"
+import { FilterSection } from "./filter-section"
 
 /** Compact pills so two rows fit in the sidebar (Recommended row + categories). */
 const FILTER_BY_PILL_TEXT =
@@ -279,121 +280,20 @@ export function SearchSection({
           <HelpCircle className="h-5 w-5" strokeWidth={2} />
         </button>
       </div>
-
-      {activeFeedTab === "recommended" && (
-        <div className="mt-5 rounded-xl bg-[#FEF9E7] px-4 py-3.5 ring-1 ring-[#F3E5AB]/80">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0 flex-1 space-y-1">
-              <p className="text-sm font-bold text-[#002D62]">
-                Showing events for your interests:
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                {selectedInterestLabels.length > 0 ? (
-                  <span className="text-sm italic text-[#002D62]">
-                    {selectedInterestLabels.join(", ")}
-                  </span>
-                ) : (
-                  <span className="text-sm italic text-[#64748B]">
-                    Complete personalization to load your recommended picks.
-                  </span>
-                )}
-                {onEditRecommended && (
-                  <button
-                    type="button"
-                    onClick={onEditRecommended}
-                    className="inline-flex shrink-0 rounded-md p-1 text-[#5c4033] hover:bg-black/[0.06]"
-                    aria-label="Edit recommended interests"
-                    title="Edit recommended interests"
-                  >
-                    <Pencil className="h-4 w-4" strokeWidth={2} />
-                  </button>
-                )}
-              </div>
-            </div>
-            {onShowAll && (
-              <button
-                type="button"
-                onClick={onShowAll}
-                className="shrink-0 text-[11px] font-bold uppercase tracking-wide text-[#002D62] hover:underline"
-              >
-                SHOW ALL
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div
-        data-onboarding="category-filters"
-        className="mt-6 flex flex-wrap items-start gap-x-3 gap-y-2"
-      >
-        <h3 className="shrink-0 pt-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.14em] text-[#64748B]">
-          FILTER BY
-        </h3>
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-          <button
-            type="button"
-            onClick={onSelectRecommended}
-            className={`${FILTER_BY_PILL_TEXT} ${
-              recommendedActive ? filterPillRecommendedOn : filterPillIdle
-            }`}
-          >
-            Recommended
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveFeedTab("all")}
-            className={`${FILTER_BY_PILL_TEXT} ${
-              allEventsActive ? filterPillCategoryOn : filterPillIdle
-            }`}
-          >
-            All Events
-          </button>
-          {EVENT_FILTER_CATEGORY_PILLS.map((category) => {
-            const isSelected = selectedCategories.includes(category.id)
-            return (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => toggleCategory(category.id)}
-                className={`${FILTER_BY_PILL_TEXT} ${
-                  isSelected ? filterPillCategoryOn : filterPillIdle
-                }`}
-              >
-                {category.label}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {showMobileSort && (
-        <div className="mt-4 block md:hidden">
-          <SortDropdown
-            selectedSort={selectedSort}
-            setSelectedSort={setSelectedSort}
-            mobile={true}
-          />
-        </div>
-      )}
-
-      {selectedCategories.length > 0 && (
-        <div className="mt-4 flex items-center justify-between border-t border-[#E5E7EB] pt-3 text-xs text-[#64748B]">
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-[#C9A227]" />
-            {selectedCategories.length} filter
-            {selectedCategories.length !== 1 ? "s" : ""} active
-          </span>
-
-          <button
-            type="button"
-            onClick={() => selectedCategories.forEach(toggleCategory)}
-            className="font-semibold text-[#002D62] transition hover:underline"
-          >
-            Clear all
-          </button>
-        </div>
-      )}
+        <FilterSection
+          activeFeedTab={activeFeedTab}
+          setActiveFeedTab={setActiveFeedTab}
+          selectedInterestLabels={selectedInterestLabels}
+          onEditRecommended={onEditRecommended}
+          onShowAll={onShowAll}
+          selectedCategories={selectedCategories}
+          toggleCategory={toggleCategory}
+          onSelectRecommended={onSelectRecommended}
+          recommendedActive={recommendedActive}
+          selectedSort={selectedSort}
+          setSelectedSort={setSelectedSort}
+          mobile={showMobileSort}
+        />
     </div>
   )
 }

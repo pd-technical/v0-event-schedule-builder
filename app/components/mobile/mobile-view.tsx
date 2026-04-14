@@ -58,6 +58,7 @@ export function MobileScheduleMap({ data, ui, actions, schedule }: any) {
 
   const [isListOpen, setIsListOpen] = useState(false)
   const { tutorialStep } = useOnboarding()
+  const { restart } = useOnboarding()
 
   useEffect(() => {
     if (searchQuery.trim()) setIsListOpen(true)
@@ -175,6 +176,7 @@ export function MobileScheduleMap({ data, ui, actions, schedule }: any) {
                   selectedSort={sortOption}
                   setSelectedSort={setSortOption}
                   showMobileSort
+                  onEditRecommended={restart}
                 />
               </div>
             </div>
