@@ -43,6 +43,23 @@ export interface ScheduledEvent extends Event {
   orderIndex: number
 }
 
+function timeToMinutes(timeStr: string): number {
+  const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (!match) return Number.POSITIVE_INFINITY
+  let hours = Number(match[1])
+  const minutes = Number(match[2])
+  const period = match[3].toUpperCase()
+  if (period === "PM" && hours !== 12) hours += 12
+  if (period === "AM" && hours === 12) hours = 0
+  return hours * 60 + minutes
+}
+
+function compareEventsByTime(a: Event | ScheduledEvent, b: Event | ScheduledEvent) {
+  const startCompare = timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+  if (startCompare !== 0) return startCompare
+  return timeToMinutes(a.endTime) - timeToMinutes(b.endTime)
+}
+
 export default function PicnicDayPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [submittedSearchQuery, setSubmittedSearchQuery] = useState("")
@@ -81,17 +98,6 @@ export default function PicnicDayPage() {
     creative: ["art", "crafts"],
     food: ["food", "drink", "coffee"],
     community: ["cultural", "culture", "personal", "services"],
-  }
-
-  function timeToMinutes(timeStr: string): number {
-    const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
-    if (!match) return Number.POSITIVE_INFINITY
-    let hours = Number(match[1])
-    const minutes = Number(match[2])
-    const period = match[3].toUpperCase()
-    if (period === "PM" && hours !== 12) hours += 12
-    if (period === "AM" && hours === 12) hours = 0
-    return hours * 60 + minutes
   }
 
   useEffect(() => {
@@ -192,14 +198,7 @@ export default function PicnicDayPage() {
     let sorted = [...result]
 
     if (sortOption === "time") {
-      sorted.sort((a, b) => {
-        const startCompare = timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
-
-        if (startCompare !== 0) return startCompare
-
-        // If start times are equal → earlier end time first
-        return timeToMinutes(a.endTime) - timeToMinutes(b.endTime)
-      })
+      sorted.sort(compareEventsByTime)
     }
 
     else if (sortOption === "alphabetical") {
@@ -283,7 +282,7 @@ export default function PicnicDayPage() {
     setScheduledEvents(prev => {
       if (prev.find(e => e.id === event.id)) return prev
       const updated = [...prev, { ...event, orderIndex: prev.length }]
-      updated.sort((a, b) => a.startTime.localeCompare(b.startTime))
+      updated.sort(compareEventsByTime)
       return updated.map((e, i) => ({ ...e, orderIndex: i }))
     })
 
