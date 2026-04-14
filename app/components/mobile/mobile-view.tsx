@@ -7,19 +7,43 @@ import { EventList } from "@/app/components/event-list"
 import { SearchSection } from "@/app/components/search-section"
 import { useOnboarding } from "@/app/components/onboarding/onboarding-provider"
 
-export function MobileScheduleMap(props: any) {
+export function MobileScheduleMap({
+    data,
+    ui,
+    actions,
+  }: {
+    data: any
+    ui: any
+    actions: any
+    schedule: any
+  }) {
   const {
     events,
     nonFoodEvents,
     scheduledEvents,
+  } = data
+
+  const {
     hoveredEvent,
-    setHoveredEventFromMap,
     shouldPanToHovered,
-    handleMapMarkerClick,
     resultsPage,
     RESULTS_PAGE_SIZE,
     recentlyAddedId,
     isExportingPdf,
+    searchQuery,
+    searchHistory,
+    sortOption,
+    activeFeedTab,
+    selectedInterestLabels,
+    selectedCategories,
+    recommendedActive,
+    totalResultsPages,
+    submittedSearchQuery,
+  } = ui
+
+  const {
+    setHoveredEventFromMap,
+    handleMapMarkerClick,
     removeFromSchedule,
     reorderSchedule,
     handleExportPdf,
@@ -27,27 +51,18 @@ export function MobileScheduleMap(props: any) {
     addToSchedule,
     scrollToEventId,
     setHoveredEventFromList,
-    totalResultsPages,
     setResultsPage,
-    submittedSearchQuery,
     handleBrowseAllEvents,
-    searchQuery,
     setSearchQuery,
-    searchHistory,
     onSearchSubmit,
     clearSearchHistory,
-    sortOption,
     setSortOption,
-    activeFeedTab,
     setActiveFeedTab,
-    selectedInterestLabels,
     onEditRecommended,
     onShowAll,
-    selectedCategories,
     toggleCategory,
     onSelectRecommended,
-    recommendedActive,
-  } = props
+  } = actions
 
   const [isListOpen, setIsListOpen] = useState(false)
   const { tutorialStep } = useOnboarding()
@@ -169,8 +184,6 @@ export function MobileScheduleMap(props: any) {
                   toggleCategory={toggleCategory}
                   onSelectRecommended={onSelectRecommended}
                   recommendedActive={recommendedActive}
-                  selectedSort={sortOption}
-                  setSelectedSort={setSortOption}
                 />
               </div>
             </div>
