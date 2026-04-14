@@ -14,12 +14,14 @@ interface OnboardingContextValue {
   restart: () => void
   openPersonalizationEditor: () => void
   closePersonalizationEditor: () => void
+  tutorialStep: number | null
 }
 
 const OnboardingContext = createContext<OnboardingContextValue>({
   restart: () => {},
   openPersonalizationEditor: () => {},
   closePersonalizationEditor: () => {},
+  tutorialStep: null,
 })
 
 export function useOnboarding() {
@@ -91,6 +93,7 @@ export function OnboardingProvider({
 
   const handleNext = useCallback(() => {
     if (step >= TUTORIAL_STEPS.length - 1) {
+      onClearScheduleRef.current?.()
       setPhase("personalization")
     } else {
       setStep(step + 1)
@@ -126,6 +129,7 @@ export function OnboardingProvider({
         restart,
         openPersonalizationEditor,
         closePersonalizationEditor,
+        tutorialStep: phase === "tutorial" ? step : null,
       }}
     >
       {children}

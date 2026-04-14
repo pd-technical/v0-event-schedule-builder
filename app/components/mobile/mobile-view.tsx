@@ -50,6 +50,7 @@ export function MobileScheduleMap(props: any) {
   } = props
 
   const [isListOpen, setIsListOpen] = useState(false)
+  const { tutorialStep } = useOnboarding()
 
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
@@ -57,17 +58,21 @@ export function MobileScheduleMap(props: any) {
     }
   }, [searchQuery])
 
+  useEffect(() => {
+    if (tutorialStep === 2) {
+      setIsListOpen(false)
+    } else if (tutorialStep === 0 || tutorialStep === 1) {
+      setIsListOpen(true)
+    }
+  }, [tutorialStep])
+
   const paginatedEvents = nonFoodEvents.slice(
     resultsPage * RESULTS_PAGE_SIZE,
     (resultsPage + 1) * RESULTS_PAGE_SIZE
   )
 
-  useEffect(() => {
-    setIsListOpen(true)
-  }, [])
-
   return (
-    <div className="flex flex-col gap-4 bg-background py-3 pb-24">
+    <div className="flex h-[100dvh] flex-col gap-4 bg-background py-3 pb-[120px]">
       <div data-onboarding="schedule-panel">
         <SchedulePanel
           scheduledEvents={scheduledEvents}
@@ -80,8 +85,8 @@ export function MobileScheduleMap(props: any) {
       </div>
 
       <div
-        data-onboarding="map"
-        className="relative z-0 h-[55vh] overflow-hidden rounded-2xl border border-gray-200"
+        data-onboarding="campus-map"
+        className="relative z-0 min-h-0 flex-1 overflow-hidden rounded-2xl border border-gray-200"
         onClick={() => setIsListOpen(false)}
       >
         <CampusMap
@@ -110,14 +115,14 @@ export function MobileScheduleMap(props: any) {
         className={`
           fixed inset-x-0 bottom-0 z-50
           transition-transform duration-300 ease-in-out
-          ${isListOpen ? "translate-y-0" : "translate-y-[calc(100%-140px)]"}
+          ${isListOpen ? "translate-y-0" : "translate-y-[calc(100%-120px)]"}
         `}
       >
         <div onClick={() => setIsListOpen(true)}>
           <div
             className={`
               flex flex-col rounded-t-3xl bg-white shadow-2xl
-              ${isListOpen ? "h-[85dvh]" : "h-[140px]"}
+              ${isListOpen ? "h-[85dvh]" : "h-[120px]"}
             `}
           >
             <div

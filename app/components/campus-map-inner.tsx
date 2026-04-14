@@ -149,6 +149,32 @@ function FitBoundsOnExport({
 }) {
   const map = useMap();
 
+  // Freeze all interactions while exporting so a stray touch can't pan the map
+  // during html2canvas capture.
+  useEffect(() => {
+    if (!isExporting) return;
+    map.dragging.disable();
+    map.touchZoom.disable();
+    map.scrollWheelZoom.disable();
+    map.doubleClickZoom.disable();
+    map.boxZoom.disable();
+    map.keyboard.disable();
+    if ((map as unknown as { tap?: { disable(): void; enable(): void } }).tap) {
+      (map as unknown as { tap: { disable(): void; enable(): void } }).tap.disable();
+    }
+    return () => {
+      map.dragging.enable();
+      map.touchZoom.enable();
+      map.scrollWheelZoom.enable();
+      map.doubleClickZoom.enable();
+      map.boxZoom.enable();
+      map.keyboard.enable();
+      if ((map as unknown as { tap?: { disable(): void; enable(): void } }).tap) {
+        (map as unknown as { tap: { disable(): void; enable(): void } }).tap.enable();
+      }
+    };
+  }, [isExporting, map]);
+
   useEffect(() => {
     if (!isExporting || points.length === 0) return;
 
@@ -529,7 +555,7 @@ export default function CampusMapInner({
   return (
     <div
       data-onboarding="campus-map"
-      className="relative w-full min-h-[320px] h-[400px] lg:h-auto lg:flex-1 lg:min-h-0"
+      className="relative w-full h-full lg:h-auto lg:flex-1 lg:min-h-0"
     >
       <div className="
         absolute z-[2000]
