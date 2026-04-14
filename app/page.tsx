@@ -89,8 +89,6 @@ export default function PicnicDayPage() {
   const [resultsPage, setResultsPage] = useState(0)
   const [isExportingPdf, setIsExportingPdf] = useState(false)
   const [personalInterests, setPersonalInterests] = useState<PersonalizationPillId[] | null>(null)
-  const [personalizationSeedPending, setPersonalizationSeedPending] =
-    useState<PersonalizationPillId[] | null>(null)
   const [activeFeedTab, setActiveFeedTab] = useState<"recommended" | "all">("all")
   const [isEditingRecommended, setIsEditingRecommended] = useState(false)
 
@@ -154,32 +152,19 @@ export default function PicnicDayPage() {
     loadEvents()
   }, [])
 
+  // Restore schedule from localStorage after events load (2-day expiry handled in scheduleCache).
   useEffect(() => {
-    if (!personalizationSeedPending || events.length === 0) return
-    const ids = personalizationSeedPending
-    const picked = topEventsForPersonalization(events, ids, 3)
-    const sortedByTime = [...picked].sort((a, b) =>
-      a.startTime.localeCompare(b.startTime)
-    )
-    setScheduledEvents(
-      sortedByTime.map((e, i) => ({ ...e, orderIndex: i }))
-    )
-    setPersonalizationSeedPending(null)
-    setResultsPage(0)
-  }, [personalizationSeedPending, events])
-
-  useEffect(() => {
-    if (!eventsReady || events.length === 0) return
-
-    const cached = readScheduleCache()
-    if (cached?.orderedEventIds.length) {
-      const restored = scheduleFromCachedIds(cached.orderedEventIds, events)
-      if (restored.length > 0) {
-        setScheduledEvents(restored)
-        writeScheduleCache(restored.map((e) => e.id))
+    if (!eventsReady) return
+    if (events.length > 0) {
+      const cached = readScheduleCache()
+      if (cached?.orderedEventIds.length) {
+        const restored = scheduleFromCachedIds(cached.orderedEventIds, events)
+        if (restored.length > 0) {
+          setScheduledEvents(restored)
+          writeScheduleCache(restored.map((e) => e.id))
+        }
       }
     }
-
     setScheduleCacheReady(true)
   }, [eventsReady, events])
 
@@ -190,7 +175,6 @@ export default function PicnicDayPage() {
 
   const handlePersonalizationComplete = useCallback((interestIds: PersonalizationPillId[]) => {
     setPersonalInterests(interestIds)
-    setPersonalizationSeedPending(interestIds)
     setSelectedCategories([])
     setSearchQuery("")
     setSubmittedSearchQuery("")
@@ -357,6 +341,8 @@ export default function PicnicDayPage() {
     setSearchQuery("")
     setSubmittedSearchQuery("")
     setSelectedCategories([])
+    setSearchQuery("")
+    setSubmittedSearchQuery("")
     setActiveFeedTab("recommended")
     setResultsPage(0)
   }, [])
