@@ -1,9 +1,7 @@
 "use client"
 
-import React from "react"
-
-import { useState, useRef } from "react"
-import { X, GripVertical, AlertTriangle, Calendar, Download, ChevronUp, ChevronDown, Loader2, FileText, CalendarClock } from "lucide-react"
+import { useState } from "react"
+import { X, AlertTriangle, Calendar, Download, ChevronUp, ChevronDown, Loader2, FileText, CalendarClock } from "lucide-react"
 import type { ScheduledEvent } from "@/app/page"
 
 interface SchedulePanelProps {
@@ -40,27 +38,8 @@ export function SchedulePanel({
   isExporting,
 }: SchedulePanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
-  const dragOverIndex = useRef<number | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [showExportMenu, setShowExportMenu] = useState(false)
-
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index)
-  }
-
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault()
-    dragOverIndex.current = index
-  }
-
-  const handleDragEnd = () => {
-    if (draggedIndex !== null && dragOverIndex.current !== null && draggedIndex !== dragOverIndex.current) {
-      reorderSchedule(draggedIndex, dragOverIndex.current)
-    }
-    setDraggedIndex(null)
-    dragOverIndex.current = null
-  }
 
   const moveItem = (fromIndex: number, direction: "up" | "down") => {
     const toIndex = direction === "up" ? fromIndex - 1 : fromIndex + 1
@@ -105,23 +84,35 @@ export function SchedulePanel({
             <div className="p-2 max-h-[70vh] overflow-y-auto lg:max-h-[300px]">
               {scheduledEvents.map((event, index) => {
                 const outOfOrder = isOutOfOrder(scheduledEvents, index)
-                const isDragging = draggedIndex === index
 
                 return (
                   <div
                     key={event.id}
-                    draggable
-                    onDragStart={() => handleDragStart(index)}
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDragEnd={handleDragEnd}
-                    className={`relative flex items-start gap-2 p-2 rounded-lg mb-1 transition-all ${isDragging
-                        ? "opacity-50 bg-muted"
-                        : "bg-secondary/50 hover:bg-secondary"
-                      }`}
+                    className="relative flex items-start gap-2 p-2 rounded-lg mb-1 transition-colors bg-secondary/50 hover:bg-secondary"
                   >
-                    {/* Drag Handle */}
-                    <div className="flex flex-col items-center gap-0.5 pt-1 cursor-grab active:cursor-grabbing">
-                      <GripVertical className="w-3 h-3 text-muted-foreground" />
+                    <div
+                      className="flex shrink-0 flex-col gap-0.5 pt-0.5"
+                      role="group"
+                      aria-label="Reorder in schedule"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => moveItem(index, "up")}
+                        disabled={index === 0}
+                        aria-label={`Move “${event.name}” up`}
+                        className="flex h-7 w-7 items-center justify-center rounded-md border border-border/90 bg-card text-muted-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-35"
+                      >
+                        <ChevronUp className="h-4 w-4" strokeWidth={2.25} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveItem(index, "down")}
+                        disabled={index === scheduledEvents.length - 1}
+                        aria-label={`Move “${event.name}” down`}
+                        className="flex h-7 w-7 items-center justify-center rounded-md border border-border/90 bg-card text-muted-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-35"
+                      >
+                        <ChevronDown className="h-4 w-4" strokeWidth={2.25} />
+                      </button>
                     </div>
 
                     {/* Index Number */}
@@ -174,26 +165,6 @@ export function SchedulePanel({
                           </div>
                         )}
                       </div>
-
-
-                    {/* Actions 
-                    <div className="flex flex-col gap-0.5">
-                      <button
-                        onClick={() => moveItem(index, "up")}
-                        disabled={index === 0}
-                        className="p-1 hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <ChevronUp className="w-3 h-3 text-muted-foreground" />
-                      </button>
-                      <button
-                        onClick={() => moveItem(index, "down")}
-                        disabled={index === scheduledEvents.length - 1}
-                        className="p-1 hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <ChevronDown className="w-3 h-3 text-muted-foreground" />
-                      </button>
-                    </div>
-                    */}
 
                     <button
                       onClick={() => removeFromSchedule(event.id)}
