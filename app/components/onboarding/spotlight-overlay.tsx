@@ -155,12 +155,62 @@ export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: 
       : computeTooltipPosition(current.tooltipPosition, rect)
     : {}
 
+  const blockerTop = ready && cutout ? cutout.top : 0
+  const blockerLeft = ready && cutout ? cutout.left : 0
+  const blockerWidth = ready && cutout ? cutout.width : 0
+  const blockerHeight = ready && cutout ? cutout.height : 0
+  const swallow = (e: React.SyntheticEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
   return (
     <>
-      {/* Backdrop always renders — no flash between steps */}
+      {/* Click blockers — four bars around the spotlight so everything except
+          the highlighted element is non-interactive while the tutorial is open. */}
       <div
-        className="fixed inset-0 z-[2000]"
-        style={{ pointerEvents: "none" }}
+        className="fixed left-0 right-0 top-0 z-[2000]"
+        style={{ height: Math.max(0, blockerTop), pointerEvents: "auto" }}
+        onClickCapture={swallow}
+        onPointerDownCapture={swallow}
+        onTouchStartCapture={swallow}
+      />
+      <div
+        className="fixed left-0 right-0 z-[2000]"
+        style={{
+          top: blockerTop + blockerHeight,
+          bottom: 0,
+          pointerEvents: "auto",
+        }}
+        onClickCapture={swallow}
+        onPointerDownCapture={swallow}
+        onTouchStartCapture={swallow}
+      />
+      <div
+        className="fixed z-[2000]"
+        style={{
+          top: blockerTop,
+          left: 0,
+          width: Math.max(0, blockerLeft),
+          height: blockerHeight,
+          pointerEvents: "auto",
+        }}
+        onClickCapture={swallow}
+        onPointerDownCapture={swallow}
+        onTouchStartCapture={swallow}
+      />
+      <div
+        className="fixed z-[2000]"
+        style={{
+          top: blockerTop,
+          left: blockerLeft + blockerWidth,
+          right: 0,
+          height: blockerHeight,
+          pointerEvents: "auto",
+        }}
+        onClickCapture={swallow}
+        onPointerDownCapture={swallow}
+        onTouchStartCapture={swallow}
       />
 
       {/* Spotlight always renders — 0x0 center fallback keeps box-shadow overlay visible between steps */}
