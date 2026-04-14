@@ -268,7 +268,7 @@ export default function PicnicDayPage() {
 
     const sorted = [...result]
 
-    if (sortOption === "soonest") {
+    if (sortOption === "earliest") {
       sorted.sort(compareEventsByTime)
     } else if (sortOption === "az") {
       sorted.sort((a, b) => a.name.localeCompare(b.name))
