@@ -21,6 +21,7 @@ interface SpotlightOverlayProps {
 export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: SpotlightOverlayProps) {
   const [rect, setRect] = useState<DOMRect | null>(null)
   const [rectTarget, setRectTarget] = useState<string | null>(null)
+  const [targetRadius, setTargetRadius] = useState<number>(12)
   const [isMobile, setIsMobile] = useState(false)
   const current: TutorialStep = TUTORIAL_STEPS[step]
   const isLast = step === TUTORIAL_STEPS.length - 1
@@ -43,8 +44,11 @@ export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: 
     if (!hasScrolledRef.current) return
     const el = document.querySelector(`[data-onboarding="${current.target}"]`)
     if (el) {
-      setRect(el.getBoundingClientRect())
+      setRect(measureUnionRect(el))
       setRectTarget(current.target)
+      const cs = window.getComputedStyle(el)
+      const r = parseFloat(cs.borderTopLeftRadius) || 0
+      setTargetRadius(r)
     }
   }, [current.target])
 
@@ -56,26 +60,29 @@ export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: 
 
     if (current.scrollIntoView) {
       el.scrollIntoView({ behavior: "smooth", block: "center" })
-      let frame: number
-      const start = performance.now()
-      const poll = () => {
-        const r = el.getBoundingClientRect()
-        const inViewport = r.top >= 0 && r.bottom <= window.innerHeight
-        if (inViewport || performance.now() - start > 600) {
-          setRect(r)
-          setRectTarget(current.target)
-          hasScrolledRef.current = true
-        } else {
-          frame = requestAnimationFrame(poll)
-        }
+    }
+
+    // Poll rect for the full duration so CSS transitions (drawer slide, scroll, etc.)
+    // are tracked to completion rather than settling on the pre-transition rect.
+    let frame: number
+    const start = performance.now()
+    const DURATION = 500
+    const poll = () => {
+      const r = measureUnionRect(el)
+      setRect(r)
+      setRectTarget(current.target)
+      const cs = window.getComputedStyle(el)
+      const br = parseFloat(cs.borderTopLeftRadius) || 0
+      setTargetRadius(br)
+
+      if (performance.now() - start >= DURATION) {
+        hasScrolledRef.current = true
+        return
       }
       frame = requestAnimationFrame(poll)
-      return () => cancelAnimationFrame(frame)
-    } else {
-      setRect(el.getBoundingClientRect())
-      setRectTarget(current.target)
-      hasScrolledRef.current = true
     }
+    frame = requestAnimationFrame(poll)
+    return () => cancelAnimationFrame(frame)
   }, [current.target, current.scrollIntoView])
 
   // Reposition on resize/scroll (no scrollIntoView)
@@ -97,6 +104,15 @@ export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: 
     return () => observer.disconnect()
   }, [current.target, reposition])
 
+  // Reposition when subtree changes (e.g. dropdown opens inside target)
+  useEffect(() => {
+    const el = document.querySelector(`[data-onboarding="${current.target}"]`)
+    if (!el) return
+    const mo = new MutationObserver(reposition)
+    mo.observe(el, { childList: true, subtree: true, attributes: true })
+    return () => mo.disconnect()
+  }, [current.target, reposition])
+
   // Keyboard navigation
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -110,7 +126,7 @@ export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: 
   const ready = rect && rectTarget === current.target
 
   // On mobile, clamp the spotlight to the visible viewport so it doesn't extend off-screen
-  const padding = 8
+  const padding = isMobile ? 0 : 8
   const cutout = ready ? (() => {
     const vh = window.innerHeight
     const vw = window.innerWidth
@@ -132,10 +148,10 @@ export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: 
 
   const Icon = ICON_MAP[current.icon] ?? Search
 
-  // On mobile, dock tooltip to bottom; on desktop, position relative to element
+  // Anchor tooltip next to the spotlight on both mobile and desktop
   const tooltipStyle: React.CSSProperties = ready
     ? isMobile
-      ? {} // mobile uses bottom-docked layout via className
+      ? computeMobileTooltipStyle(current.mobilePosition, rect, 12)
       : computeTooltipPosition(current.tooltipPosition, rect)
     : {}
 
@@ -157,7 +173,7 @@ export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: 
           width: ready && cutout ? cutout.width : 0,
           height: ready && cutout ? cutout.height : 0,
           zIndex: 2001,
-          borderRadius: 12,
+          borderRadius: targetRadius + (isMobile ? 0 : padding),
           pointerEvents: "none",
         }}
       />
@@ -165,11 +181,7 @@ export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: 
       {/* Tooltip only renders when rect is measured for the current step */}
       {ready && cutout && (
         <div
-          className={`fixed z-[2002] ${
-            isMobile
-              ? "bottom-0 left-0 right-0 px-3 pb-3"
-              : ""
-          }`}
+          className="fixed z-[2002]"
           style={{
             ...tooltipStyle,
             ...(isMobile ? {} : { width: "min(340px, 90vw)" }),
@@ -250,6 +262,47 @@ export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: 
       )}
     </>
   )
+}
+
+// Returns the bounding box of the element, optionally extended by any
+// descendants marked with data-onboarding-include (e.g. absolutely-positioned
+// dropdowns). Keeps unrelated descendants (Leaflet tiles, etc.) from
+// inflating the rect.
+function measureUnionRect(el: Element): DOMRect {
+  const base = el.getBoundingClientRect()
+  let top = base.top
+  let left = base.left
+  let right = base.right
+  let bottom = base.bottom
+  el.querySelectorAll("[data-onboarding-include]").forEach((d) => {
+    const r = (d as Element).getBoundingClientRect()
+    if (r.width === 0 || r.height === 0) return
+    if (r.top < top) top = r.top
+    if (r.left < left) left = r.left
+    if (r.right > right) right = r.right
+    if (r.bottom > bottom) bottom = r.bottom
+  })
+  return new DOMRect(left, top, right - left, bottom - top)
+}
+
+function computeMobileTooltipStyle(
+  position: "top" | "bottom",
+  rect: DOMRect,
+  gap: number,
+): React.CSSProperties {
+  const vh = window.innerHeight
+  const side = 12
+  const estHeight = 180
+  if (position === "top" && rect.top < estHeight) {
+    return { top: rect.bottom + gap, left: side, right: side }
+  }
+  if (position === "bottom" && vh - rect.bottom < estHeight) {
+    return { bottom: vh - rect.top + gap, left: side, right: side }
+  }
+  if (position === "top") {
+    return { bottom: vh - rect.top + gap, left: side, right: side }
+  }
+  return { top: rect.bottom + gap, left: side, right: side }
 }
 
 function computeTooltipPosition(

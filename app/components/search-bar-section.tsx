@@ -233,17 +233,17 @@ export function SearchBarSection({
         )}
       </div>
 
-      {!mobile && (
-        <button
-          type="button"
-          onClick={onHelpClick}
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#002D62] text-white transition-colors hover:bg-[#00244d]"
-          aria-label="Help"
-          title="Replay tutorial"
-        >
-          <HelpCircle className="h-5 w-5" strokeWidth={2} />
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={onHelpClick}
+        className={`flex shrink-0 items-center justify-center bg-[#002D62] text-white transition-colors hover:bg-[#00244d] ${
+          mobile ? "h-14 w-14 rounded-[18px]" : "h-12 w-12 rounded-xl"
+        }`}
+        aria-label="Help"
+        title="Replay tutorial"
+      >
+        <HelpCircle className="h-5 w-5" strokeWidth={2} />
+      </button>
     </div>
   )
 }
