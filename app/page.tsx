@@ -341,6 +341,8 @@ export default function PicnicDayPage() {
     setSearchQuery("")
     setSubmittedSearchQuery("")
     setSelectedCategories([])
+    setSearchQuery("")
+    setSubmittedSearchQuery("")
     setActiveFeedTab("recommended")
     setResultsPage(0)
   }, [])
