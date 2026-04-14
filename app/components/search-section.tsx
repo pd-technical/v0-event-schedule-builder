@@ -1,5 +1,3 @@
-"use client"
-
 import { Search, Clock, X, HelpCircle, Pencil, MapPin } from "lucide-react"
 import { useMemo, useRef, useState } from "react"
 import type { Event } from "@/app/page"
@@ -11,6 +9,7 @@ import {
   filterPillRecommendedOn,
 } from "@/app/lib/eventFilters"
 import { rankedEventMatchesSearch } from "@/app/lib/searchUtils"
+import { SortDropdown, type SortOption } from "@/app/components/sort-dropdown"
 
 /** Compact pills so two rows fit in the sidebar (Recommended row + categories). */
 const FILTER_BY_PILL_TEXT =
@@ -23,15 +22,24 @@ interface SearchSectionProps {
   setSearchQuery: (query: string) => void
   onSearchSubmit: (value?: string) => void
   clearSearchHistory: () => void
+
   activeFeedTab: "recommended" | "all"
   setActiveFeedTab: (tab: "recommended" | "all") => void
+
   selectedInterestLabels: string[]
   onEditRecommended?: () => void
   onShowAll?: () => void
+
   selectedCategories: string[]
   toggleCategory: (category: string) => void
+
   onSelectRecommended: () => void
   recommendedActive: boolean
+
+  selectedSort: SortOption
+  setSelectedSort: (value: SortOption) => void
+
+  showMobileSort?: boolean
 }
 
 const MAX_SUGGESTIONS = 8
@@ -72,6 +80,9 @@ export function SearchSection({
   toggleCategory,
   onSelectRecommended,
   recommendedActive,
+  selectedSort,
+  setSelectedSort,
+  showMobileSort = false,
 }: SearchSectionProps) {
   const { restart } = useOnboarding()
   const trimmedQuery = searchQuery.trim()
@@ -355,6 +366,16 @@ export function SearchSection({
           })}
         </div>
       </div>
+
+      {showMobileSort && (
+        <div className="mt-4 block md:hidden">
+          <SortDropdown
+            selectedSort={selectedSort}
+            setSelectedSort={setSelectedSort}
+            mobile={true}
+          />
+        </div>
+      )}
 
       {selectedCategories.length > 0 && (
         <div className="mt-4 flex items-center justify-between border-t border-[#E5E7EB] pt-3 text-xs text-[#64748B]">

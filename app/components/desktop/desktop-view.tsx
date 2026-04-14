@@ -138,6 +138,8 @@ export function DesktopLayout({
                 toggleCategory={toggleCategory}
                 onSelectRecommended={selectRecommended}
                 recommendedActive={activeFeedTab === "recommended"}
+                selectedSort={sortOption}
+                setSelectedSort={setSortOption}
                 onSearchSubmit={(value) => commitSearch(value, { forceAll: true })}
                 clearSearchHistory={clearSearchHistory}
               />

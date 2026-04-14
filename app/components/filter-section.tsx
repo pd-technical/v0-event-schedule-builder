@@ -190,6 +190,35 @@ export function FilterSection({
               </div>
 
               {EVENT_FILTER_CATEGORY_PILLS.map((category) => {
+                  const isSelected = selectedCategories.includes(category.id)
+
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() => toggleCategory(category.id)}
+                      className={`${pillText} ${isSelected ? filterPillCategoryOn : filterPillIdle}`}
+                    >
+                      {category.label}
+                    </button>
+                  )
+                })}
+
+                {setSelectedSort && (
+                  <SortDropdown
+                    selectedSort={selectedSort}
+                    setSelectedSort={setSelectedSort}
+                  />
+                )}
+
+            {setSelectedSort && (
+              <SortDropdown
+                selectedSort={selectedSort}
+                setSelectedSort={setSelectedSort}
+              />
+            )}
+
+              {EVENT_FILTER_CATEGORY_PILLS.map((category) => {
                 const isSelected = selectedCategories.includes(category.id)
 
                 return (

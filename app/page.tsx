@@ -35,33 +35,27 @@ export interface ScheduledEvent extends Event {
 }
 
 export default function PicnicDayPage() {
-  // event data state=
   const [events, setEvents] = useState<Event[]>([])
   const [eventsReady, setEventsReady] = useState(false)
 
-  // Search, filter, and sort state
   const [searchQuery, setSearchQuery] = useState("")
   const [submittedSearchQuery, setSubmittedSearchQuery] = useState("")
   const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [sortOption, setSortOption] = useState<SortOption>("popular")
 
-  // Recommendation + feed state
   const [personalInterests, setPersonalInterests] = useState<PersonalizationPillId[] | null>(null)
   const [activeFeedTab, setActiveFeedTab] = useState<"recommended" | "all">("all")
   const [isEditingRecommended, setIsEditingRecommended] = useState(false)
 
-  // UI interaction state
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null)
   const [shouldPanToHovered, setShouldPanToHovered] = useState(false)
   const [scrollToEventId, setScrollToEventId] = useState<string | null>(null)
   const [resultsPage, setResultsPage] = useState(0)
 
-  // Responsive layout state
   const [isMobile, setIsMobile] = useState(false)
   const [resultsPageSize, setResultsPageSize] = useState(20)
 
-  // Schedule management
   const {
     scheduledEvents,
     setScheduledEvents,
@@ -74,7 +68,6 @@ export default function PicnicDayPage() {
     handleExportIcs,
   } = useScheduleManager(events, eventsReady)
 
-  // Shared reset helpers
   const resetSearchState = useCallback(() => {
     setSearchQuery("")
     setSubmittedSearchQuery("")
@@ -85,7 +78,6 @@ export default function PicnicDayPage() {
     setSelectedCategories([])
   }, [])
 
-  // Feed switching helpers
   const goToAllFeed = useCallback(() => {
     setActiveFeedTab("all")
     resetFilters()
@@ -109,7 +101,6 @@ export default function PicnicDayPage() {
     [goToRecommendedFeed, goToAllFeed]
   )
 
-  // Derived event results
   const {
     selectedInterestLabels,
     nonFoodEvents,
@@ -126,7 +117,6 @@ export default function PicnicDayPage() {
     resultsPageSize,
   })
 
-  // Initial data loading
   useEffect(() => {
     async function loadEvents() {
       try {
@@ -142,7 +132,6 @@ export default function PicnicDayPage() {
     loadEvents()
   }, [])
 
-  // Screen size detection
   useEffect(() => {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth < 1024)
@@ -173,7 +162,6 @@ export default function PicnicDayPage() {
     return () => window.removeEventListener("resize", updateResultsPageSize)
   }, [])
 
-  // Search behavior
   useEffect(() => {
     if (searchQuery.trim() === "") {
       setSubmittedSearchQuery("")
@@ -182,35 +170,35 @@ export default function PicnicDayPage() {
   }, [searchQuery])
 
   const commitSearch = useCallback(
-    (value?: string, options?: { forceAll?: boolean }) => {
-      const finalQuery = (value ?? searchQuery).trim()
+  (value?: string, options?: { forceAll?: boolean }) => {
+    const finalQuery = (value ?? searchQuery).trim()
 
-      if (!finalQuery) {
-        resetSearchState()
-        return
-      }
+    if (!finalQuery) {
+      resetSearchState()
+      return
+    }
 
-      if (options?.forceAll) {
-        setActiveFeedTab("all")
-      }
+    if (options?.forceAll) {
+      setActiveFeedTab("all")
+      setSelectedCategories([])
+    }
 
-      setSearchQuery(finalQuery)
-      setSubmittedSearchQuery(finalQuery)
-      setResultsPage(0)
+    setSearchQuery(finalQuery)
+    setSubmittedSearchQuery(finalQuery)
+    setResultsPage(0)
 
-      setSearchHistory((prev) => {
-        const updated = [finalQuery, ...prev.filter((q) => q !== finalQuery)]
-        return updated.slice(0, 5)
-      })
-    },
-    [searchQuery, resetSearchState]
-  )
+    setSearchHistory((prev) => {
+      const updated = [finalQuery, ...prev.filter((q) => q !== finalQuery)]
+      return updated.slice(0, 5)
+    })
+  },
+  [searchQuery, resetSearchState]
+)
 
   const clearSearchHistory = useCallback(() => {
     setSearchHistory([])
   }, [])
 
-  // Category filter behavior
   const toggleCategory = useCallback((category: string) => {
     setActiveFeedTab("all")
     setSelectedCategories((prev) =>
@@ -220,7 +208,6 @@ export default function PicnicDayPage() {
     )
   }, [])
 
-  // Hover and map/list syncing
   const setHoveredEventFromList = useCallback((id: string | null) => {
     setHoveredEvent(id)
     setShouldPanToHovered(Boolean(id))
@@ -244,7 +231,6 @@ export default function PicnicDayPage() {
     [nonFoodEvents, resultsPageSize]
   )
 
-  // Personalization behavior
   const handlePersonalizationComplete = useCallback((interestIds: PersonalizationPillId[]) => {
     setPersonalInterests(interestIds)
     setSelectedCategories([])
@@ -254,7 +240,7 @@ export default function PicnicDayPage() {
     setResultsPage(0)
   }, [])
 
-  const dataProps = {
+  const data = {
     events,
     nonFoodEvents,
     eventsForCurrentPage,
@@ -262,7 +248,7 @@ export default function PicnicDayPage() {
     selectedInterestLabels,
   }
 
-  const uiProps = {
+  const ui = {
     hoveredEvent,
     shouldPanToHovered,
     resultsPage,
@@ -274,25 +260,26 @@ export default function PicnicDayPage() {
     activeFeedTab,
     selectedCategories,
     sortOption,
+    recommendedActive: activeFeedTab === "recommended",
   }
 
-  const actionProps = {
-    setHoveredEventFromMap,
-    setHoveredEventFromList,
-    handleMapMarkerClick,
-    setResultsPage,
-    handleBrowseAllEvents: goToAllFeed,
-    setSearchQuery,
-    clearSearchHistory,
-    toggleCategory,
-    setFeedTab,
-    selectRecommended: goToRecommendedFeed,
-    handleShowAllFromBanner: goToAllFeed,
-    setSortOption,
-    commitSearch,
-  }
+  const actions = {
+  setHoveredEventFromMap,
+  setHoveredEventFromList,
+  handleMapMarkerClick,
+  setResultsPage,
+  handleBrowseAllEvents: goToAllFeed,
+  setSearchQuery,
+  clearSearchHistory,
+  toggleCategory,
+  setFeedTab,
+  selectRecommended: goToRecommendedFeed,
+  handleShowAllFromBanner: goToAllFeed,
+  setSortOption,
+  commitSearch,
+}
 
-  const scheduleProps = {
+  const schedule = {
     recentlyAddedId,
     isExportingPdf,
     addToSchedule,
@@ -315,17 +302,17 @@ export default function PicnicDayPage() {
     >
       {isMobile ? (
         <MobileScheduleMap
-          data={dataProps}
-          ui={uiProps}
-          actions={actionProps}
-          schedule={scheduleProps}
+          data={data}
+          ui={ui}
+          actions={actions}
+          schedule={schedule}
         />
       ) : (
         <DesktopLayout
-          data={dataProps}
-          ui={uiProps}
-          actions={actionProps}
-          schedule={scheduleProps}
+          data={data}
+          ui={ui}
+          actions={actions}
+          schedule={schedule}
           isEditingRecommended={isEditingRecommended}
           setIsEditingRecommended={setIsEditingRecommended}
           personalInterests={personalInterests}
