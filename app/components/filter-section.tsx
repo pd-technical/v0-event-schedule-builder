@@ -79,7 +79,10 @@ export function FilterSection({
                 {onEditRecommended && (
                   <button
                     type="button"
-                    onClick={onEditRecommended}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEditRecommended?.()
+                    }}
                     className="ml-auto inline-flex shrink-0 self-start rounded-md p-1.5 text-[#9A4B12] hover:bg-black/[0.04]"
                     aria-label="Edit recommended interests"
                     title="Edit recommended interests"

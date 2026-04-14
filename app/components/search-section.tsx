@@ -45,12 +45,13 @@ export function SearchSection({
   selectedSort,
   setSelectedSort,
 }: SearchSectionProps) {
-  const { restart } = useOnboarding()
+  const { restart, openPersonalizationEditor } = useOnboarding()
 
   const handleHelpClick = () => {
     setActiveFeedTab("all")
     restart()
   }
+
 
   return (
     <>
@@ -71,7 +72,7 @@ export function SearchSection({
           activeFeedTab={activeFeedTab}
           setActiveFeedTab={setActiveFeedTab}
           selectedInterestLabels={selectedInterestLabels}
-          onEditRecommended={onEditRecommended}
+          onEditRecommended={openPersonalizationEditor}
           onShowAll={onShowAll}
           selectedCategories={selectedCategories}
           toggleCategory={toggleCategory}
