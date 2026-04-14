@@ -3,8 +3,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react"
 
 // components
-
-// components
 import { SearchSection } from "@/app/components/search-section"
 import { EventList } from "@/app/components/event-list"
 import { CampusMap } from "@/app/components/campus-map"
