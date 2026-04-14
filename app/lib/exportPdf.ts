@@ -84,13 +84,15 @@ export async function exportSchedulePdf(scheduledEvents: ScheduledEvent[]) {
       const imgHeight = imgWidth * aspectRatio
 
       pdf.addImage(imgData, "PNG", margin, y, imgWidth, imgHeight)
-      y += imgHeight + 8
     } catch (err) {
       console.warn("Could not capture map for PDF:", err)
     }
   }
 
-  // --- Schedule list ---
+  // --- Schedule list (always on its own page) ---
+  pdf.addPage()
+  y = margin
+
   pdf.setTextColor(2, 40, 81)
   pdf.setFontSize(14)
   pdf.setFont("helvetica", "bold")
