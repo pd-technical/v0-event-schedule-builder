@@ -56,22 +56,21 @@ export function FilterSection({
           className={
             mobile
               ? "mt-4 rounded-[20px] border border-[#F0B429] bg-[#FFF7D8] px-4 py-3.5"
-              : "mt-5 rounded-xl border border-[#F0B429] bg-[#FFF7D8] px-4 py-3.5"
+              : "mt-5 rounded-xl bg-[#FEF9E7] px-4 py-3.5 ring-1 ring-[#F3E5AB]/80"
           }
         >
-          <div className="flex items-start gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-[#9A4B12]">
+ <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0 flex-1 space-y-1">
+              <p className="text-sm font-bold text-[#002D62]">
                 Showing events for your interests:
               </p>
-
-              <div className="mt-2 flex min-w-0 items-start gap-2">
+ <div className="flex flex-wrap items-center gap-2">
                 {selectedInterestLabels.length > 0 ? (
-                  <span className="min-w-0 flex-1 text-[15px] font-semibold text-[#9A4B12]">
+                  <span className="text-sm italic text-[#002D62]">
                     {selectedInterestLabels.join(", ")}
                   </span>
                 ) : (
-                  <span className="min-w-0 flex-1 text-sm text-[#64748B]">
+                  <span className="text-sm italic text-[#64748B]">
                     Complete personalization to load your recommended picks.
                   </span>
                 )}
@@ -79,11 +78,8 @@ export function FilterSection({
                 {onEditRecommended && (
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onEditRecommended?.()
-                    }}
-                    className="ml-auto inline-flex shrink-0 self-start rounded-md p-1.5 text-[#9A4B12] hover:bg-black/[0.04]"
+                    onClick={onEditRecommended}
+                    className="inline-flex shrink-0 rounded-md p-1 text-[#5c4033] hover:bg-black/[0.06]"
                     aria-label="Edit recommended interests"
                     title="Edit recommended interests"
                   >
@@ -92,9 +88,19 @@ export function FilterSection({
                 )}
               </div>
             </div>
+            {onShowAll && (
+              <button
+                type="button"
+                onClick={onShowAll}
+                className="shrink-0 text-[11px] font-bold uppercase tracking-wide text-[#002D62] hover:underline"
+              >
+                SHOW ALL
+              </button>
+            )}
           </div>
         </div>
       )}
+
 
       <div
         data-onboarding="category-filters"

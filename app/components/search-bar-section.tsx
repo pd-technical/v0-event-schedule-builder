@@ -1,7 +1,7 @@
 "use client"
 
 import { Search, Clock, X, HelpCircle, MapPin } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import type { Event } from "@/app/page"
 import { rankedEventMatchesSearch } from "@/app/lib/searchUtils"
 
@@ -29,7 +29,7 @@ function HighlightMatch({ text, query }: { text: string; query: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="rounded bg-accent/35 px-0.5 font-medium text-foreground">
+      <mark className="rounded bg-accent/35 font-medium text-foreground">
         {text.slice(idx, idx + q.length)}
       </mark>
       {text.slice(idx + q.length)}
@@ -71,6 +71,14 @@ export function SearchBarSection({
     }
   }, [trimmedQuery, events, searchHistory])
 
+   const inputRef = useRef<HTMLInputElement>(null)
+
+  /** Blur the input and close suggestions (Enter, pick, or close control). */
+  function exitSearchField() {
+    inputRef.current?.blur()
+    setIsFocused(false)
+  }
+  
   const showDropdown = isFocused && (mode === "events" ? true : items.length > 0)
 
   const showNoResults =
@@ -83,6 +91,8 @@ export function SearchBarSection({
           onSubmit={(e) => {
             e.preventDefault()
             onSearchSubmit(searchQuery)
+                          exitSearchField()
+
           }}
           className="relative flex w-full min-w-0"
         >
@@ -95,6 +105,7 @@ export function SearchBarSection({
 
           {/* INPUT */}
           <input
+                        ref={inputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -169,7 +180,7 @@ export function SearchBarSection({
                     )}
                     <button
                       type="button"
-                      onClick={() => setIsFocused(false)}
+                      onClick={() => exitSearchField()}
                       className="text-muted-foreground transition-colors hover:text-foreground"
                       aria-label="Close suggestions"
                     >
@@ -188,7 +199,7 @@ export function SearchBarSection({
                         e.preventDefault()
                         setSearchQuery(item.label)
                         onSearchSubmit(item.label)
-                        setIsFocused(false)
+                       exitSearchField()
                       }}
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-primary/5"
                     >
@@ -205,7 +216,7 @@ export function SearchBarSection({
                         const name = item.event.name
                         setSearchQuery(name)
                         onSearchSubmit(name)
-                        setIsFocused(false)
+                        exitSearchField()
                       }}
                       className="flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors hover:bg-primary/5"
                     >
