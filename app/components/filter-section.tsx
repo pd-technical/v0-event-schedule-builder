@@ -40,7 +40,7 @@ export function FilterSection({
   toggleCategory,
   onSelectRecommended,
   recommendedActive,
-  selectedSort = "popular",
+  selectedSort = "relevance",
   setSelectedSort,
   mobile = false,
 }: FilterSectionProps) {

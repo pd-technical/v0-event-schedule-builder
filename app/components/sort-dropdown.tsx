@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 
-export type SortOption = "popular" | "earliest" | "az"
+export type SortOption = "relevance" | "earliest" | "az"
 
 interface SortDropdownProps {
   selectedSort: SortOption
@@ -21,7 +21,7 @@ export function SortDropdown({
   const getSortLabel = () => {
     if (selectedSort === "earliest") return "Earliest"
     if (selectedSort === "az") return "A–Z"
-    return "Most Popular"
+    return "Relevance"
   }
 
   const handleSortSelect = (sort: SortOption) => {
@@ -49,15 +49,15 @@ export function SortDropdown({
     >
       <button
         type="button"
-        onClick={() => handleSortSelect("popular")}
+        onClick={() => handleSortSelect("relevance")}
         className={`flex w-full items-center justify-between px-4 py-3.5 text-left text-sm transition ${
-          selectedSort === "popular"
+          selectedSort === "relevance"
             ? "bg-[#E8F1FB] font-semibold text-[#123E7C]"
             : "text-[#163A70] hover:bg-[#F1F6FC]"
         }`}
       >
-        <span>Most Popular</span>
-        {selectedSort === "popular" && (
+        <span>Relevance</span>
+        {selectedSort === "relevance" && (
           <span className="text-xs font-semibold text-[#123E7C]">
             Selected
           </span>
@@ -147,15 +147,15 @@ export function SortDropdown({
       <div className="absolute right-0 top-[calc(100%-1px)] z-[200] w-[220px] overflow-hidden rounded-lg border border-[#D6E0EB] bg-white shadow-[0_14px_30px_rgba(2,40,81,0.14)]">
         <button
           type="button"
-          onClick={() => handleSortSelect("popular")}
+          onClick={() => handleSortSelect("relevance")}
           className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition ${
-            selectedSort === "popular"
+            selectedSort === "relevance"
               ? "bg-[#EDF4FB] font-semibold text-[#123E7C]"
               : "text-[#163A70] hover:bg-[#F6FAFD]"
           }`}
         >
-          <span>Most Popular</span>
-          {selectedSort === "popular" && (
+          <span>Relevance</span>
+          {selectedSort === "relevance" && (
             <span className="text-xs font-semibold text-[#123E7C]">
               Selected
             </span>

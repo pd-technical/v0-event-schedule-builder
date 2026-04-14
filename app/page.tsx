@@ -75,7 +75,7 @@ export default function PicnicDayPage() {
   const [submittedSearchQuery, setSubmittedSearchQuery] = useState("")
   const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [sortOption, setSortOption] = useState<SortOption>("popular")
+  const [sortOption, setSortOption] = useState<SortOption>("relevance")
 
   // schedule
   const [scheduledEvents, setScheduledEvents] = useState<ScheduledEvent[]>([])
@@ -256,7 +256,7 @@ export default function PicnicDayPage() {
       sorted.sort(compareEventsByTime)
     } else if (sortOption === "az") {
       sorted.sort((a, b) => a.name.localeCompare(b.name))
-    } else if (sortOption === "popular") {
+    } else if (sortOption === "relevance") {
       if (!submittedSearchQuery.trim()) {
         sorted.sort((a, b) => a.name.localeCompare(b.name))
       }
