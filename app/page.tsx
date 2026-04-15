@@ -103,7 +103,7 @@ export default function PicnicDayPage() {
 
   const {
     selectedInterestLabels,
-    nonFoodEvents,
+    displayedEvents,
     totalResultsPages,
     eventsForCurrentPage,
   } = useEventResults({
@@ -220,7 +220,7 @@ export default function PicnicDayPage() {
 
   const handleMapMarkerClick = useCallback(
     (eventId: string) => {
-      const index = nonFoodEvents.findIndex((event) => event.id === eventId)
+      const index = displayedEvents.findIndex((event) => event.id === eventId)
 
       if (index >= 0) {
         const page = Math.floor(index / resultsPageSize)
@@ -228,7 +228,7 @@ export default function PicnicDayPage() {
         setScrollToEventId(eventId)
       }
     },
-    [nonFoodEvents, resultsPageSize]
+    [displayedEvents, resultsPageSize]
   )
 
   const handlePersonalizationComplete = useCallback((interestIds: PersonalizationPillId[]) => {
@@ -242,7 +242,7 @@ export default function PicnicDayPage() {
 
   const data = {
     events,
-    nonFoodEvents,
+    displayedEvents,
     eventsForCurrentPage,
     scheduledEvents,
     selectedInterestLabels,
