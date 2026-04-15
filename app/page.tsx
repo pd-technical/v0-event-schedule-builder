@@ -42,7 +42,7 @@ export default function PicnicDayPage() {
   const [submittedSearchQuery, setSubmittedSearchQuery] = useState("")
   const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [sortOption, setSortOption] = useState<SortOption>("popular")
+  const [sortOption, setSortOption] = useState<SortOption>("relevance")
 
   const [personalInterests, setPersonalInterests] = useState<PersonalizationPillId[] | null>(null)
   const [activeFeedTab, setActiveFeedTab] = useState<"recommended" | "all">("all")

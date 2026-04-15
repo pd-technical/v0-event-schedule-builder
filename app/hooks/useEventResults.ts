@@ -97,7 +97,7 @@ export function useEventResults({
       sorted.sort(compareEventsByTime)
     } else if (sortOption === "az") {
       sorted.sort((a, b) => a.name.localeCompare(b.name))
-    } else if (sortOption === "popular") {
+    } else if (sortOption === "relevance") {
       if (!submittedSearchQuery.trim()) {
         sorted.sort((a, b) => a.name.localeCompare(b.name))
       }
