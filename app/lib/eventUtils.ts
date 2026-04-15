@@ -64,40 +64,36 @@ export function getCategoryIcon(event: Event | ScheduledEvent): { icon: string; 
   if (location.includes("hutchison") || location.includes("leaf")) return { icon: "leaf", color: "#15803D" }
   if (location.includes("cole facility")) return { icon: "sun",        color: "#F97316" }
   if (location.includes("academic surge") || location.includes("fish")) return { icon: "fish", color: "#0EA5E9" }
-// Music & Entertainment (Dark Maroon / Berry)
-  // This replaces the primary blue to keep the hover state distinct.
+// Music & Entertainment 
   if (has("battle of the bands", "music", "band", "ensemble", "performance", "synth", "microphone", "show", "entertainment"))
-    return { icon: "music", color: "#d1115e" } // Deep Maroon/Pink
+    return { icon: "music", color: "#d1115e" } 
 
-  // STEM & Engineering (Slate Blue)
-  // Shifted to a grey-blue so it doesn't clash with the primary blue hover.
+  // STEM & Engineering
   if (has("robot", "engineering", "tech", "ece", "autonomous", "ecocar", "civil engineer", "esdc", "cultivating"))
     return { icon: "robot", color: "#385ec1" } 
 
-  // Plants, Agriculture & Entomology (Aggie Green)
+  // Plants, Agriculture & Entomology 
   if (has("tractor", "strawberry", "tomato", "plant", "cacao", "coffee", "popcorn", "soil", "pistachio", "weed", "viticulture", "enology", "water", "agri", "bug", "insect", "entomolog"))
-    return { icon: "leaf", color: "#166534" } // Forest Green
+    return { icon: "leaf", color: "#166534" } 
 
-  // Animals & Wildlife (Earthy Ochre)
+  // Animals & Wildlife 
   if (has("animal", "paw", "canine", "dog", "otter", "bat", "wildlife", "primate", "frisbee dog", "kitten"))
-    return { icon: "paw", color: "#92400E" } // Burnt Orange/Brown
+    return { icon: "paw", color: "#92400E" } 
 
-  // Science, Lab & Weather (Light Cyan)
-  // A "clean room" blue that is significantly lighter than your navy hover state.
+  // Science, Lab & Weather 
   if (has("chemistry", "dna", "biotechnology", "laser", "microbe", "physics", "nutrition", "math", "stats", "science", "weather", "balloon", "climate"))
     return { icon: "flask", color: "#0891B2" } 
 
-  // Arts, Crafts & Kids (Aggie Gold)
-  // Pulls directly from your --accent variable.
+  // Arts, Crafts & Kids 
   if (has("art", "fashion show", "craft center", "visual journal", "paintbrush", "craft", "crafts", "slime", "scissor", "make", "children", "kids"))
     return { icon: "scissors", color: "#D97706" } 
 
-  // Food (Poppy Red)
+  // Food 
   if (has("food", "sorbet", "liquid nitrogen", "drink", "coffee", "popcorn", "ice cream"))
     return { icon: "utensils", color: "#BE123C" } 
 
-  // Informational / Community (Muted Sage)
-  if (has("admissions", "educational", "alumni", "fire department", "vip", "lounge", "book", "talk", "cultural"))
+  // Informational / Community 
+  if (has("admissions", "educational", "education", "alumni", "fire department", "vip", "lounge", "book", "talk", "cultural"))
     return { icon: "book", color: "#64748B" }
 
   // Fallback
