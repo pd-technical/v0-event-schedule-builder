@@ -10,7 +10,7 @@ import { useOnboarding } from "@/app/components/onboarding/onboarding-provider"
 export function MobileScheduleMap({ data, ui, actions, schedule }: any) {
   const {
     events,
-    nonFoodEvents,
+    displayedEvents,
     eventsForCurrentPage,
     scheduledEvents,
     selectedInterestLabels,
@@ -96,7 +96,7 @@ export function MobileScheduleMap({ data, ui, actions, schedule }: any) {
       >
         <CampusMap
           events={events}
-          browseEvents={nonFoodEvents}
+          browseEvents={displayedEvents}
           scheduledEvents={scheduledEvents}
           hoveredEvent={hoveredEvent}
           setHoveredEvent={setHoveredEventFromMap}
@@ -189,7 +189,7 @@ export function MobileScheduleMap({ data, ui, actions, schedule }: any) {
               >
                 <EventList
                   events={eventsForCurrentPage}
-                  allFilteredCount={nonFoodEvents.length}
+                  allFilteredCount={displayedEvents.length}
                   scheduledEvents={scheduledEvents}
                   addToSchedule={addToSchedule}
                   removeFromSchedule={removeFromSchedule}

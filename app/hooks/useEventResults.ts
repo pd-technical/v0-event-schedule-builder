@@ -106,23 +106,23 @@ export function useEventResults({
     return sorted
   }, [searchRanked, selectedCategories, sortOption, submittedSearchQuery])
 
-  const nonFoodEvents = useMemo(
+  const displayedEvents = useMemo(
     () => filteredEvents.filter((event) => !isFoodEvent(event) && !isRestroom(event)),
     [filteredEvents]
   )
 
   const totalResultsPages = useMemo(
-    () => Math.max(1, Math.ceil(nonFoodEvents.length / resultsPageSize)),
-    [nonFoodEvents.length, resultsPageSize]
+    () => Math.max(1, Math.ceil(displayedEvents.length / resultsPageSize)),
+    [displayedEvents.length, resultsPageSize]
   )
 
   const eventsForCurrentPage = useMemo(
     () =>
-      nonFoodEvents.slice(
+      displayedEvents.slice(
         resultsPage * resultsPageSize,
         (resultsPage + 1) * resultsPageSize
       ),
-    [nonFoodEvents, resultsPage, resultsPageSize]
+    [displayedEvents, resultsPage, resultsPageSize]
   )
 
   return {
@@ -131,7 +131,7 @@ export function useEventResults({
     baseEvents,
     searchRanked,
     filteredEvents,
-    nonFoodEvents,
+    displayedEvents,
     totalResultsPages,
     eventsForCurrentPage,
   }

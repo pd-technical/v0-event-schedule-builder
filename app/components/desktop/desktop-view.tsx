@@ -12,7 +12,7 @@ import type { SortOption } from "@/app/components/sort-dropdown"
 interface DesktopLayoutProps {
   data: {
     events: Event[]
-    nonFoodEvents: Event[]
+    displayedEvents: Event[]
     eventsForCurrentPage: Event[]
     scheduledEvents: ScheduledEvent[]
     selectedInterestLabels: string[]
@@ -72,7 +72,7 @@ export function DesktopLayout({
 }: DesktopLayoutProps) {
   const {
     events,
-    nonFoodEvents,
+    displayedEvents,
     eventsForCurrentPage,
     scheduledEvents,
     selectedInterestLabels,
@@ -125,7 +125,7 @@ export function DesktopLayout({
           <section className="order-1 flex min-w-0 flex-col lg:min-h-0 lg:max-w-[520px] lg:flex-1 xl:max-w-[600px]">
             <div data-onboarding="search-section">
               <SearchSection
-                events={events}
+                events={displayedEvents}
                 searchHistory={searchHistory}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
@@ -151,7 +151,7 @@ export function DesktopLayout({
             >
               <EventList
                 events={eventsForCurrentPage}
-                allFilteredCount={nonFoodEvents.length}
+                allFilteredCount={displayedEvents.length}
                 scheduledEvents={scheduledEvents}
                 addToSchedule={addToSchedule}
                 removeFromSchedule={removeFromSchedule}
@@ -173,7 +173,7 @@ export function DesktopLayout({
           <aside className="relative order-2 flex min-h-[320px] w-full min-w-0 flex-col gap-6 lg:min-h-0 lg:min-w-[360px] lg:flex-1 lg:gap-0">
             <CampusMap
               events={events}
-              browseEvents={nonFoodEvents}
+              browseEvents={displayedEvents}
               scheduledEvents={scheduledEvents}
               hoveredEvent={hoveredEvent}
               setHoveredEvent={setHoveredEventFromMap}
