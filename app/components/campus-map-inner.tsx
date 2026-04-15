@@ -14,7 +14,7 @@ const GOLD_DARK = "#d89f00";
 
 
 import {
-  FaPaw, FaBug, FaFlask, FaPaintbrush, FaMusic, FaUtensils, FaInfo,
+  FaPaw, FaBug, FaFlask, FaPaintbrush, FaMusic, FaUtensils, FaInfo, FaFish,
   FaGamepad, FaLeaf, FaHorse, FaEgg, FaCat, FaTractor, FaScissors, FaChess, FaBook, FaRobot, FaSeedling, FaCloudSun
 } from "react-icons/fa6"
 import { FaMapMarkerAlt } from "react-icons/fa";
@@ -69,6 +69,7 @@ function renderReactIcon(iconKey: string, bg: string): string {
   const iconMap: Record<string, React.ReactElement> = {
     horse:      <FaHorse       color="white" size={iconSize} />,
     egg:        <FaEgg         color="white" size={iconSize} />,
+    fish:       <FaFish        color="white" size={iconSize} />,
     bug:        <FaBug         color="white" size={iconSize} />,
     cat:        <FaCat         color="white" size={iconSize} />,
     leaf:       <FaLeaf        color="white" size={iconSize} />,
