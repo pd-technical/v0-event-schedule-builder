@@ -89,8 +89,8 @@ export function EventList({
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-bold uppercase leading-none tracking-wide text-[#002D62]">
             {hasSearch
-              ? `${events.length} Events Found`
-              : `All Events (${allFilteredCount})`}
+              ? `Found ${events.length} Events`
+              : `Found ${allFilteredCount} Events`}
           </h3>
 
           {hasSearch && (
