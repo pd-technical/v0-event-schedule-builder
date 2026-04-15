@@ -257,7 +257,7 @@ export function SpotlightOverlay({ step, onNext, onSkip, scheduledEventCount }: 
           </div>
 
           {/* Description */}
-          <p className={`mt-2 leading-relaxed text-[var(--muted-foreground)] ${isMobile ? "text-xs" : "text-sm"}`}>
+          <p className={`mt-2 leading-relaxed text-[var(--muted-foreground)] whitespace-pre-line ${isMobile ? "text-xs" : "text-sm"}`}>
             {current.description}
           </p>
 
