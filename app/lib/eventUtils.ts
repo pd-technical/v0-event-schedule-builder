@@ -38,5 +38,68 @@ export const CATEGORY_TO_TAGS: Record<string, string[]> = {
   music: ["music", "performance"],
   creative: ["art", "crafts"],
   food: ["food", "drink", "coffee"],
-  community: ["cultural", "culture", "personal", "services"],
+  community: ["cultural", "culture", "personal"],
+  services: ["info", "information", "booth", "services", "accessibility"],
+}
+
+
+
+// Map category/location/tag combos to an icon + color
+export function getCategoryIcon(event: Event | ScheduledEvent): { icon: string; color: string } {
+  const name = event.name?.toLowerCase() ?? ""
+  const category = event.category?.toLowerCase() ?? ""
+  const tags = event.tags?.map(t => t.toLowerCase()) ?? []
+  const location = event.location?.toLowerCase() ?? ""
+
+  const has = (...terms: string[]) =>
+    terms.some(t =>  tags.includes(t) || category.includes(t) || name.includes(t) || location.includes(t))
+
+  // info booths
+  if (name.includes("info booth") ||  tags.includes("services")) return { icon: "info", color: "#64748B" }
+  // Location-based overrides first
+  if (location.includes("horse barn"))     return { icon: "horse",     color: "#8B4513" }
+  // if (location.includes("meyer hall"))     return { icon: "egg",       color: "#F59E0B" }
+  if (location.includes("briggs"))         return { icon: "bug",       color: "#16A34A" }
+  if (location.includes("giedt"))          return { icon: "cat",       color: "#7C3AED" }
+  if (location.includes("hutchison") || location.includes("leaf")) return { icon: "leaf", color: "#15803D" }
+  if (location.includes("cole facility")) return { icon: "sun",        color: "#F97316" }
+  if (location.includes("academic surge") || location.includes("fish")) return { icon: "fish", color: "#0EA5E9" }
+// Music & Entertainment (Dark Maroon / Berry)
+  // This replaces the primary blue to keep the hover state distinct.
+  if (has("battle of the bands", "music", "band", "ensemble", "performance", "synth", "microphone", "show", "entertainment"))
+    return { icon: "music", color: "#d1115e" } // Deep Maroon/Pink
+
+  // STEM & Engineering (Slate Blue)
+  // Shifted to a grey-blue so it doesn't clash with the primary blue hover.
+  if (has("robot", "engineering", "tech", "ece", "autonomous", "ecocar", "civil engineer", "esdc", "cultivating"))
+    return { icon: "robot", color: "#385ec1" } 
+
+  // Plants, Agriculture & Entomology (Aggie Green)
+  if (has("tractor", "strawberry", "tomato", "plant", "cacao", "coffee", "popcorn", "soil", "pistachio", "weed", "viticulture", "enology", "water", "agri", "bug", "insect", "entomolog"))
+    return { icon: "leaf", color: "#166534" } // Forest Green
+
+  // Animals & Wildlife (Earthy Ochre)
+  if (has("animal", "paw", "canine", "dog", "otter", "bat", "wildlife", "primate", "frisbee dog", "kitten"))
+    return { icon: "paw", color: "#92400E" } // Burnt Orange/Brown
+
+  // Science, Lab & Weather (Light Cyan)
+  // A "clean room" blue that is significantly lighter than your navy hover state.
+  if (has("chemistry", "dna", "biotechnology", "laser", "microbe", "physics", "nutrition", "math", "stats", "science", "weather", "balloon", "climate"))
+    return { icon: "flask", color: "#0891B2" } 
+
+  // Arts, Crafts & Kids (Aggie Gold)
+  // Pulls directly from your --accent variable.
+  if (has("art", "fashion show", "craft center", "visual journal", "paintbrush", "craft", "crafts", "slime", "scissor", "make", "children", "kids"))
+    return { icon: "scissors", color: "#D97706" } 
+
+  // Food (Poppy Red)
+  if (has("food", "sorbet", "liquid nitrogen", "drink", "coffee", "popcorn", "ice cream"))
+    return { icon: "utensils", color: "#BE123C" } 
+
+  // Informational / Community (Muted Sage)
+  if (has("admissions", "educational", "alumni", "fire department", "vip", "lounge", "book", "talk", "cultural"))
+    return { icon: "book", color: "#64748B" }
+
+  // Fallback
+  return { icon: "pin", color: "#64748B" }
 }
