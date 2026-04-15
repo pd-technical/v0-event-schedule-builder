@@ -6,7 +6,8 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
-    "start": "next start"
+    "start": "next start",
+    "postinstall": "pnpm rebuild better-sqlite3"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
