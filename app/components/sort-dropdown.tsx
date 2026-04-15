@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 
-export type SortOption = "popular" | "earliest" | "az"
+export type SortOption = "relevance" | "earliest" | "az"
 
 interface SortDropdownProps {
   selectedSort: SortOption
@@ -21,7 +21,7 @@ export function SortDropdown({
   const getSortLabel = () => {
     if (selectedSort === "earliest") return "Earliest"
     if (selectedSort === "az") return "A–Z"
-    return "Most Popular"
+    return "Relevance"
   }
 
   const handleSortSelect = (sort: SortOption) => {
@@ -50,13 +50,13 @@ export function SortDropdown({
     >
       <button
         type="button"
-        onClick={() => handleSortSelect("popular")}
-        className={`flex w-full items-center justify-between px-4 py-3.5 text-left text-sm transition ${selectedSort === "popular"
+        onClick={() => handleSortSelect("relevance")}
+        className={`flex w-full items-center justify-between px-4 py-3.5 text-left text-sm transition ${selectedSort === "relevance"
             ? "bg-[#E8F1FB] font-semibold text-[#123E7C]"
             : "text-[#163A70] hover:bg-[#F1F6FC]"
           }`}
       >
-        <span>Most Popular</span>
+        <span>Relevance</span>
       </button>
 
       <div className="h-px bg-[#E3ECF5]" />
@@ -127,13 +127,13 @@ export function SortDropdown({
         <div className="absolute right-0 top-[calc(100%-1px)] z-[200] w-full min-w-[190px] overflow-hidden rounded-b-[10px] rounded-t-none border border-[#D7E2EE] bg-white shadow-[0_10px_24px_rgba(2,40,81,0.12)]">
           <button
             type="button"
-            onClick={() => handleSortSelect("popular")}
-            className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition ${selectedSort === "popular"
+            onClick={() => handleSortSelect("relevance")}
+            className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition ${selectedSort === "relevance"
                 ? "bg-[#E8F1FB] font-semibold text-[#123E7C]"
                 : "text-[#163A70] hover:bg-[#F1F6FC]"
               }`}
           >
-            <span>Most Popular</span>
+            <span>Relevance</span>
           </button>
 
           <div className="h-px bg-[#E3ECF5]" />
