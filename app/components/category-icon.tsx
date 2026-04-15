@@ -32,8 +32,8 @@ const ICON_MAP: Record<string, React.ElementType> = {
   pin:         FaMapMarkerAlt,
 }
 
-export function CategoryIcon({ event, size = 12 }: { event: Event | ScheduledEvent, size?: number }) {
+export function CategoryIcon({ event, size = 12, className }: { event: Event | ScheduledEvent, size?: number, className?: string }) {
   const { icon, color } = getCategoryIcon(event)
   const IconComponent = ICON_MAP[icon] ?? FaMapMarkerAlt
-  return <IconComponent size={size} color={color} style={{ flexShrink: 0 }} />
+  return <IconComponent size={size} color={color} className={className} />
 }
