@@ -22,17 +22,18 @@ function HighlightMatch({ text, query }: { text: string; query: string }) {
   const q = query.trim()
   if (!q) return <>{text}</>
 
-  const lower = text.toLowerCase()
-  const idx = lower.indexOf(q.toLowerCase())
-  if (idx === -1) return <>{text}</>
+  const start = text.toLowerCase().indexOf(q.toLowerCase())
+  if (start === -1) return <>{text}</>
+
+  const end = start + q.length
 
   return (
     <>
-      {text.slice(0, idx)}
+      {text.slice(0, start)}
       <mark className="rounded bg-accent/35 font-medium text-foreground">
-        {text.slice(idx, idx + q.length)}
+        {text.slice(start, end)}
       </mark>
-      {text.slice(idx + q.length)}
+      {text.slice(end)}
     </>
   )
 }
@@ -49,40 +50,39 @@ export function SearchBarSection({
 }: SearchBarSectionProps) {
   const trimmedQuery = searchQuery.trim()
   const [isFocused, setIsFocused] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  const { items, mode } = useMemo(() => {
-    if (trimmedQuery) {
-      const matches = rankedEventMatchesSearch(events, trimmedQuery).slice(
-        0,
-        MAX_SUGGESTIONS
-      )
-      return {
-        mode: "events" as const,
-        items: matches.map((event) => ({ type: "event" as const, event })),
-      }
-    }
+  const isSearching = !!trimmedQuery
+  const mode = isSearching ? "events" : "history"
 
-    return {
-      mode: "history" as const,
-      items: searchHistory.slice(0, 5).map((label) => ({
-        type: "history" as const,
-        label,
-      })),
-    }
-  }, [trimmedQuery, events, searchHistory])
+  const items = useMemo(() => {
+    return isSearching
+      ? rankedEventMatchesSearch(events, trimmedQuery)
+          .slice(0, MAX_SUGGESTIONS)
+          .map((event) => ({ type: "event" as const, event }))
+      : searchHistory
+          .slice(0, 5)
+          .map((label) => ({ type: "history" as const, label }))
+  }, [isSearching, events, trimmedQuery, searchHistory])
 
-   const inputRef = useRef<HTMLInputElement>(null)
+  const showDropdown = isFocused && (isSearching || items.length > 0)
+  const showNoResults = isFocused && isSearching && items.length === 0
 
-  /** Blur the input and close suggestions (Enter, pick, or close control). */
-  function exitSearchField() {
+  const closeSearch = () => {
     inputRef.current?.blur()
     setIsFocused(false)
   }
-  
-  const showDropdown = isFocused && (mode === "events" ? true : items.length > 0)
 
-  const showNoResults =
-    isFocused && mode === "events" && trimmedQuery && items.length === 0
+  const submitSearch = (value = searchQuery) => {
+    onSearchSubmit(value)
+    closeSearch()
+  }
+
+  const inputClasses = mobile
+    ? "flex-1 min-w-0 py-3 pl-10 pr-4 bg-[#DDEAF7] border border-[#B7CCE3] rounded-lg text-foreground text-sm text-[#163A70] placeholder:text-[#163A70]/65 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#8FB2D8] transition-all"
+    : "flex-1 min-w-0 pl-10 pr-4 py-3 bg-secondary border border-primary/20 rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all"
+
+  const searchIconClasses = "absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#163A70]/60"
 
   return (
     <div className="flex items-stretch gap-2 sm:gap-3">
@@ -90,63 +90,25 @@ export function SearchBarSection({
         <form
           onSubmit={(e) => {
             e.preventDefault()
-            onSearchSubmit(searchQuery)
-                          exitSearchField()
-
+            submitSearch()
           }}
           className="relative flex w-full min-w-0"
         >
-          {/* ICON */}
-          <Search
-            className={`absolute left-3 top-1/2 -translate-y-1/2 ${mobile ? "h-5 w-5 text-[#163A70]/60" : "h-5 w-5 text-muted-foreground"
-              }`}
-            strokeWidth={2.25}
-          />
+          <Search className={searchIconClasses} strokeWidth={2.25} />
 
-          {/* INPUT */}
           <input
-                        ref={inputRef}
+            ref={inputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsFocused(true)}
-            onBlur={() => {
-              setTimeout(() => setIsFocused(false), 150)
-            }}
+            onBlur={() => setTimeout(() => setIsFocused(false), 150)}
             placeholder="Search for events..."
             autoComplete="off"
-            aria-expanded={showDropdown || showNoResults ? true : false}
+            aria-expanded={showDropdown || showNoResults}
             aria-controls="search-suggestions"
             aria-autocomplete="list"
-            className={
-              mobile
-                ? `
-          flex-1 min-w-0 h-14 pl-10 pr-4
-          bg-[#DDEAF7]
-          border border-[#B7CCE3]
-          rounded-[18px]
-          text-[15px] text-[#163A70]
-          placeholder:text-[#163A70]/65
-          focus:outline-none
-          focus:ring-2
-          focus:ring-primary/20
-          focus:border-[#8FB2D8]
-          transition-all
-        `
-                : `
-          flex-1 min-w-0 pl-10 pr-4 py-3
-          bg-secondary
-          border border-primary/20
-          rounded-lg
-          text-foreground
-          placeholder:text-muted-foreground
-          focus:outline-none
-          focus:ring-2
-          focus:ring-primary/25
-          focus:border-primary
-          transition-all
-        `
-            }
+            className={inputClasses}
           />
         </form>
 
@@ -154,12 +116,11 @@ export function SearchBarSection({
           <div
             id="search-suggestions"
             role="listbox"
-            className="absolute z-[70] mt-2 w-full bg-card border border-border rounded-lg shadow-[0_10px_25px_rgba(2,40,81,0.08)] max-h-72 overflow-y-auto"
+            className="absolute z-[70] mt-2 max-h-72 w-full overflow-y-auto rounded-lg border border-border bg-card shadow-[0_10px_25px_rgba(2,40,81,0.08)]"
           >
             {showNoResults ? (
               <div className="px-4 py-3 text-sm text-muted-foreground">
-                No events match &ldquo;{trimmedQuery}&rdquo;. Try a different
-                word or check spelling.
+                No events match &ldquo;{trimmedQuery}&rdquo;. Try a different word or check spelling.
               </div>
             ) : (
               <>
@@ -178,9 +139,10 @@ export function SearchBarSection({
                         Clear
                       </button>
                     )}
+
                     <button
                       type="button"
-                      onClick={() => exitSearchField()}
+                      onClick={closeSearch}
                       className="text-muted-foreground transition-colors hover:text-foreground"
                       aria-label="Close suggestions"
                     >
@@ -198,8 +160,7 @@ export function SearchBarSection({
                       onMouseDown={(e) => {
                         e.preventDefault()
                         setSearchQuery(item.label)
-                        onSearchSubmit(item.label)
-                       exitSearchField()
+                        submitSearch(item.label)
                       }}
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-primary/5"
                     >
@@ -215,18 +176,14 @@ export function SearchBarSection({
                         e.preventDefault()
                         const name = item.event.name
                         setSearchQuery(name)
-                        onSearchSubmit(name)
-                        exitSearchField()
+                        submitSearch(name)
                       }}
                       className="flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors hover:bg-primary/5"
                     >
                       <Search className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                       <span className="min-w-0 flex-1">
                         <span className="block text-sm font-medium text-foreground">
-                          <HighlightMatch
-                            text={item.event.name}
-                            query={trimmedQuery}
-                          />
+                          <HighlightMatch text={item.event.name} query={trimmedQuery} />
                         </span>
                         <span className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                           <MapPin className="h-3 w-3 shrink-0" />
@@ -247,11 +204,11 @@ export function SearchBarSection({
       <button
         type="button"
         onClick={onHelpClick}
-        className={`flex shrink-0 items-center justify-center bg-[#002D62] text-white transition-colors hover:bg-[#00244d] ${
-          mobile ? "h-14 w-14 rounded-[18px]" : "h-12 w-12 rounded-xl"
-        }`}
         aria-label="Help"
         title="Replay tutorial"
+        className={`flex shrink-0 items-center justify-center rounded-xl bg-[#002D62] text-white transition-colors hover:bg-[#00244d] ${
+          mobile ? "py-3 w-12 rounded-lg" : "h-12 w-12"
+        }`}
       >
         <HelpCircle className="h-5 w-5" strokeWidth={2} />
       </button>

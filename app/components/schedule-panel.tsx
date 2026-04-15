@@ -67,8 +67,9 @@ export function SchedulePanel({
   return (
     <div
       data-onboarding="schedule-panel"
-      className={`w-full bg-card border border-border rounded-lg shadow-lg transition-all lg:absolute lg:left-auto lg:right-4 lg:top-4 lg:bottom-auto lg:w-72 lg:z-[1000] ${effectiveCollapsed ? "h-auto" : "h-[300px] lg:max-h-[440px]"
-        }`}
+      className={`w-full bg-card border border-border rounded-lg shadow-lg transition-all lg:absolute lg:left-auto lg:right-4 lg:top-4 lg:bottom-auto lg:w-72 lg:z-[1000] ${
+        effectiveCollapsed ? "h-auto" : "max-h-[300px] lg:max-h-[440px] flex flex-col"
+      }`}
     >
       {/* Header */}
       <div
@@ -105,7 +106,7 @@ export function SchedulePanel({
               </p>
             </div>
           ) : (
-            <div className="p-2 h-[200px] overflow-y-auto lg:max-h-[300px]">
+            <div className="min-h-0 flex-1 overflow-y-auto p-2">
               {scheduledEvents.map((event, index) => {
                 const outOfOrder = isOutOfOrder(scheduledEvents, index);
 

@@ -28,7 +28,7 @@ const DESKTOP_FILTER_BY_PILL_TEXT =
   "px-3 py-1.5 text-xs font-semibold leading-tight transition-colors"
 
 const MOBILE_FILTER_BY_PILL_TEXT =
-  "whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold leading-tight transition-colors"
+  "whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold leading-tight transition-colors"
 
 export function FilterSection({
   activeFeedTab,
