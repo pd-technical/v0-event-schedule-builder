@@ -125,7 +125,7 @@ export function DesktopLayout({
           <section className="order-1 flex min-w-0 flex-col lg:min-h-0 lg:max-w-[520px] lg:flex-1 xl:max-w-[600px]">
             <div data-onboarding="search-section">
               <SearchSection
-                events={events}
+                events={nonFoodEvents}
                 searchHistory={searchHistory}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
