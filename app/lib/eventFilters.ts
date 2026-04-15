@@ -15,4 +15,5 @@ export const EVENT_FILTER_CATEGORY_PILLS = [
   { id: "music", label: "Music" },
   { id: "creative", label: "Creative" },
   { id: "community", label: "Community" },
+  { id: "services", label: "Services" },
 ] as const

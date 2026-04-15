@@ -38,5 +38,88 @@ export const CATEGORY_TO_TAGS: Record<string, string[]> = {
   music: ["music", "performance"],
   creative: ["art", "crafts"],
   food: ["food", "drink", "coffee"],
-  community: ["cultural", "culture", "personal", "services"],
+  community: ["cultural", "culture", "personal"],
+  services: ["info", "information", "booth", "services", "accessibility"],
+}
+
+
+
+// Map category/location/tag combos to an icon + color
+export function getCategoryIcon(event: Event | ScheduledEvent): { icon: string; color: string } {
+  const name = event.name?.toLowerCase() ?? ""
+  const category = event.category?.toLowerCase() ?? ""
+  const tags = event.tags?.map(t => t.toLowerCase()) ?? []
+  const location = event.location?.toLowerCase() ?? ""
+
+  const has = (...terms: string[]) =>
+    terms.some(t =>  tags.includes(t) || category.includes(t) || name.includes(t) || location.includes(t))
+
+  // info booths
+  if (name.includes("info booth") ||  tags.includes("services")) return { icon: "info", color: "#64748B" }
+  // Location-based overrides first
+  if (location.includes("horse barn"))     return { icon: "horse",     color: "#8B4513" }
+  // if (location.includes("meyer hall"))     return { icon: "egg",       color: "#F59E0B" }
+  if (location.includes("briggs"))         return { icon: "bug",       color: "#16A34A" }
+  if (location.includes("giedt"))          return { icon: "cat",       color: "#7C3AED" }
+  if (location.includes("hutchison") || location.includes("leaf")) return { icon: "leaf", color: "#15803D" }
+  if (location.includes("cole facility")) return { icon: "sun",        color: "#F97316" }
+  if (location.includes("academic surge") || location.includes("fish")) return { icon: "fish", color: "#0EA5E9" }
+
+  // Music
+  if (has("battle of the bands", "music", "band", "ensemble", "performance", "synth"))
+    return { icon: "music", color: "#7C3AED" }
+
+  // STEM / Engineering / Robots
+  if (has("robot", "engineering", "tech", "ece", "autonomous", "ecocar", "civil engineer", "esdc", "cultivating"))
+    return { icon: "robot", color: "#6366F1" }
+
+
+  // Bugs/Entomology
+  if (has("bug", "insect", "entomolog", "cockroach", "maggot", "mosquito", "nematology", "pollinator", "fly-tying", "glowing"))
+    return { icon: "bug", color: "#16A34A" }
+
+    // Animals
+  if (has("animal", "paw", "canine", "dog", "otter", "bat", "wildlife", "primate", "frisbee dog", "kitten", "herpetolog", "aquaculture", "beef cattle", "hog", "laboratory animal"))
+    return { icon: "paw", color: "#D97706" }
+
+  // Science / Lab
+  if (has("chemistry", "dna", "biotechnology", "laser", "microbe", "physics", "ice cream", "nutrition", "bme", "toxicology", "math", "stats", "datalab", "science"))
+    return { icon: "flask", color: "#0891B2" }
+
+  // Crafts / Scissors
+  if (has("craft", "crafts", "slime", "scissor", "make", "children", "kids", "special event"))
+    return { icon: "scissors", color: "#F59E0B" }
+
+  // Art
+  if (has("art", "fashion show", "craft center", "visual journal", "paintbrush", "manetti shrem"))
+    return { icon: "art", color: "#EC4899" }
+
+
+
+  // Plants / Agriculture / Tractors
+  if (has("tractor", "strawberry", "tomato", "plant", "cacao", "coffee", "popcorn", "soil", "pistachio", "weed", "viticulture", "enology", "water", "agri"))
+    return { icon: "leaf", color: "#15803D" }
+
+  // Weather / Earth / Atmosphere
+  if (has("weather", "balloon", "climate", "atmospheric", "earth", "cosmos", "meteorolog"))
+    return { icon: "cloudSun", color: "#38BDF8" }
+
+  // Games
+  if (has("game", "valorant", "esport", "controller", "chess"))
+    return { icon: "gamepad", color: "#8B5CF6" }
+
+  // Informational / Community
+  if (has("admissions", "educational", "alumni", "fire department", "summer session", "vip", "lounge", "book", "datalab", "dive into", "talk", "cultural"))
+    return { icon: "book", color: "#64748B" }
+
+  // Entertainment / Performances
+  if (has("microphone", "show", "entertainment"))
+    return { icon: "microphone", color: "#F43F5E" }
+
+  // Food
+  if (has("food", "sorbet", "liquid nitrogen", "drink", "coffee", "popcorn", "ice cream"))
+    return { icon: "utensils", color: "#EF4444" }
+
+  // Fallback
+  return { icon: "pin", color: "#64748B" }
 }

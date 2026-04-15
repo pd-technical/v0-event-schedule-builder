@@ -7,10 +7,20 @@ import type { Event, ScheduledEvent } from "@/app/page";
 import RoutingMachine from "./routing-machine";
 import { renderToStaticMarkup } from "react-dom/server";
 import { LuUtensils, LuToilet } from "react-icons/lu";
-
+import { getCategoryIcon } from "../lib/eventUtils";
 const NAVY = "#123c73";
 const GOLD = "#ffbf00";
 const GOLD_DARK = "#d89f00";
+
+
+import {
+  FaPaw, FaBug, FaFlask, FaPaintbrush, FaMusic, FaUtensils, FaInfo,
+  FaGamepad, FaLeaf, FaHorse, FaEgg, FaCat, FaTractor, FaScissors, FaChess, FaBook, FaRobot, FaSeedling, FaCloudSun
+} from "react-icons/fa6"
+import { FaMapMarkerAlt } from "react-icons/fa";
+import { PiMicrophoneStageFill } from "react-icons/pi";
+
+
 
 function isFoodTruck(event: Event | ScheduledEvent) {
   return event.tags?.some(
@@ -51,6 +61,64 @@ function createFoodTruckIcon(): L.DivIcon {
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
+}
+
+function renderReactIcon(iconKey: string, bg: string): string {
+  const iconSize = 11;
+
+  const iconMap: Record<string, React.ReactElement> = {
+    horse:      <FaHorse       color="white" size={iconSize} />,
+    egg:        <FaEgg         color="white" size={iconSize} />,
+    bug:        <FaBug         color="white" size={iconSize} />,
+    cat:        <FaCat         color="white" size={iconSize} />,
+    leaf:       <FaLeaf        color="white" size={iconSize} />,
+    sun:        <FaSeedling    color="white" size={iconSize} />,
+    music:      <FaMusic       color="white" size={iconSize} />,
+    art:        <FaPaintbrush  color="white" size={iconSize} />,
+    paw:        <FaPaw         color="white" size={iconSize} />,
+    flask:      <FaFlask       color="white" size={iconSize} />,
+    robot:      <FaRobot       color="white" size={iconSize} />,
+    gamepad:    <FaGamepad     color="white" size={iconSize} />,
+    book:       <FaBook        color="white" size={iconSize} />,
+    microphone: <PiMicrophoneStageFill  color="white" size={iconSize} />,
+    utensils:   <FaUtensils    color="white" size={iconSize} />,
+    scissors:   <FaScissors    color="white" size={iconSize} />,
+    cloudSun:   <FaCloudSun    color="white" size={iconSize} />,
+    tractor:    <FaTractor     color="white" size={iconSize} />,
+    pin:        <FaMapMarkerAlt color="white" size={iconSize} />,
+    games:      <FaChess       color="white" size={iconSize} />,
+    info:       <FaInfo        color="white" size={iconSize} />,
+  }
+
+  const svgString = renderToStaticMarkup(iconMap[iconKey] ?? iconMap.pin)
+
+  return `
+    <div style="
+      background-color: ${bg};
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    ">
+      ${svgString}
+    </div>
+  `
+}
+
+function createCategoryIcon(event: Event | ScheduledEvent, isHovered = false): L.DivIcon {
+  const { icon, color } = getCategoryIcon(event)
+  const bg = isHovered ? 'var(--color-primary)' : color  // blue on hover, keep icon white either way
+
+  return L.divIcon({
+    className: "",
+    html: renderReactIcon(icon, bg),
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+  })
 }
 
 function createRestroomIcon(): L.DivIcon {
@@ -114,11 +182,8 @@ function getMarkerIcon({
     return icons.restroom;
   }
 
-  if (isHovered) {
-    return icons.hovered;
-  }
 
-  return icons.available;
+  return createCategoryIcon(event, isHovered);
 }
 
 /* Re-tile when container resizes (prevents gray area at bottom) */
