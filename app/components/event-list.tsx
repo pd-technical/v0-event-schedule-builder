@@ -181,7 +181,7 @@ export function EventList({
 
                   <div className="min-w-0 flex-1">
                     <h4 className="flex items-center gap-1.5 break-words items-start  font-medium text-foreground">
-                      <CategoryIcon event={event} size={12} className="mt-1 shrink-0" />
+                      <CategoryIcon event={event} size={12} className="mt-1.5 shrink-0" />
                       {event.name}
                     </h4>
 

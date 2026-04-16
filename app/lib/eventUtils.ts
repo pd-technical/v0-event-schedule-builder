@@ -84,6 +84,9 @@ export function getCategoryIcon(event: Event | ScheduledEvent): { icon: string; 
   if (has("chemistry", "dna", "biotechnology", "laser", "microbe", "physics", "nutrition", "math", "stats", "science", "weather", "balloon", "climate"))
     return { icon: "flask", color: "#0891B2" } 
 
+  // Games
+  if (has("game", "chess", "esports", "vr", "arcade", "play"))
+    return { icon: "chess", color: "#db2777" }
   // Arts, Crafts & Kids 
   if (has("art", "fashion show", "craft center", "visual journal", "paintbrush", "craft", "crafts", "slime", "scissor", "make", "children", "kids"))
     return { icon: "scissors", color: "#D97706" } 

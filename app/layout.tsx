@@ -9,7 +9,6 @@ import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 export const metadata: Metadata = {
   title: 'UC Davis Picnic Day - Find Events',
   description: 'Plan your UC Davis Picnic Day visit by exploring events and building your custom schedule',
-  generator: 'v0.app',
   icons: {
     icon: [
       {

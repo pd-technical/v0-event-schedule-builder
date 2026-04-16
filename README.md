@@ -1,6 +1,6 @@
 # Event schedule builder
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/technical-5785s-projects/v0-event-schedule-builder)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://pd-schedule-builder.vercel.app/)
 
 ## Overview
 
@@ -12,9 +12,9 @@ Event data is maintained in the MyMaps Google Sheets, and synchronized into a lo
 
 ## Deployment
 
-Your project is live at:
+The project is live at:
 
-**[https://vercel.com/technical-5785s-projects/v0-event-schedule-builder](https://vercel.com/technical-5785s-projects/v0-event-schedule-builder)**
+**[https://pd-schedule-builder.vercel.app/](https://pd-schedule-builder.vercel.app/)**
 
 # Build your app
 
