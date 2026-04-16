@@ -2,8 +2,9 @@
 Dockerfile
 docker-compose.yml
 .dockerignore
-volumes/
+volumes/*
 *.sqlite
+!volumes/.gitkeep
 
 # Below is copied from .gitignore
 # dependencies
