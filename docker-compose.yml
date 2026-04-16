@@ -3,7 +3,10 @@ services:
     container_name: scheduler
     image: "${IMAGE:-picnicday/scheduler}"
     pull_policy: "${PULL_POLICY:-build}"
-    build: .
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: "${NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}"
     restart: unless-stopped
     env_file:
       - .env
@@ -13,3 +16,4 @@ services:
       - ./volumes:/app/volumes:rw
     ports:
       - "3000:3000"
+
