@@ -103,7 +103,7 @@ export function SearchBarSection({
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setTimeout(() => setIsFocused(false), 150)}
-            placeholder="Search for events..."
+            placeholder="Search for events, locations, keywords..."
             autoComplete="off"
             aria-expanded={showDropdown || showNoResults}
             aria-controls="search-suggestions"
