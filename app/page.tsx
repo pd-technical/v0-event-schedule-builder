@@ -5,6 +5,7 @@ import { useState, useCallback, useEffect } from "react"
 // components
 import { OnboardingProvider } from "@/app/components/onboarding/onboarding-provider"
 import { MobileScheduleMap } from "./components/mobile/mobile-view"
+import { MobileWarningDialog } from "./components/mobile/mobile-warning-dialog"
 import { DesktopLayout } from "./components/desktop/desktop-view"
 import type { SortOption } from "@/app/components/sort-dropdown"
 
@@ -54,6 +55,8 @@ export default function PicnicDayPage() {
   const [resultsPage, setResultsPage] = useState(0)
 
   const [isMobile, setIsMobile] = useState(false)
+  const [mobileWarningDismissed, setMobileWarningDismissed] = useState(false)
+
   const [resultsPageSize, setResultsPageSize] = useState(20)
 
   const {
@@ -300,6 +303,10 @@ export default function PicnicDayPage() {
       onPersonalizationComplete={handlePersonalizationComplete}
       scheduledEventCount={scheduledEvents.length}
     >
+      {/* Show mobile warning once on first mobile visit */}
+      {isMobile && !mobileWarningDismissed && (
+        <MobileWarningDialog onDismiss={() => setMobileWarningDismissed(true)} />
+      )}
       {isMobile ? (
         <MobileScheduleMap
           data={data}
