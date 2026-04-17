@@ -57,7 +57,7 @@ export default function PicnicDayPage() {
   const [isMobile, setIsMobile] = useState(false)
   const [mobileWarningDismissed, setMobileWarningDismissed] = useState(false)
 
-  const [resultsPageSize, setResultsPageSize] = useState(20)
+  const resultsPageSize = 20
 
   const {
     scheduledEvents,
@@ -147,56 +147,42 @@ export default function PicnicDayPage() {
   }, [])
 
   useEffect(() => {
-    const updateResultsPageSize = () => {
-      const width = window.innerWidth
-
-      if (width < 640) {
-        setResultsPageSize(5)
-      } else if (width < 1024) {
-        setResultsPageSize(10)
-      } else {
-        setResultsPageSize(20)
-      }
-    }
-
-    updateResultsPageSize()
-    window.addEventListener("resize", updateResultsPageSize)
-
-    return () => window.removeEventListener("resize", updateResultsPageSize)
-  }, [])
-
-  useEffect(() => {
     if (searchQuery.trim() === "") {
       setSubmittedSearchQuery("")
       setResultsPage(0)
     }
   }, [searchQuery])
 
-  const commitSearch = useCallback(
-  (value?: string, options?: { forceAll?: boolean }) => {
-    const finalQuery = (value ?? searchQuery).trim()
-
-    if (!finalQuery) {
-      resetSearchState()
-      return
-    }
-
-    if (options?.forceAll) {
-      setActiveFeedTab("all")
-      setSelectedCategories([])
-    }
-
-    setSearchQuery(finalQuery)
-    setSubmittedSearchQuery(finalQuery)
+  const handleSortChange = useCallback((sort: SortOption) => {
+    setSortOption(sort)
     setResultsPage(0)
+  }, [])
 
-    setSearchHistory((prev) => {
-      const updated = [finalQuery, ...prev.filter((q) => q !== finalQuery)]
-      return updated.slice(0, 5)
-    })
-  },
-  [searchQuery, resetSearchState]
-)
+  const commitSearch = useCallback(
+    (value?: string, options?: { forceAll?: boolean }) => {
+      const finalQuery = (value ?? searchQuery).trim()
+
+      if (!finalQuery) {
+        resetSearchState()
+        return
+      }
+
+      if (options?.forceAll) {
+        setActiveFeedTab("all")
+        setSelectedCategories([])
+      }
+
+      setSearchQuery(finalQuery)
+      setSubmittedSearchQuery(finalQuery)
+      setResultsPage(0)
+
+      setSearchHistory((prev) => {
+        const updated = [finalQuery, ...prev.filter((q) => q !== finalQuery)]
+        return updated.slice(0, 5)
+      })
+    },
+    [searchQuery, resetSearchState]
+  )
 
   const clearSearchHistory = useCallback(() => {
     setSearchHistory([])
@@ -204,6 +190,7 @@ export default function PicnicDayPage() {
 
   const toggleCategory = useCallback((category: string) => {
     setActiveFeedTab("all")
+    setResultsPage(0)
     setSelectedCategories((prev) =>
       prev.includes(category)
         ? prev.filter((c) => c !== category)
@@ -267,20 +254,20 @@ export default function PicnicDayPage() {
   }
 
   const actions = {
-  setHoveredEventFromMap,
-  setHoveredEventFromList,
-  handleMapMarkerClick,
-  setResultsPage,
-  handleBrowseAllEvents: goToAllFeed,
-  setSearchQuery,
-  clearSearchHistory,
-  toggleCategory,
-  setFeedTab,
-  selectRecommended: goToRecommendedFeed,
-  handleShowAllFromBanner: goToAllFeed,
-  setSortOption,
-  commitSearch,
-}
+    setHoveredEventFromMap,
+    setHoveredEventFromList,
+    handleMapMarkerClick,
+    setResultsPage,
+    handleBrowseAllEvents: goToAllFeed,
+    setSearchQuery,
+    clearSearchHistory,
+    toggleCategory,
+    setFeedTab,
+    selectRecommended: goToRecommendedFeed,
+    handleShowAllFromBanner: goToAllFeed,
+    setSortOption: handleSortChange,
+    commitSearch,
+  }
 
   const schedule = {
     recentlyAddedId,
