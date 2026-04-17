@@ -13,6 +13,38 @@ import {
 import type { Event, ScheduledEvent } from "@/app/page"
 import { SortDropdown, type SortOption } from "@/app/components/sort-dropdown"
 import { CategoryIcon } from "./category-icon"
+import ticketedEventsData from "@/app/lib/ticketed-events.json"
+
+type TicketedEventEntry = {
+  name: string
+  aliases?: string[]
+  url: string
+}
+
+const ticketedEvents = ticketedEventsData as TicketedEventEntry[]
+
+function normalizeName(value: string) {
+  return value.toLowerCase().replace(/\s+/g, " ").trim()
+}
+
+function getTicketUrl(eventName: string) {
+  const normalizedEventName = normalizeName(eventName)
+
+  const match = ticketedEvents.find((entry) => {
+    const names = [entry.name, ...(entry.aliases ?? [])]
+
+    return names.some((name) => {
+      const normalizedName = normalizeName(name)
+      return (
+        normalizedName === normalizedEventName ||
+        normalizedName.includes(normalizedEventName) ||
+        normalizedEventName.includes(normalizedName)
+      )
+    })
+  })
+
+  return match?.url
+}
 
 interface EventListProps {
   events: Event[]
@@ -147,6 +179,7 @@ export function EventList({
           const scheduled = scheduledIds.has(event.id)
           const isExpanded = expandedEvent === event.id
           const isHovered = hoveredEvent === event.id
+          const ticketUrl = getTicketUrl(event.name)
 
           return (
             <div
@@ -180,9 +213,9 @@ export function EventList({
                   />
 
                   <div className="min-w-0 flex-1">
-                    <h4 className="flex items-center gap-1.5 break-words items-start  font-medium text-foreground">
+                    <h4 className="flex items-start gap-1.5 break-words font-medium text-foreground">
                       <CategoryIcon event={event} size={12} className="mt-1.5 shrink-0" />
-                      {event.name}
+                      <span>{event.name}</span>
                     </h4>
 
                     <div className="mt-1 space-y-1 text-xs text-muted-foreground">
@@ -237,7 +270,7 @@ export function EventList({
                       {event.category}
                     </span>
 
-                    {event.tags?.map((tag) => (
+                    {event.tags?.filter((tag) => tag.toLowerCase() !== "ticketed").map((tag) => (
                       <span
                         key={tag}
                         className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium capitalize text-primary"
@@ -245,6 +278,16 @@ export function EventList({
                         {tag}
                       </span>
                     ))}
+                    {ticketUrl && (
+                      <a
+                        href={ticketUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-[11px] font-medium text-red-800 transition hover:bg-red-200"
+                      >
+                        Get tickets
+                      </a>
+                    )}
                   </div>
                 </div>
               )}
