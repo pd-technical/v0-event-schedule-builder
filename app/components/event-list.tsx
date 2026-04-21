@@ -117,7 +117,7 @@ export function EventList({
   }, [page])
 
   return (
-    <div className="mt-6 flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <div className="sticky top-0 z-20 flex items-center justify-between gap-5 border-b border-[#E5E7EB] bg-background/95 py-3 backdrop-blur">
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-bold uppercase leading-none tracking-wide text-[#002D62]">

@@ -147,7 +147,7 @@ export function DesktopLayout({
 
             <div
               data-onboarding="event-list"
-              className="mt-6 flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden"
+              className="mt-5 flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden"
             >
               <EventList
                 events={eventsForCurrentPage}
